@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ar } from "@/content/ar";
+import { CartLink } from "@/components/shop/CartLink";
 import { MobileMenu } from "./MobileMenu";
 
 export function Header() {
@@ -20,7 +21,10 @@ export function Header() {
             </Link>
           ))}
         </nav>
-        <MobileMenu links={links} />
+        <div className="flex items-center gap-1">
+          <CartLink />
+          <MobileMenu links={links} />
+        </div>
       </div>
     </header>
   );
