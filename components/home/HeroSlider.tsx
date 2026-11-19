@@ -83,6 +83,7 @@ export function HeroSlider({ banners }: { banners: Banner[] }) {
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
+      <h1 className="sr-only">{m.siteName}</h1>
       {/* initial={false}: the first banner is in the page at once, only later changes animate */}
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
