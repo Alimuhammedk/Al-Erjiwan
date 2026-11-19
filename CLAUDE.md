@@ -8,7 +8,7 @@ Online store for paints and decor: [Al-Erjiwan]. Full requirements are in `SPEC.
 ## Stack
 - Next.js (App Router), TypeScript, Tailwind CSS, Framer Motion
 - Supabase for database, auth and image storage
-- Deploy: [Vercel]
+- Deploy: [Netlify]
 
 ## Commands
 - `npm run dev`: start the dev server

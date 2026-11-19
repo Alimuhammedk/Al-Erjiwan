@@ -66,7 +66,7 @@
 - Next.js (App Router) + TypeScript
 - Tailwind CSS + Framer Motion
 - Supabase (Postgres, Auth, Storage)
-- Hosting: [Vercel ]
+- Hosting: [Netlify]
 - Domain: [not purchased yet]
 
 ## 9. Build phases (do one at a time, test, then continue)

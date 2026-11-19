@@ -9,7 +9,7 @@ Ali signs up himself, with his own email, for each service below. Never share pa
 |---|---|
 | GitHub | the code (private repo `al-erjiwan`) |
 | Supabase | database, admin login, image storage (project `al-erjiwan`) |
-| Vercel | hosting the live site |
+| Netlify | hosting the live site |
 
 ## Run locally
 ```bash

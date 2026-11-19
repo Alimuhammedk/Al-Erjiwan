@@ -26,7 +26,7 @@ Success after three months: **more orders and fewer WhatsApp messages answered b
 - Accounts held in the builder's name.
 
 ## 3. Constraints
-- Stack fixed by the spec: Next.js (App Router), TypeScript, Tailwind, Framer Motion, Supabase (Postgres, Auth, Storage), Vercel.
+- Stack fixed by the spec: Next.js (App Router), TypeScript, Tailwind, Framer Motion, Supabase (Postgres, Auth, Storage), Netlify.
 - Admin writes are checked on the server and restricted by Supabase row-level security (RLS). No secret keys in code (`.env.local`, out of git).
 - `next/image`, compressed images, lazy loading. Subtle animation only.
 - Check every page at 375px, 768px and 1280px with Playwright screenshots. Run `npm run build` and `npm run lint` before finishing any phase.
@@ -45,9 +45,9 @@ Success after three months: **more orders and fewer WhatsApp messages answered b
 | Products | Each product is marked **tinted** or **ready-made**. Tinted: customer picks any palette colour and a size; stock is counted for the base paint. Ready-made: each colour is its own stock item, with sold-out shown per colour. |
 | Colour catalogue | Ali supplies it later. Build the colours table, an admin bulk import from CSV, and sample colours for development. |
 | Room preview | 3–4 illustrated vector rooms (living room, bedroom, kitchen, exterior) with recolourable walls, then links to matching products. |
-| Ownership | Ali creates and owns GitHub, Supabase, Vercel and the domain accounts, using his own email. The builder is added as a collaborator. A handover guide is written. |
+| Ownership | Ali creates and owns GitHub, Supabase, Netlify and the domain accounts, using his own email. The builder is added as a collaborator. A handover guide is written. |
 | Process | Work in phases, one git branch per phase, review on localhost before merging. |
-| Accounts | Ali has no GitHub, Supabase or Vercel account yet. In phase 1 we create them together, with Ali signing up himself using his own email. The builder never holds his passwords. |
+| Accounts | Ali has no GitHub, Supabase or Netlify account yet. In phase 1 we create them together, with Ali signing up himself using his own email. The builder never holds his passwords. |
 | Board changes | Added after the board review: a litres calculator, a guarantee for damaged or wrong-colour orders, honest wording on colour preview, and a first market of Babil and neighbouring governorates before promoting nationwide. See sections 6 and 13. |
 
 ## 5. Approaches considered
@@ -57,7 +57,7 @@ Success after three months: **more orders and fewer WhatsApp messages answered b
 
 ## 6. Build phases
 Stage 1 (launchable shop):
-0. Account setup with Ali (GitHub, Supabase, Vercel), done first because everything else depends on it.
+0. Account setup with Ali (GitHub, Supabase, Netlify), done first because everything else depends on it.
 1. Project setup, git, design system from the logo, RTL layout, Arabic text file, homepage.
 2. Database tables, RLS policies, admin login.
 3. Admin product manager with image upload and drag-to-reorder, categories, banners.
@@ -67,7 +67,7 @@ Stage 1 (launchable shop):
 Stage 2:
 6. Colour picker with room preview, CSV colour import, before/after gallery.
 7. SEO, speed, full mobile testing, full Arabic proofread.
-8. Deploy on Vercel, connect the domain, final checks, handover guide.
+8. Deploy on Netlify, connect the domain, final checks, handover guide.
 
 Each phase gets a detailed implementation plan before it starts.
 
