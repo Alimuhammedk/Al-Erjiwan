@@ -78,3 +78,15 @@ describe("0007_product_colours.sql", () => {
     }
   }, 90_000);
 });
+
+describe("0008_articles.sql", () => {
+  it("passes every check in supabase/tests/0008_articles_test.sql", async () => {
+    const db8 = await createDb([...BASE_MIGRATIONS, "0004_orders.sql", "0005_order_changes.sql", "0006_colours.sql", "0007_product_colours.sql", "0008_articles.sql"]);
+    try {
+      const results = await db8.exec(readSql("supabase/tests/0008_articles_test.sql"));
+      expect((results.at(-1)?.rows[0] as { result: string }).result).toBe("ALL PASSED");
+    } finally {
+      await db8.close();
+    }
+  }, 90_000);
+});
