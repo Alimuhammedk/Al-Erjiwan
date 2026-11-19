@@ -10,6 +10,7 @@ const links = [
   { href: "/admin/stock", label: ar.admin.nav.stock },
   { href: "/admin/products", label: ar.admin.nav.products },
   { href: "/admin/categories", label: ar.admin.nav.categories },
+  { href: "/admin/colours", label: ar.admin.nav.colours },
   { href: "/admin/banners", label: ar.admin.nav.banners },
   { href: "/admin/delivery", label: ar.admin.nav.delivery },
 ];

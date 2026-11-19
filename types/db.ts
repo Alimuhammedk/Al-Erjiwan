@@ -41,6 +41,7 @@ export type Colour = {
   code: string | null;
   hex: string;
   family: string | null;
+  system?: string | null;
 };
 
 export type ProductImage = {
