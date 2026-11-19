@@ -205,7 +205,9 @@ test.describe("editing an existing product", () => {
       "223e4567-e89b-12d3-a456-426614174001",
       "323e4567-e89b-12d3-a456-426614174002",
     ]);
-    expect(r.product).toMatchObject({ base_price: 18000, stock: 35, finish: "مطفي", rooms: ["المطبخ"] });
+    expect(r.product).toMatchObject({ base_price: 18000, stock: 35 });
+    expect(r.product).not.toHaveProperty("finish");
+    expect(r.product).not.toHaveProperty("rooms");
   });
 
   test("reordering the photos changes the saved order", async ({ page }) => {
@@ -221,5 +223,156 @@ test.describe("editing an existing product", () => {
     const r = await saved(page);
     expect(r.variants).toHaveLength(1);
     expect(r.product.stock).toBe(20);
+  });
+});
+
+test.describe("which colours a mixed paint offers", () => {
+  const paintSwitch = (page: Page) => page.getByLabel("دهان يُخلط حسب اللون المطلوب");
+  const section = (page: Page) => page.getByTestId("product-colours");
+
+  test("the colours section shows only for a mixed paint, and offers every colour by default", async ({ page }) => {
+    await page.goto(URL);
+    await expect(section(page)).toHaveCount(0);
+    await paintSwitch(page).check();
+    await expect(section(page)).toBeVisible();
+    await expect(page.getByLabel("كل ألوان الكتالوج")).toBeChecked();
+    await expect(page.getByTestId("colour-count")).toHaveCount(0);
+    await name(page).fill("دهان");
+    await page.locator('input[name="base_price"]').fill("1000");
+    expect((await saved(page)).colours).toEqual({ all: true, ids: [] });
+  });
+
+  test("'only these colours' lets you tick one by one, a whole family, or search", async ({ page }) => {
+    await page.goto(URL);
+    await paintSwitch(page).check();
+    await page.getByLabel("ألوان مختارة فقط").check();
+    await section(page).getByRole("group", { name: "العائلات" }).getByRole("button", { name: "الأبيض" }).click();
+    await page.getByRole("button", { name: /تحديد كل المعروض \(2\)/ }).click();
+    await expect(page.getByTestId("colour-count")).toHaveText("المختار: 2");
+
+    await section(page).getByRole("group", { name: "العائلات" }).getByRole("button", { name: "كل العائلات" }).click();
+    await section(page).getByRole("searchbox").fill("رمادي");
+    await section(page).getByLabel(/رمادي فاتح/).check();
+    await expect(page.getByTestId("colour-count")).toHaveText("المختار: 3");
+
+    await name(page).fill("دهان");
+    await page.locator('input[name="base_price"]').fill("1000");
+    const colours = (await saved(page)).colours;
+    expect(colours.all).toBe(false);
+    expect(colours.ids.sort()).toEqual([C(1), C(2), C(3)].sort());
+  });
+
+  test("unticking and clearing work, and saving with none ticked is explained", async ({ page }) => {
+    await page.goto(URL);
+    await paintSwitch(page).check();
+    await page.getByLabel("ألوان مختارة فقط").check();
+    await section(page).getByLabel(/أبيض ثلجي/).check();
+    await expect(page.getByTestId("colour-count")).toHaveText("المختار: 1");
+    await section(page).getByLabel(/أبيض ثلجي/).uncheck();
+    await expect(page.getByTestId("colour-count")).toHaveText("المختار: 0");
+    await name(page).fill("دهان");
+    await page.locator('input[name="base_price"]').fill("1000");
+    await saveButton(page).click();
+    await expect(page.getByText("اختر لونًا واحدًا على الأقل")).toBeVisible();
+    await section(page).getByLabel(/كريمي/).check();
+    await page.getByRole("button", { name: "مسح الكل" }).click();
+    await expect(page.getByTestId("colour-count")).toHaveText("المختار: 0");
+  });
+
+  test("switching back to 'all colours' keeps the choice if you switch again", async ({ page }) => {
+    await page.goto(URL);
+    await paintSwitch(page).check();
+    await page.getByLabel("ألوان مختارة فقط").check();
+    await section(page).getByLabel(/كريمي/).check();
+    await page.getByLabel("كل ألوان الكتالوج").check();
+    await expect(section(page).getByRole("searchbox")).toHaveCount(0);
+    await page.getByLabel("ألوان مختارة فقط").check();
+    await expect(page.getByTestId("colour-count")).toHaveText("المختار: 1");
+  });
+
+  test("the colours section fits a phone screen", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.goto(URL);
+    await paintSwitch(page).check();
+    await page.getByLabel("ألوان مختارة فقط").check();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+    await section(page).screenshot({ path: "e2e/screenshots/admin-product-colours-375.png" });
+  });
+});
+
+test.describe("several colours for one size", () => {
+  const manyButton = (page: Page) => page.getByRole("button", { name: "إضافة عدة ألوان لهذا الحجم" });
+  const dlg = (page: Page) => page.getByTestId("multi-colour-dialog");
+
+  async function tick(page: Page, ...names: RegExp[]) {
+    for (const n of names) await dlg(page).getByLabel(n).check();
+  }
+
+  test("ticking colours makes one line per colour with the same size and price, each with its own stock and price", async ({ page }) => {
+    await page.goto(URL);
+    await page.waitForLoadState("networkidle");
+    await name(page).fill("دهان جاهز");
+    await sizesSwitch(page).check();
+    await fillSize(page, 0, "4 لتر", "60000", "5");
+    await manyButton(page).click();
+    await expect(dlg(page).getByRole("button", { name: /إضافة الألوان \(0\)/ })).toBeDisabled();
+    await tick(page, /أبيض ثلجي/, /كريمي/, /رمادي فاتح/);
+    await dlg(page).getByRole("button", { name: "إضافة الألوان (3)" }).click();
+    await expect(dlg(page)).toHaveCount(0);
+
+    await expect(sizeBoxes(page, "الحجم")).toHaveCount(3);
+    for (let i = 0; i < 3; i++) {
+      await expect(sizeBoxes(page, "الحجم").nth(i)).toHaveValue("4 لتر");
+      await expect(sizeBoxes(page, "السعر (د.ع)").nth(i)).toHaveValue("60000");
+    }
+    await expect(sizeBoxes(page, "الكمية").nth(0)).toHaveValue("5");
+    await expect(sizeBoxes(page, "الكمية").nth(1)).toHaveValue("0");
+
+    // a different price and a stock for one colour only
+    await sizeBoxes(page, "السعر (د.ع)").nth(1).fill("65000");
+    await sizeBoxes(page, "الكمية").nth(1).fill("7");
+    const out = await saved(page);
+    expect(out.variants.map((v: { colour_id: string; price: number; stock: number }) => [v.colour_id, v.price, v.stock])).toEqual([
+      [C(1), 60000, 5],
+      [C(2), 65000, 7],
+      [C(3), 60000, 0],
+    ]);
+  });
+
+  test("colours the size already offers are not listed again", async ({ page }) => {
+    await page.goto(URL);
+    await page.waitForLoadState("networkidle");
+    await sizesSwitch(page).check();
+    await fillSize(page, 0, "4 لتر", "60000", "5");
+    await manyButton(page).click();
+    await tick(page, /كريمي/);
+    await dlg(page).getByRole("button", { name: "إضافة الألوان (1)" }).click();
+    await manyButton(page).first().click();
+    await expect(dlg(page).getByLabel(/كريمي/)).toHaveCount(0);
+    await expect(dlg(page).getByLabel(/أبيض ثلجي/)).toBeVisible();
+  });
+
+  test("cancelling the window changes nothing", async ({ page }) => {
+    await page.goto(URL);
+    await page.waitForLoadState("networkidle");
+    await sizesSwitch(page).check();
+    await manyButton(page).click();
+    await tick(page, /كريمي/);
+    await dlg(page).getByRole("button", { name: "إلغاء", exact: true }).click();
+    await expect(dlg(page)).toHaveCount(0);
+    await expect(sizeBoxes(page, "الحجم")).toHaveCount(1);
+  });
+
+  test("the window fits a phone screen", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.goto(URL);
+    await page.waitForLoadState("networkidle");
+    await sizesSwitch(page).check();
+    await manyButton(page).click();
+    const box = (await page.getByRole("dialog", { name: "إضافة عدة ألوان لهذا الحجم" }).boundingBox())!;
+    expect(box.width).toBeLessThanOrEqual(375);
+    expect(box.height).toBeLessThanOrEqual(800);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+    await page.screenshot({ path: "e2e/screenshots/admin-many-colours-375.png" });
   });
 });

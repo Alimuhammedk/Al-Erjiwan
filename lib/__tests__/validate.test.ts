@@ -77,25 +77,11 @@ describe("validateProduct", () => {
   });
 });
 
-describe("validateProduct room and finish", () => {
-  const base = { name_ar: "دهان", base_price: "1000", stock: "1" };
-  it("defaults to no finish and no rooms", () => {
-    const r = validateProduct(base);
-    expect(r.ok && r.value.finish).toBeNull();
-    expect(r.ok && r.value.rooms).toEqual([]);
-  });
-  it("accepts allowed values", () => {
-    const r = validateProduct({ ...base, finish: "مطفي", rooms: ["المطبخ", "الحمام"] });
-    expect(r.ok && r.value.finish).toBe("مطفي");
-    expect(r.ok && r.value.rooms).toEqual(["المطبخ", "الحمام"]);
-  });
-  it("rejects a finish that is not in the list", () => {
-    const r = validateProduct({ ...base, finish: "غير موجود" });
-    expect(r.ok === false && r.errors.finish).toBeTruthy();
-  });
-  it("rejects a room that is not in the list", () => {
-    const r = validateProduct({ ...base, rooms: ["المطبخ", "قبو"] });
-    expect(r.ok === false && r.errors.rooms).toBeTruthy();
+describe("validateProduct no longer has room and finish", () => {
+  it("leaves them out of what is saved, even if an old form sends them", () => {
+    const r = validateProduct({ name_ar: "دهان", base_price: "1000", stock: "1", finish: "مطفي", rooms: ["المطبخ"] });
+    expect(r.ok && r.value).not.toHaveProperty("finish");
+    expect(r.ok && r.value).not.toHaveProperty("rooms");
   });
 });
 

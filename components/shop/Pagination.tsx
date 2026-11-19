@@ -7,8 +7,6 @@ function href(q: ShopQuery, page: number): string {
   if (q.q) p.set("q", q.q);
   if (q.category) p.set("category", q.category);
   if (q.brand) p.set("brand", q.brand);
-  if (q.room) p.set("room", q.room);
-  if (q.finish) p.set("finish", q.finish);
   if (q.min !== null) p.set("min", String(q.min));
   if (q.max !== null) p.set("max", String(q.max));
   if (q.sort !== "newest") p.set("sort", q.sort);

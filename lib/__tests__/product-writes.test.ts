@@ -93,3 +93,40 @@ describe("syncVariants", () => {
     expect(await syncVariants(db, PID, [{ ...size, id: null }])).toBe(ar.admin.errors.saveFailed);
   });
 });
+
+import { syncProductColours } from "../admin/product-save";
+
+describe("syncProductColours", () => {
+  const notFn = vi.fn();
+  beforeEach(() => {
+    const del = { eq: (...a: unknown[]) => Object.assign(Promise.resolve(t.delResult()), { not: (...n: unknown[]) => (notFn(...a, ...n), Promise.resolve(t.delResult())) }) };
+    t.table.delete.mockReturnValue(del as never);
+    notFn.mockClear();
+  });
+  const C1 = "223e4567-e89b-12d3-a456-426614174001";
+  const C2 = "323e4567-e89b-12d3-a456-426614174002";
+
+  it("saves the chosen colours, then removes the ones no longer chosen", async () => {
+    expect(await syncProductColours(db, PID, { all: false, ids: [C1, C2] })).toBeNull();
+    expect(t.table.upsert).toHaveBeenCalledWith(
+      [{ product_id: PID, colour_id: C1 }, { product_id: PID, colour_id: C2 }],
+      { onConflict: "product_id,colour_id" },
+    );
+    expect(notFn).toHaveBeenCalledWith("product_id", PID, "colour_id", "in", `(${C1},${C2})`);
+  });
+  it("'all colours' keeps no rows: it clears the list and writes nothing", async () => {
+    expect(await syncProductColours(db, PID, { all: true, ids: [C1] })).toBeNull();
+    expect(t.table.upsert).not.toHaveBeenCalled();
+    expect(t.table.delete).toHaveBeenCalledTimes(1);
+    expect(notFn).not.toHaveBeenCalled();
+  });
+  it("returns an error when a write fails, and does not clear the old list after a failed save", async () => {
+    t.table.upsert.mockResolvedValue({ error: { message: "x" } });
+    expect(await syncProductColours(db, PID, { all: false, ids: [C1] })).toBe(ar.admin.errors.saveFailed);
+    expect(notFn).not.toHaveBeenCalled();
+  });
+  it("returns an error when the old rows cannot be removed", async () => {
+    t.delResult.mockResolvedValue({ error: { message: "x" } });
+    expect(await syncProductColours(db, PID, { all: false, ids: [C1] })).toBe(ar.admin.errors.saveFailed);
+  });
+});

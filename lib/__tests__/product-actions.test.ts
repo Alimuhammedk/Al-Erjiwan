@@ -11,7 +11,7 @@ const db = vi.hoisted(() => {
   return { eq, single, table, from: vi.fn(() => table) };
 });
 const guard = vi.hoisted(() => ({ requireAdmin: vi.fn() }));
-const writes = vi.hoisted(() => ({ replaceProductImages: vi.fn(), syncVariants: vi.fn() }));
+const writes = vi.hoisted(() => ({ replaceProductImages: vi.fn(), syncVariants: vi.fn(), syncProductColours: vi.fn() }));
 
 vi.mock("@/lib/auth", () => guard);
 vi.mock("@/lib/supabase/auth-server", () => ({ createAuthClient: async () => ({ from: db.from }) }));
@@ -47,6 +47,7 @@ beforeEach(() => {
   db.eq.mockResolvedValue({ error: null });
   writes.replaceProductImages.mockResolvedValue(null);
   writes.syncVariants.mockResolvedValue(null);
+  writes.syncProductColours.mockResolvedValue(null);
 });
 
 describe("saveProductAction: one save for product, photos and sizes", () => {

@@ -9,8 +9,6 @@ describe("parseShopQuery", () => {
       q: "",
       category: null,
       brand: null,
-      room: null,
-      finish: null,
       min: null,
       max: null,
       sort: "newest",
@@ -37,13 +35,10 @@ describe("parseShopQuery", () => {
     expect(parseShopQuery({ page: "7" }).page).toBe(7);
     expect(parseShopQuery({ page: "99999" }).page).toBe(500);
   });
-  it("accepts only a UUID category and listed room and finish", () => {
+  it("accepts only a UUID category, and ignores the old room and finish links", () => {
     expect(parseShopQuery({ category: UUID }).category).toBe(UUID);
     expect(parseShopQuery({ category: "x" }).category).toBeNull();
-    expect(parseShopQuery({ room: "المطبخ" }).room).toBe("المطبخ");
-    expect(parseShopQuery({ room: "قبو" }).room).toBeNull();
-    expect(parseShopQuery({ finish: "مطفي" }).finish).toBe("مطفي");
-    expect(parseShopQuery({ finish: "x" }).finish).toBeNull();
+    expect(parseShopQuery({ room: "المطبخ", finish: "مطفي" })).not.toHaveProperty("room");
   });
   it("takes the first item of an array value", () => {
     expect(parseShopQuery({ sort: ["price_desc", "price_asc"] }).sort).toBe("price_desc");

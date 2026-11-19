@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { ar } from "@/content/ar";
+import { addColourLines, takenColours } from "@/lib/admin/variant-colours";
+import { ColourChecklist } from "./ColourChecklist";
 import { ColourPicker, type PickableColour } from "./ColourPicker";
 import { inputClass } from "./FormField";
 
@@ -21,6 +24,11 @@ export function VariantsEditor({ rows, onChange, colours, errors }: Props) {
   const set = (i: number, key: keyof VariantRow, value: string) =>
     onChange(rows.map((row, j) => (j === i ? { ...row, [key]: value } : row)));
   const err = (i: number, key: string) => errors[`variants.${i}.${key}`];
+  // the size line whose "several colours" window is open, and what is ticked in it
+  const [multi, setMulti] = useState<{ index: number; ids: string[] } | null>(null);
+  // colours not offered again: the ones this size already has on other lines, and this line's own colour
+  const taken = multi ? takenColours(rows, multi.index) : new Set<string>();
+  if (multi && rows[multi.index]?.colour_id) taken.add(rows[multi.index].colour_id);
 
   const Err = ({ msg }: { msg?: string }) =>
     msg ? (
@@ -70,6 +78,11 @@ export function VariantsEditor({ rows, onChange, colours, errors }: Props) {
               <Err msg={err(i, "colour_id")} />
             </div>
           </div>
+          {colours.length > 0 && (
+            <button type="button" onClick={() => setMulti({ index: i, ids: [] })} className="min-h-11 rounded-full px-1 text-sm font-bold text-brand-700 underline">
+              {t.addManyColours}
+            </button>
+          )}
         </div>
       ))}
       <button
@@ -79,6 +92,37 @@ export function VariantsEditor({ rows, onChange, colours, errors }: Props) {
       >
         + {t.addSize}
       </button>
+
+      {multi && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center" data-testid="multi-colour-dialog">
+          <button type="button" aria-label={t.closeWindow} tabIndex={-1} onClick={() => setMulti(null)} className="absolute inset-0 cursor-default bg-ink/50" />
+          <div role="dialog" aria-modal="true" aria-label={t.addManyColours} className="relative flex max-h-[88vh] w-full flex-col rounded-t-3xl bg-paper shadow-xl md:max-w-2xl md:rounded-3xl">
+            <div className="space-y-1 border-b border-brand-100 p-4">
+              <h2 className="text-lg font-extrabold text-brand-900">{t.addManyColours}</h2>
+              <p className="text-sm text-ink/70">{t.manyHint}</p>
+            </div>
+            <div className="min-h-40 flex-1 overflow-y-auto p-4">
+              <ColourChecklist colours={colours.filter((c) => !taken.has(c.id))} ids={multi.ids} onChange={(ids) => setMulti({ ...multi, ids })} />
+            </div>
+            <div className="flex flex-wrap items-center gap-3 border-t border-brand-100 p-4">
+              <button
+                type="button"
+                disabled={multi.ids.length === 0}
+                onClick={() => {
+                  onChange(addColourLines(rows, multi.index, multi.ids));
+                  setMulti(null);
+                }}
+                className="min-h-11 rounded-full bg-brand-700 px-6 font-bold text-white hover:bg-brand-900 disabled:opacity-50"
+              >
+                {t.addManyConfirm.replace("{n}", String(multi.ids.length))}
+              </button>
+              <button type="button" onClick={() => setMulti(null)} className="min-h-11 rounded-full px-4 font-bold text-brand-700 hover:bg-brand-50">
+                {t.cancelMany}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

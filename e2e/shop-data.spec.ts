@@ -23,11 +23,9 @@ test("search finds a product by name", async ({ page }) => {
   await expect(cards(page).first()).toContainText("فرشاة طلاء احترافية");
 });
 
-test("room, finish, category and price filters narrow the list", async ({ page }) => {
-  await page.goto("/shop?room=المطبخ");
-  await expect(cards(page)).toHaveCount(2);
-  await page.goto("/shop?finish=لامع");
-  await expect(cards(page)).toHaveCount(2);
+test("category and price filters narrow the list, and the old room and finish links just show everything", async ({ page }) => {
+  await page.goto("/shop?room=المطبخ&finish=لامع");
+  await expect(cards(page)).toHaveCount(10);
   await page.goto(`/shop?category=${C3}`);
   await expect(cards(page)).toHaveCount(2);
   await page.goto("/shop?min=8000&max=9000");
@@ -39,12 +37,15 @@ test("sorting by price puts the cheapest first", async ({ page }) => {
   await expect(cards(page).first()).toContainText("فرشاة طلاء احترافية");
 });
 
-test("the filter form works without typing a URL", async ({ page }) => {
+test("the filter form has no room or finish boxes, and works without typing a URL", async ({ page }) => {
   await page.goto("/shop");
-  await page.getByLabel("الغرفة").selectOption("المطبخ");
+  await expect(page.getByLabel("الغرفة")).toHaveCount(0);
+  await expect(page.getByLabel("نوع اللمعة")).toHaveCount(0);
+  await page.getByLabel("أقل سعر").fill("8000");
+  await page.getByLabel("أعلى سعر").fill("9000");
   await page.getByRole("button", { name: "تطبيق" }).click();
-  await expect(page).toHaveURL(/room=/);
-  await expect(cards(page)).toHaveCount(2);
+  await expect(page).toHaveURL(/min=8000/);
+  await expect(cards(page)).toHaveCount(1);
 });
 
 test("a size changes the price and a sold-out size is disabled", async ({ page }) => {
@@ -56,9 +57,13 @@ test("a size changes the price and a sold-out size is disabled", async ({ page }
 });
 
 test("a tinted paint needs a colour, then adds to the cart", async ({ page }) => {
+  await page.route("**/api/colours*", (route) =>
+    route.fulfill({ json: { colours: [{ id: C3, name_ar: "أزرق سماوي", code: "JW-301", hex: "#bfe0f2", family: "الأزرق", system: null }] } }),
+  );
   await page.goto(`/shop/${P(1)}`);
   await page.getByRole("button", { name: "أضف إلى السلة" }).click();
-  await expect(page.getByText("اختر لونًا أو اكتب اسمه أو رقمه")).toBeVisible();
+  await expect(page.getByText("اختر اللون أولًا")).toBeVisible();
+  await page.getByTestId("colour-row").click();
   await page.getByRole("button", { name: "أزرق سماوي" }).click();
   await page.getByRole("button", { name: "أضف إلى السلة" }).click();
   await expect(page.getByText("تمت الإضافة إلى السلة")).toBeVisible();
@@ -76,7 +81,10 @@ test("a sold-out product cannot be added", async ({ page }) => {
   await expect(page.getByRole("button", { name: "نفدت الكمية" })).toBeDisabled();
 });
 
-test("a sale price shows with the old price struck", async ({ page }) => {
+test("a sale price shows with the old price struck", async ({ page, request }) => {
+  // these use the dummy sale on product 6; they skip themselves if that sale was edited away in the admin
+  const sale = await request.get(`/shop/${P(6)}`);
+  test.skip(!(await sale.text()).includes("line-through"), "the sample sale on product 6 is not there any more");
   await page.goto(`/shop/${P(6)}`);
   await expect(page.getByText("38,000 د.ع").first()).toBeVisible();
   await expect(page.locator("main .line-through").first()).toHaveText("45,000 د.ع");
@@ -88,10 +96,12 @@ test("a hidden product opens the not-found page", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "المنتج غير موجود" })).toBeVisible();
 });
 
-test("the litres calculator link jumps to a working calculator", async ({ page }) => {
+test("the product page has no calculator box, only a link to the calculator page", async ({ page }) => {
   await page.goto(`/shop/${P(1)}`);
+  await expect(page.getByLabel("الطول (متر)")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "احسب كمية الدهان" })).toHaveCount(0);
   await page.getByRole("link", { name: "لست متأكدًا من الكمية؟ احسب كمية الدهان" }).click();
-  await expect(page.getByRole("heading", { name: "احسب كمية الدهان" })).toBeInViewport();
+  await expect(page).toHaveURL(/\/calculator$/);
   await page.getByLabel("الطول (متر)").fill("4");
   await page.getByLabel("العرض (متر)").fill("3");
   await page.getByLabel("الارتفاع (متر)").fill("2.5");
@@ -110,7 +120,10 @@ test("add a simple product, then change quantity in the cart", async ({ page }) 
   await expect(page.getByText("16,000 د.ع").first()).toBeVisible();
 });
 
-test("the homepage shows banners, categories, best sellers and offers, and cards open products", async ({ page }) => {
+test("the homepage shows banners, categories, best sellers and offers, and cards open products", async ({ page, request }) => {
+  // these use the dummy sale on product 6; they skip themselves if that sale was edited away in the admin
+  const sale = await request.get(`/shop/${P(6)}`);
+  test.skip(!(await sale.text()).includes("line-through"), "the sample sale on product 6 is not there any more");
   await page.goto("/");
   await expect(page.getByRole("button", { name: /^الشريحة \d/ })).toHaveCount(2);
   await expect(page.getByRole("heading", { name: "تسوّق حسب الفئة" })).toBeVisible();

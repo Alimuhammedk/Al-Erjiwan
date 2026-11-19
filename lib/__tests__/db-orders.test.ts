@@ -35,3 +35,58 @@ describe("0005_order_changes.sql", () => {
     }
   }, 90_000);
 });
+
+describe("0006_colours.sql", () => {
+  it("passes every check in supabase/tests/0006_colours_test.sql", async () => {
+    const db6 = await createDb([...BASE_MIGRATIONS, "0004_orders.sql", "0005_order_changes.sql", "0006_colours.sql"]);
+    try {
+      const results = await db6.exec(readSql("supabase/tests/0006_colours_test.sql"));
+      expect((results.at(-1)?.rows[0] as { result: string }).result).toBe("ALL PASSED");
+    } finally {
+      await db6.close();
+    }
+  }, 90_000);
+});
+
+describe("supabase/seed/sample-colours.sql", () => {
+  it("loads, can be run twice without duplicates, and the removal line takes them all away", async () => {
+    const db = await createDb([...BASE_MIGRATIONS, "0004_orders.sql", "0005_order_changes.sql", "0006_colours.sql"]);
+    try {
+      const sql = readSql("supabase/seed/sample-colours.sql");
+      await db.exec(sql);
+      await db.exec(sql);
+      const count = async () => (await db.query<{ n: number }>("select count(*)::int as n from public.colours where system = 'عينة'")).rows[0].n;
+      expect(await count()).toBe(51);
+      const near = await db.query<{ code: string }>("select code from public.closest_colours('#bfe0f2', 1)");
+      expect(near.rows[0].code).toBeTruthy();
+      await db.exec("delete from public.colours where system = 'عينة'");
+      expect(await count()).toBe(0);
+    } finally {
+      await db.close();
+    }
+  }, 90_000);
+});
+
+describe("0007_product_colours.sql", () => {
+  it("passes every check in supabase/tests/0007_product_colours_test.sql", async () => {
+    const db7 = await createDb([...BASE_MIGRATIONS, "0004_orders.sql", "0005_order_changes.sql", "0006_colours.sql", "0007_product_colours.sql"]);
+    try {
+      const results = await db7.exec(readSql("supabase/tests/0007_product_colours_test.sql"));
+      expect((results.at(-1)?.rows[0] as { result: string }).result).toBe("ALL PASSED");
+    } finally {
+      await db7.close();
+    }
+  }, 90_000);
+});
+
+describe("0008_articles.sql", () => {
+  it("passes every check in supabase/tests/0008_articles_test.sql", async () => {
+    const db8 = await createDb([...BASE_MIGRATIONS, "0004_orders.sql", "0005_order_changes.sql", "0006_colours.sql", "0007_product_colours.sql", "0008_articles.sql"]);
+    try {
+      const results = await db8.exec(readSql("supabase/tests/0008_articles_test.sql"));
+      expect((results.at(-1)?.rows[0] as { result: string }).result).toBe("ALL PASSED");
+    } finally {
+      await db8.close();
+    }
+  }, 90_000);
+});

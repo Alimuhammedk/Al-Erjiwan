@@ -111,3 +111,34 @@ describe("prepareProductSave: photos and id", () => {
     expect(r.ok === false && r.errors.name_ar).toBe(e.required);
   });
 });
+
+describe("prepareProductSave: which colours a mixed paint offers", () => {
+  const C2 = "323e4567-e89b-12d3-a456-426614174002";
+  const paint = { ...basics, base_price: "1000", is_tintable: "on" };
+
+  it("offers every colour by default, with no list kept", () => {
+    const r = prepareProductSave(form(paint));
+    expect(r.ok && r.value.colours).toEqual({ all: true, ids: [] });
+    expect(r.ok && r.value.product.all_colours).toBe(true);
+  });
+  it("offers only the ticked colours when asked, without repeats or bad ids", () => {
+    const r = prepareProductSave(form({ ...paint, colour_mode: "some", colour_ids: JSON.stringify([C1, C2, C1, "nope", 5]) }));
+    expect(r.ok && r.value.colours).toEqual({ all: false, ids: [C1, C2] });
+    expect(r.ok && r.value.product.all_colours).toBe(false);
+  });
+  it("needs at least one colour when it is 'only these'", () => {
+    for (const ids of ["[]", JSON.stringify(["nope"]), ""]) {
+      const r = prepareProductSave(form({ ...paint, colour_mode: "some", colour_ids: ids }));
+      expect(r.ok === false && r.errors.colours, ids).toBe(e.needColour);
+    }
+  });
+  it("refuses a colour list that is not a list or is huge", () => {
+    expect((prepareProductSave(form({ ...paint, colour_mode: "some", colour_ids: "{bad" })) as { errors: Record<string, string> }).errors.colours).toBe(e.saveFailed);
+    const many = JSON.stringify(Array.from({ length: 3001 }, () => C1));
+    expect((prepareProductSave(form({ ...paint, colour_mode: "some", colour_ids: many })) as { errors: Record<string, string> }).errors.colours).toBe(e.saveFailed);
+  });
+  it("ignores colour choices for a product that is not mixed paint", () => {
+    const r = prepareProductSave(form({ ...basics, base_price: "1000", colour_mode: "some", colour_ids: JSON.stringify([C1]) }));
+    expect(r.ok && r.value.colours).toEqual({ all: true, ids: [] });
+  });
+});

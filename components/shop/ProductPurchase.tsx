@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { ar } from "@/content/ar";
+import type { PickableColour } from "@/lib/colours/search";
 import { useCart } from "@/lib/cart/CartProvider";
 import type { ProductDetail } from "@/lib/data/shop";
 import { formatPrice } from "@/lib/format";
 import { discountPercent, displayPrice, isSoldOut, stockFor } from "@/lib/shop/product";
-import { TrustStrip } from "./TrustStrip";
+import { ColourPanel } from "./ColourPanel";
 
 type Variant = ProductDetail["variants"][number];
 
@@ -23,8 +24,11 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
   const [variantId, setVariantId] = useState<string | null>(
     (sizeOptions.find((v) => v.stock > 0) ?? sizeOptions[0])?.id ?? null,
   );
-  const [note, setNote] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  // Mixed paint: a shade chosen from the catalogue (or arriving from the colour page); a typed colour is the fallback.
+  const [chosen, setChosen] = useState<PickableColour | null>(null);
+  // The box keeps what is typed (it can be empty while typing); the real quantity is always 1 to 99.
+  const [quantityText, setQuantityText] = useState("1");
+  const quantity = Math.min(99, Math.max(1, Math.floor(Number(quantityText)) || 1));
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
 
   const variant: Variant | null = sizeOptions.find((v) => v.id === variantId) ?? null;
@@ -43,14 +47,13 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
 
   function addToCart() {
     if (variants.length > 0 && !variant) return setMessage({ text: t.chooseSize, ok: false });
-    if (product.is_tintable && !colourId && !note.trim()) return setMessage({ text: t.chooseColour, ok: false });
+    if (product.is_tintable && !chosen) return setMessage({ text: t.chooseColour, ok: false });
     add({
       product_id: product.id,
       variant_id: variant?.id ?? null,
-      colour_id: product.is_tintable ? colourId : (variant?.colour_id ?? null),
-      colour_name:
-        colours.find((c) => c.id === (product.is_tintable ? colourId : variant?.colour_id))?.name_ar ?? null,
-      colour_note: product.is_tintable ? note.trim() || null : null,
+      colour_id: product.is_tintable ? (chosen?.id ?? null) : (variant?.colour_id ?? null),
+      colour_name: product.is_tintable ? (chosen?.name_ar ?? null) : (colours.find((c) => c.id === variant?.colour_id)?.name_ar ?? null),
+      colour_note: null,
       name: product.name_ar,
       size_label: variant?.size_label ?? null,
       unit_price: price,
@@ -99,15 +102,10 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
       )}
 
       {product.is_tintable && (
-        <label className="block">
-          <span className="mb-1 block text-sm font-semibold text-brand-900">{t.colourNote}</span>
-          <input
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            maxLength={100}
-            className="w-full rounded-xl border border-brand-100 bg-paper px-4 py-2.5 focus:border-brand-500 focus:outline-none"
-          />
-        </label>
+        <div>
+          <p className="mb-2 font-semibold text-brand-900">{t.colours}</p>
+          <ColourPanel productId={product.id} value={chosen} onChange={setChosen} />
+        </div>
       )}
 
       {sizeOptions.length > 0 && (
@@ -145,8 +143,9 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
             type="number"
             min={1}
             max={99}
-            value={quantity}
-            onChange={(e) => setQuantity(Math.min(99, Math.max(1, Math.floor(Number(e.target.value)) || 1)))}
+            value={quantityText}
+            onChange={(e) => setQuantityText(e.target.value)}
+            onBlur={() => setQuantityText(String(quantity))}
             className="w-24 rounded-xl border border-brand-100 bg-paper px-3 py-2.5"
           />
         </label>
@@ -164,8 +163,6 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
           {message.text}
         </p>
       )}
-
-      <TrustStrip />
 
       {/* Phone only: price and add button stay in reach while scrolling. The end padding leaves room for the WhatsApp button. */}
       <div

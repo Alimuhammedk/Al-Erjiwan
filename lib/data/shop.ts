@@ -17,8 +17,6 @@ export async function getShopProducts(q: ShopQuery): Promise<{ products: Product
     if (q.q) query = query.or(`name_ar.ilike.%${q.q}%,name_en.ilike.%${q.q}%`);
     if (q.category) query = query.eq("category_id", q.category);
     if (q.brand) query = query.eq("brand", q.brand);
-    if (q.room) query = query.contains("rooms", [q.room]);
-    if (q.finish) query = query.eq("finish", q.finish);
     if (q.min !== null) query = query.gte("base_price", q.min);
     if (q.max !== null) query = query.lte("base_price", q.max);
 
@@ -91,12 +89,10 @@ export async function getProductDetail(id: string): Promise<ProductDetail | null
     if (images.error || variants.error) return null;
     const vs = (variants.data as ProductDetail["variants"] | null) ?? [];
 
-    // Tinted paint can be any palette colour; ready-made paint offers only the colours its sizes use.
+    // Ready-made paint offers only the colours its sizes use. Mixed paint takes any catalogue shade, found by
+    // searching as the customer types (so the whole catalogue is never loaded into the page).
     let colours: Colour[] = [];
-    if ((product as Product).is_tintable) {
-      const r = await db.from("colours").select("*").order("name_ar");
-      if (!r.error) colours = (r.data as Colour[] | null) ?? [];
-    } else {
+    if (!(product as Product).is_tintable) {
       const ids = [...new Set(vs.map((v) => v.colour_id).filter((c): c is string => c !== null))];
       if (ids.length) {
         const r = await db.from("colours").select("*").in("id", ids);

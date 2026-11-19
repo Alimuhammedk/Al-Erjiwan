@@ -7,6 +7,8 @@ const protectedPaths = [
   "/admin/categories",
   "/admin/categories/new",
   "/admin/banners",
+  "/admin/articles",
+  "/admin/articles/new",
   "/admin/banners/new",
   "/admin/orders",
   "/admin/orders/123e4567-e89b-12d3-a456-426614174000",

@@ -29,6 +29,7 @@ export type Product = {
   is_active: boolean;
   is_featured: boolean;
   is_tintable: boolean;
+  all_colours?: boolean;
   finish: string | null;
   rooms: string[];
   created_at: string;
@@ -41,6 +42,7 @@ export type Colour = {
   code: string | null;
   hex: string;
   family: string | null;
+  system?: string | null;
 };
 
 export type ProductImage = {

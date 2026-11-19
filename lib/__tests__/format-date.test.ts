@@ -13,3 +13,19 @@ describe("formatDateTime", () => {
     expect(formatDateTime("")).toBe("—");
   });
 });
+
+import { formatDate } from "../format";
+
+describe("formatDate", () => {
+  it("shows only the date, in Baghdad time, with ordinary digits", () => {
+    const text = formatDate("2026-11-20T22:30:00Z"); // already the 21st in Baghdad (UTC+3)
+    expect(text).toContain("2026");
+    expect(text).toContain("21");
+    expect(text).not.toMatch(/[٠-٩]/);
+    expect(text).not.toMatch(/\d:\d/);
+  });
+  it("gives an empty text for a bad or empty date", () => {
+    expect(formatDate("nope")).toBe("");
+    expect(formatDate("")).toBe("");
+  });
+});

@@ -45,7 +45,7 @@ export function randomId(): string {
 }
 
 // Browser only: only a signed-in admin can write to the bucket (storage security rules).
-export async function uploadImage(file: File, folder: "products" | "categories" | "banners"): Promise<string> {
+export async function uploadImage(file: File, folder: "products" | "categories" | "banners" | "articles"): Promise<string> {
   const blob = await compressImage(file);
   const path = `${folder}/${randomId()}.webp`;
   const storage = getBrowserClient().storage.from("images");

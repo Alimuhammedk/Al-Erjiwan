@@ -1,3 +1,4 @@
+import { SideScroller } from "@/components/ui/SideScroller";
 import { ar } from "@/content/ar";
 
 const icons = {
@@ -14,16 +15,18 @@ export function TrustStrip({ className = "" }: { className?: string }) {
     ["cod", ar.trust.cod],
     ["support", ar.trust.support],
   ] as const;
+  // On a phone the three boxes slide sideways; on wider screens they share the row.
   return (
-    <ul className={`grid gap-3 ${className}`}>
-      {items.map(([key, label]) => (
-        <li key={key} className="flex items-center gap-3 rounded-2xl border border-brand-100 bg-brand-50 px-4 py-3">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-brand-700" aria-hidden="true">
-            <path d={icons[key]} />
-          </svg>
-          <span className="font-semibold text-brand-900">{label}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
+    <div className={className}>
+      <SideScroller label={ar.trust.label} itemClassName="w-[78%] sm:flex-1">
+        {items.map(([key, label]) => (
+          <div key={key} className="flex h-full items-center gap-3 rounded-2xl border border-brand-100 bg-brand-50 px-4 py-3">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-brand-700" aria-hidden="true">
+              <path d={icons[key]} />
+            </svg>
+            <span className="font-semibold text-brand-900">{label}</span>
+          </div>
+        ))}
+      </SideScroller>
+    </div>
+  );}

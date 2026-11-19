@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { ar } from "@/content/ar";
-import { prepareProductSave, replaceProductImages, syncVariants } from "@/lib/admin/product-save";
+import { prepareProductSave, replaceProductImages, syncProductColours, syncVariants } from "@/lib/admin/product-save";
 import type { ProductSaveState } from "@/lib/admin/types";
 import { requireAdmin } from "@/lib/auth";
 import { createAuthClient } from "@/lib/supabase/auth-server";
@@ -14,7 +14,7 @@ export async function saveProductAction(_prev: ProductSaveState, formData: FormD
   await requireAdmin();
   const plan = prepareProductSave(formData);
   if (!plan.ok) return { errors: plan.errors };
-  const { product, images, variants } = plan.value;
+  const { product, images, variants, colours } = plan.value;
 
   const db = await createAuthClient();
   let id = plan.value.id;
@@ -29,7 +29,8 @@ export async function saveProductAction(_prev: ProductSaveState, formData: FormD
 
   const imagesError = await replaceProductImages(db, id, images);
   const sizesError = await syncVariants(db, id, variants);
-  if (imagesError || sizesError) return { error: ar.admin.errors.partialSave, savedId: id };
+  const coloursError = await syncProductColours(db, id, colours);
+  if (imagesError || sizesError || coloursError) return { error: ar.admin.errors.partialSave, savedId: id };
   redirect("/admin/products");
 }
 

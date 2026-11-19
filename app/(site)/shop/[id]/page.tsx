@@ -1,7 +1,7 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/shop/Breadcrumbs";
 import { Gallery } from "@/components/shop/Gallery";
-import { LitresCalculator } from "@/components/shop/LitresCalculator";
 import { ProductPurchase } from "@/components/shop/ProductPurchase";
 import { ar } from "@/content/ar";
 import { getProductDetail } from "@/lib/data/shop";
@@ -34,9 +34,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           )}
           {product.is_tintable && <p className="rounded-xl bg-brand-50 px-4 py-3 text-brand-700">{ar.product.tintNote}</p>}
           <ProductPurchase detail={detail} />
-          <a href="#calculator" className="inline-block font-bold text-brand-700 underline">
+          <Link href="/calculator" className="inline-block font-bold text-brand-700 underline">
             {ar.product.notSure}
-          </a>
+          </Link>
         </div>
       </div>
       {product.description && (
@@ -45,9 +45,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           <p className="whitespace-pre-line leading-8">{product.description}</p>
         </section>
       )}
-      <div id="calculator" className="max-w-3xl scroll-mt-24">
-        <LitresCalculator />
-      </div>
     </main>
   );
 }

@@ -7,7 +7,6 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const str = (v: Raw[string]) => (typeof v === "string" ? v.trim() : "");
 const flag = (v: Raw[string]) => v === "on" || v === "true";
-const list = (v: Raw[string]) => (Array.isArray(v) ? v.map((x) => x.trim()).filter(Boolean) : []);
 
 // Whole dinar only. Accepts Arabic-Indic digits and thousands separators (٬ and ,).
 export function parsePrice(input: string): number | null {
@@ -69,11 +68,6 @@ export function validateProduct(raw: Raw): Result<ProductInput> {
 
   const stock = whole(raw, "stock", errors, e.invalidStock);
 
-  const finish = str(raw.finish) || null;
-  if (finish && !(ar.options.finishes as readonly string[]).includes(finish)) errors.finish = e.required;
-  const rooms = list(raw.rooms);
-  if (rooms.some((r) => !(ar.options.rooms as readonly string[]).includes(r))) errors.rooms = e.required;
-
   return done(errors, {
     name_ar,
     name_en,
@@ -86,8 +80,6 @@ export function validateProduct(raw: Raw): Result<ProductInput> {
     is_active: flag(raw.is_active),
     is_featured: flag(raw.is_featured),
     is_tintable: flag(raw.is_tintable),
-    finish,
-    rooms,
   });
 }
 

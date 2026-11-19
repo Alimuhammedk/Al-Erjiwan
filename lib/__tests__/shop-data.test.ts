@@ -56,12 +56,10 @@ describe("getShopProducts", () => {
     expect(state.calls).toContainEqual(["or", ["name_ar.ilike.%a b%,name_en.ilike.%a b%"]]);
   });
 
-  it("applies room, finish, price range and sort", async () => {
+  it("applies price range and sort", async () => {
     await getShopProducts(
-      parseShopQuery({ room: "المطبخ", finish: "مطفي", min: "1000", max: "9000", sort: "price_desc" }),
+      parseShopQuery({ min: "1000", max: "9000", sort: "price_desc" }),
     );
-    expect(state.calls).toContainEqual(["contains", ["rooms", ["المطبخ"]]]);
-    expect(state.calls).toContainEqual(["eq", ["finish", "مطفي"]]);
     expect(state.calls).toContainEqual(["gte", ["base_price", 1000]]);
     expect(state.calls).toContainEqual(["lte", ["base_price", 9000]]);
     expect(state.calls).toContainEqual(["order", ["base_price", { ascending: false }]]);

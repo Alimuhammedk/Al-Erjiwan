@@ -5,7 +5,7 @@ const URL = "/styleguide/admin-dashboard";
 
 test("the dashboard shows every order status, sales and stock health", async ({ page }) => {
   await page.goto(URL);
-  await expect(page.getByRole("heading", { name: "لوحة التحكم", level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "الإحصائيات", level: 1 })).toBeVisible();
   for (const [s, n] of [["new", "3"], ["confirmed", "2"], ["shipped", "1"], ["delivered", "14"], ["cancelled", "2"], ["returned", "1"]]) {
     await expect(page.getByTestId(`status-${s}`)).toContainText(n);
     await expect(page.getByTestId(`status-${s}`)).toHaveAttribute("href", `/admin/orders?status=${s}`);

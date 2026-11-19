@@ -146,3 +146,10 @@ These are business choices only Ali can make. They do not block phases 0–3, bu
 - Any order can be deleted from the Orders tab after a confirmation; stock returns unless the order was delivered.
 - Delivery fees for customers are set by the owner in the admin at any time. Delivery companies live in their own admin tab (name, WhatsApp number, notes and a price list per governorate); an order picks one company and the "send to delivery company" button opens WhatsApp to that company with the delivery message.
 - The order page has one notes box, which is included in the delivery message. The home tab of the admin is a dashboard with order statuses, sales and stock levels.
+
+## 17. Phase 6 decisions (colours)
+- Phase 6 is colours only; the gallery with before/after slider moves to phase 7.
+- Customers find a colour by search, family filter, or a colour wheel that shows the closest catalogue shades with their codes. No photo picker.
+- On mixed-paint products a catalogue picker replaces the typed colour box, and a typed code or name is still allowed when the colour is not listed.
+- About 60 invented sample shades are used until Ali supplies the real catalogue; one SQL removes them.
+- Colours are searched in the database, never loaded whole into a page. The catalogue can be loaded by CSV (system, code, name, hex, family); importing again updates instead of duplicating.

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Cairo } from "next/font/google";
+import { SelectOnFocus } from "@/components/SelectOnFocus";
 import { ar } from "@/content/ar";
 import "./globals.css";
 
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         >
           {ar.common.skip}
         </a>
+        <SelectOnFocus />
         {children}
       </body>
     </html>

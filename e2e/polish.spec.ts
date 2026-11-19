@@ -68,21 +68,11 @@ test("the banner rotates on its own, but not when reduced motion is requested", 
   await calm.close();
 });
 
-test("categories are links and the last row is centred", async ({ page }) => {
+test("categories are links to the shop", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/");
   const cards = page.locator('main a[href^="/shop?category="]');
-  await expect(cards).toHaveCount(5);
-
-  const boxes = await Promise.all((await cards.all()).map((c) => c.boundingBox()));
-  const bottom = Math.max(...boxes.map((b) => b!.y));
-  const lastRow = boxes.filter((b) => Math.abs(b!.y - bottom) < 4);
-  const left = Math.min(...boxes.map((b) => b!.x));
-  const right = Math.max(...boxes.map((b) => b!.x + b!.width));
-  const rowLeft = Math.min(...lastRow.map((b) => b!.x));
-  const rowRight = Math.max(...lastRow.map((b) => b!.x + b!.width));
-  expect(Math.abs((rowLeft + rowRight) / 2 - (left + right) / 2)).toBeLessThan(6);
-
+  await expect(cards.first()).toBeVisible(); // however many categories you have added
   await cards.first().click();
   await expect(page).toHaveURL(/\/shop\?category=/);
 });
@@ -122,7 +112,10 @@ test("a product page has breadcrumbs back to the shop", async ({ page }) => {
   await expect(crumbs.locator('[aria-current="page"]')).toHaveText("بنتلايت داخلي ممتاز");
 });
 
-test("homepage product sections have a view-all link to the shop", async ({ page }) => {
+test("homepage product sections have a view-all link to the shop", async ({ page, request }) => {
+  // these use the dummy sale on product 6; they skip themselves if that sale was edited away in the admin
+  const sale = await request.get(`/shop/${P(6)}`);
+  test.skip(!(await sale.text()).includes("line-through"), "the sample sale on product 6 is not there any more");
   await page.goto("/");
   for (const heading of ["الأكثر مبيعًا", "العروض"]) {
     const section = page.locator("section", { has: page.getByRole("heading", { name: heading }) });
@@ -132,7 +125,10 @@ test("homepage product sections have a view-all link to the shop", async ({ page
 
 const P = (n: number) => `00000000-0000-4002-8000-${String(n).padStart(12, "0")}`;
 
-test("a sale shows a discount badge on the card and on the product page", async ({ page }) => {
+test("a sale shows a discount badge on the card and on the product page", async ({ page, request }) => {
+  // these use the dummy sale on product 6; they skip themselves if that sale was edited away in the admin
+  const sale = await request.get(`/shop/${P(6)}`);
+  test.skip(!(await sale.text()).includes("line-through"), "the sample sale on product 6 is not there any more");
   await page.goto("/shop");
   await expect(page.locator('main a[href^="/shop/0000"]', { hasText: "ورق جدران ملكي" })).toContainText("خصم 16%");
   await expect(page.locator('main a[href^="/shop/0000"]', { hasText: "فرشاة طلاء" })).not.toContainText("خصم");
@@ -140,10 +136,10 @@ test("a sale shows a discount badge on the card and on the product page", async 
   await expect(page.getByText("خصم 16%")).toBeVisible();
 });
 
-test("the product page reassures with delivery, cash on delivery and support", async ({ page }) => {
+test("the product page no longer has the three reassurance boxes (they stay on the homepage)", async ({ page }) => {
   await page.goto(`/shop/${P(7)}`);
-  for (const text of ["توصيل إلى جميع محافظات العراق", "الدفع عند الاستلام", "دعم عبر واتساب"]) {
-    await expect(page.getByText(text).first()).toBeVisible();
+  for (const text of ["توصيل إلى جميع محافظات العراق", "الدفع عند الاستلام"]) {
+    await expect(page.getByRole("main").getByText(text)).toHaveCount(0);
   }
 });
 
@@ -329,7 +325,7 @@ test("the reassurance lines sit at the very bottom of the homepage", async ({ pa
   const y = async (loc: ReturnType<Page["locator"]>) => (await loc.first().boundingBox())!.y;
   const strip = page.getByText("توصيل إلى جميع محافظات العراق").first();
   const stripY = await y(strip);
-  expect(stripY).toBeGreaterThan(await y(page.getByRole("heading", { name: "من أعمالنا" })));
+  expect(stripY).toBeGreaterThan(await y(page.getByRole("heading", { name: "كم لتر دهان تحتاج؟" })));
   expect(stripY).toBeLessThan(await y(page.locator("footer")));
   expect(stripY).toBeGreaterThan(await y(page.getByRole("heading", { name: "تسوّق حسب الفئة" })));
 });

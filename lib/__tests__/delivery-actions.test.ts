@@ -107,7 +107,7 @@ describe("saveCompanyAction", () => {
     expect(ops("delete")).toEqual([["delivery_company_prices", "delete", "company_id", CID]]);
   });
   it("without a price list in the form (the current form), saved prices are left alone", async () => {
-    const { ids: _ids, ...noPrices } = good;
+    const noPrices = Object.fromEntries(Object.entries(good).filter(([k]) => k !== "ids"));
     await expect(saveCompanyAction(CID, {}, form(noPrices))).rejects.toThrow("REDIRECT:/admin/delivery");
     expect(calls.log).toEqual([["delivery_companies", "update", company, "id", CID]]);
   });
