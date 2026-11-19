@@ -10,10 +10,11 @@ import {
   type CartItem,
 } from "../cart/cart";
 
-const base = {
+const base: Omit<CartItem, "key"> = {
   product_id: "p1",
   variant_id: "v1",
   colour_id: null,
+  colour_name: null,
   colour_note: null,
   name: "دهان أبيض",
   size_label: "4 لتر",
@@ -76,6 +77,13 @@ describe("parseCart", () => {
     const good = withKey(base);
     const broken = { ...withKey({ ...base, variant_id: "v2" }), unit_price: undefined };
     expect(parseCart(JSON.stringify([good, broken]))).toEqual([good]);
+  });
+  it("keeps the colour name, and treats a missing one as null", () => {
+    const named = withKey({ ...base, colour_id: "c1", colour_name: "أبيض ثلجي" });
+    expect(parseCart(JSON.stringify([named]))[0].colour_name).toBe("أبيض ثلجي");
+    const old: Record<string, unknown> = { ...withKey(base) };
+    delete old.colour_name;
+    expect(parseCart(JSON.stringify([old]))[0].colour_name).toBeNull();
   });
   it("clamps a huge stored quantity", () => {
     const stored = [{ ...withKey(base), quantity: 1000 }];

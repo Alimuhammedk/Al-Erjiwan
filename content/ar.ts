@@ -72,6 +72,22 @@ export const ar = {
     description: "الوصف",
     chooseColour: "اختر لونًا أو اكتب اسمه أو رقمه",
     chooseSize: "اختر الحجم",
+    notSure: "لست متأكدًا من الكمية؟ احسب كمية الدهان",
+  },
+
+  cart: {
+    title: "السلة",
+    empty: "السلة فارغة",
+    continueShopping: "تابع التسوق",
+    total: "المجموع",
+    remove: "حذف",
+    increase: "زيادة الكمية",
+    decrease: "تقليل الكمية",
+    checkout: "إتمام الطلب",
+    checkoutSoon: "إتمام الطلب سيتوفر قريبًا",
+    size: "الحجم",
+    colour: "اللون",
+    deliveryNote: "تكلفة التوصيل تُحسب عند إتمام الطلب",
   },
 
   // Fixed lists Ali picks from; the shop filters use the same values.

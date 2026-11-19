@@ -5,6 +5,7 @@ export type CartItem = {
   product_id: string;
   variant_id: string | null;
   colour_id: string | null;
+  colour_name: string | null; // shown in the cart; checkout re-reads the colour from the database
   colour_note: string | null;
   name: string;
   size_label: string | null;
@@ -75,6 +76,7 @@ export function parseCart(raw: string | null): CartItem[] {
       product_id: d.product_id,
       variant_id: d.variant_id,
       colour_id: d.colour_id,
+      colour_name: typeof d.colour_name === "string" ? d.colour_name : null, // older saved carts have none
       colour_note: d.colour_note,
       name: d.name,
       size_label: d.size_label,

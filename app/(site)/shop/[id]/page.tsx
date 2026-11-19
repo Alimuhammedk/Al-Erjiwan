@@ -26,6 +26,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           )}
           {product.is_tintable && <p className="rounded-xl bg-brand-50 px-4 py-3 text-brand-700">{ar.product.tintNote}</p>}
           <ProductPurchase detail={detail} />
+          <a href="#calculator" className="inline-block font-bold text-brand-700 underline">
+            {ar.product.notSure}
+          </a>
         </div>
       </div>
       {product.description && (
@@ -34,7 +37,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           <p className="whitespace-pre-line leading-8">{product.description}</p>
         </section>
       )}
-      <div className="max-w-3xl">
+      <div id="calculator" className="max-w-3xl scroll-mt-24">
         <LitresCalculator />
       </div>
     </main>

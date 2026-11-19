@@ -46,6 +46,8 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
       product_id: product.id,
       variant_id: variant?.id ?? null,
       colour_id: product.is_tintable ? colourId : (variant?.colour_id ?? null),
+      colour_name:
+        colours.find((c) => c.id === (product.is_tintable ? colourId : variant?.colour_id))?.name_ar ?? null,
       colour_note: product.is_tintable ? note.trim() || null : null,
       name: product.name_ar,
       size_label: variant?.size_label ?? null,
