@@ -71,6 +71,16 @@ test("wrong details show an Arabic error on each field and keep what was typed",
   await expect(page).toHaveURL(/\/checkout$/);
 });
 
+test("there is no example text under the phone box, and the city box is named correctly", async ({ page }) => {
+  await withCart(page);
+  await page.goto("/checkout");
+  await expect(page.getByLabel("رقم الهاتف")).toBeVisible();
+  await expect(page.getByText("مثال: 07701234567")).toHaveCount(0);
+  await expect(page.getByText("وسنتواصل معك عبر واتساب")).toHaveCount(0);
+  await expect(page.getByLabel("المدينة أو القضاء")).toBeVisible();
+  await expect(page.getByText("المدينة أو المنطقة")).toHaveCount(0);
+});
+
 test("the checkout fits a phone screen", async ({ page }) => {
   await withCart(page);
   await page.setViewportSize({ width: 375, height: 800 });
@@ -82,6 +92,16 @@ test("the checkout fits a phone screen", async ({ page }) => {
 test.describe("with the order functions in the database", () => {
   test.beforeAll(async ({ request }) => {
     test.skip(!(await ordersDeployed(request)), "0004_orders.sql has not been run in Supabase yet");
+  });
+
+  test("the province list shows only the province names, never a price or the word free", async ({ page }) => {
+    await withCart(page);
+    await page.goto("/checkout");
+    const names = await page.getByLabel("المحافظة").locator("option").allTextContents();
+    expect(names.length).toBeGreaterThan(1);
+    for (const name of names.slice(1)) {
+      expect(name, name).not.toMatch(/مجانًا|—|د\.ع|\d/);
+    }
   });
 
   test("choosing a governorate shows its fee and adds it to the total", async ({ page }) => {

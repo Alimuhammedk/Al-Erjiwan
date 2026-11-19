@@ -10,13 +10,27 @@ async function useCalculator(page: import("@playwright/test").Page) {
   await expect(page.getByRole("status").filter({ hasText: "7 لتر" })).toBeVisible();
 }
 
-test("the calculator link is the last link in the top bar", async ({ page }) => {
+test("the top bar ends with the calculator and then order tracking", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/");
   const links = page.getByRole("navigation", { name: "القائمة" }).getByRole("link");
-  await expect(links).toHaveText(["الرئيسية", "المتجر", "حاسبة الدهان"]);
-  await links.last().click();
+  await expect(links).toHaveText(["الرئيسية", "المتجر", "حاسبة الدهان", "تتبع الطلب"]);
+  await links.nth(2).click();
   await useCalculator(page);
+});
+
+test("the last link in the top bar opens order tracking, on desktop and in the phone menu", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+  await page.getByRole("navigation", { name: "القائمة" }).getByRole("link").last().click();
+  await expect(page).toHaveURL(/\/track$/);
+  await expect(page.getByRole("navigation", { name: "القائمة" }).locator('a[aria-current="page"]')).toHaveText("تتبع الطلب");
+
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "القائمة" }).click();
+  await page.locator("#mobile-menu").getByRole("link", { name: "تتبع الطلب" }).click();
+  await expect(page).toHaveURL(/\/track$/);
 });
 
 test("the result is big, separate from the form and scrolled into view", async ({ page }) => {

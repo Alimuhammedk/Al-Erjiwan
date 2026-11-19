@@ -47,7 +47,6 @@ export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
         </FormField>
         <FormField label={t.phone} error={err.phone}>
           <input name="phone" type="tel" inputMode="tel" autoComplete="tel" dir="ltr" maxLength={25} className={`${inputClass} text-start`} />
-          <span className="mt-1 block text-xs text-ink/70">{t.phoneHint}</span>
         </FormField>
         <div className="grid gap-5 sm:grid-cols-2">
           <FormField label={t.governorate} error={err.governorate}>
@@ -55,7 +54,7 @@ export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
               <option value="">{t.chooseGovernorate}</option>
               {zones.map((z) => (
                 <option key={z.id} value={z.governorate_ar} data-fee={z.fee}>
-                  {z.governorate_ar} — {z.fee === 0 ? t.free : formatPrice(z.fee)}
+                  {z.governorate_ar}
                 </option>
               ))}
             </select>

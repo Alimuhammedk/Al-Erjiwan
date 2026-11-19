@@ -10,8 +10,9 @@ export const ar = {
     { key: "colours", label: "منتقي الألوان", href: "/colours", enabled: false },
     { key: "gallery", label: "معرض الأعمال", href: "/gallery", enabled: false },
     { key: "about", label: "من نحن", href: "/about", enabled: false },
-    // Keep this last in the list so it stays the last link in the top bar.
+    // Keep the calculator and tracking last in the list so they stay the last links in the top bar.
     { key: "calculator", label: "حاسبة الدهان", href: "/calculator", enabled: true },
+    { key: "track", label: "تتبع الطلب", href: "/track", enabled: true },
   ],
 
   home: {
@@ -105,10 +106,9 @@ export const ar = {
     summary: "ملخص الطلب",
     name: "الاسم الكامل",
     phone: "رقم الهاتف",
-    phoneHint: "مثال: 07701234567، وسنتواصل معك عبر واتساب",
     governorate: "المحافظة",
     chooseGovernorate: "اختر المحافظة",
-    city: "المدينة أو المنطقة",
+    city: "المدينة أو القضاء",
     address: "العنوان بالتفصيل",
     landmark: "أقرب نقطة دالة",
     notes: "ملاحظات (اختياري)",
@@ -152,8 +152,8 @@ export const ar = {
     status: "حالة الطلب",
     items: "المنتجات",
     total: "المجموع (الدفع عند الاستلام)",
-    whatsapp: "أرسل تفاصيل الطلب عبر واتساب",
-    whatsappGreeting: "مرحبًا، قدمت الطلب رقم {code} وأرغب بتأكيده.",
+    copyNumber: "نسخ رقم الطلب",
+    copied: "تم النسخ",
     track: "تتبع طلبك",
     continueShopping: "متابعة التسوق",
     notFound: "الطلب غير موجود",
