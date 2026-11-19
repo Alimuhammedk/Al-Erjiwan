@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatPrice } from "@/lib/format";
 import { ar } from "@/content/ar";
+import { formatPrice } from "@/lib/format";
 import { discountPercent, displayPrice } from "@/lib/shop/product";
 import type { ProductWithImage } from "@/types/db";
+
+const sizes = "(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw";
 
 // No "sold out" badge here: a sized product's stock lives on its sizes, which the card doesn't load.
 // The product page shows the real stock.
@@ -13,7 +15,7 @@ export function ProductCard({ product }: { product: ProductWithImage }) {
   return (
     <Link
       href={`/shop/${product.id}`}
-      className="group block overflow-hidden rounded-2xl border border-brand-100 bg-paper"
+      className="group block overflow-hidden rounded-2xl border border-brand-100 bg-paper shadow-sm transition-all duration-300 hover:shadow-xl motion-safe:hover:-translate-y-1"
     >
       <div className="relative aspect-square overflow-hidden bg-brand-50">
         {product.image_url && (
@@ -21,12 +23,22 @@ export function ProductCard({ product }: { product: ProductWithImage }) {
             src={product.image_url}
             alt={product.name_ar}
             fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+            sizes={sizes}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         )}
+        {product.hover_image_url && (
+          <Image
+            src={product.hover_image_url}
+            alt=""
+            fill
+            sizes={sizes}
+            loading="lazy"
+            className="object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+          />
+        )}
         {percent !== null && (
-          <span className="absolute start-2 top-2 rounded-full bg-coral-500 px-3 py-1 text-xs font-bold text-white shadow">
+          <span className="absolute start-2 top-2 z-10 rounded-full bg-coral-500 px-3 py-1 text-xs font-bold text-white shadow">
             {ar.common.discount.replace("{n}", String(percent))}
           </span>
         )}

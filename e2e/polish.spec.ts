@@ -176,3 +176,20 @@ test("the sticky bar button is disabled for a sold-out product", async ({ page }
   await page.goto(`/shop/${P(8)}`);
   await expect(page.getByTestId("sticky-buy").getByRole("button")).toBeDisabled();
 });
+
+test("a card with two photos shows the second on hover and lifts", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/shop");
+  const two = page.locator('main a[href^="/shop/0000"]', { hasText: "بنتلايت داخلي ممتاز" });
+  const one = page.locator('main a[href^="/shop/0000"]', { hasText: "فرشاة طلاء" });
+  await expect(two.locator("img")).toHaveCount(2);
+  await expect(one.locator("img")).toHaveCount(1);
+
+  const second = two.locator("img").nth(1);
+  const opacity = () => second.evaluate((el) => parseFloat(getComputedStyle(el).opacity));
+  expect(await opacity()).toBe(0);
+  await two.hover();
+  await expect.poll(opacity).toBe(1);
+  // Tailwind v4 lifts with the `translate` property, not `transform`.
+  await expect.poll(() => two.evaluate((el) => getComputedStyle(el).translate)).toMatch(/-\d/);
+});

@@ -50,4 +50,5 @@ export type ProductImage = {
   sort_order: number;
 };
 
-export type ProductWithImage = Product & { image_url: string | null };
+// hover_image_url is the second photo, shown when the card is hovered.
+export type ProductWithImage = Product & { image_url: string | null; hover_image_url: string | null };

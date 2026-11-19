@@ -5,8 +5,8 @@ export type Row = Product & { product_images: Pick<ProductImage, "url" | "sort_o
 
 export function withFirstImage(row: Row): ProductWithImage {
   const { product_images, ...product } = row;
-  const first = [...(product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0];
-  return { ...product, image_url: first?.url ?? null };
+  const [first, second] = [...(product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order);
+  return { ...product, image_url: first?.url ?? null, hover_image_url: second?.url ?? null };
 }
 
 async function activeProducts(filter: "is_featured" | "sale_price"): Promise<ProductWithImage[]> {
