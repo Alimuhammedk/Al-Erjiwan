@@ -223,3 +223,77 @@ test.describe("editing an existing product", () => {
     expect(r.product.stock).toBe(20);
   });
 });
+
+test.describe("which colours a mixed paint offers", () => {
+  const paintSwitch = (page: Page) => page.getByLabel("دهان يُخلط حسب اللون المطلوب");
+  const section = (page: Page) => page.getByTestId("product-colours");
+
+  test("the colours section shows only for a mixed paint, and offers every colour by default", async ({ page }) => {
+    await page.goto(URL);
+    await expect(section(page)).toHaveCount(0);
+    await paintSwitch(page).check();
+    await expect(section(page)).toBeVisible();
+    await expect(page.getByLabel("كل ألوان الكتالوج")).toBeChecked();
+    await expect(page.getByTestId("colour-count")).toHaveCount(0);
+    await name(page).fill("دهان");
+    await page.locator('input[name="base_price"]').fill("1000");
+    expect((await saved(page)).colours).toEqual({ all: true, ids: [] });
+  });
+
+  test("'only these colours' lets you tick one by one, a whole family, or search", async ({ page }) => {
+    await page.goto(URL);
+    await paintSwitch(page).check();
+    await page.getByLabel("ألوان مختارة فقط").check();
+    await section(page).getByRole("group", { name: "العائلات" }).getByRole("button", { name: "الأبيض" }).click();
+    await page.getByRole("button", { name: /تحديد كل المعروض \(2\)/ }).click();
+    await expect(page.getByTestId("colour-count")).toHaveText("المختار: 2");
+
+    await section(page).getByRole("group", { name: "العائلات" }).getByRole("button", { name: "كل العائلات" }).click();
+    await section(page).getByRole("searchbox").fill("رمادي");
+    await section(page).getByLabel(/رمادي فاتح/).check();
+    await expect(page.getByTestId("colour-count")).toHaveText("المختار: 3");
+
+    await name(page).fill("دهان");
+    await page.locator('input[name="base_price"]').fill("1000");
+    const colours = (await saved(page)).colours;
+    expect(colours.all).toBe(false);
+    expect(colours.ids.sort()).toEqual([C(1), C(2), C(3)].sort());
+  });
+
+  test("unticking and clearing work, and saving with none ticked is explained", async ({ page }) => {
+    await page.goto(URL);
+    await paintSwitch(page).check();
+    await page.getByLabel("ألوان مختارة فقط").check();
+    await section(page).getByLabel(/أبيض ثلجي/).check();
+    await expect(page.getByTestId("colour-count")).toHaveText("المختار: 1");
+    await section(page).getByLabel(/أبيض ثلجي/).uncheck();
+    await expect(page.getByTestId("colour-count")).toHaveText("المختار: 0");
+    await name(page).fill("دهان");
+    await page.locator('input[name="base_price"]').fill("1000");
+    await saveButton(page).click();
+    await expect(page.getByText("اختر لونًا واحدًا على الأقل")).toBeVisible();
+    await section(page).getByLabel(/كريمي/).check();
+    await page.getByRole("button", { name: "مسح الكل" }).click();
+    await expect(page.getByTestId("colour-count")).toHaveText("المختار: 0");
+  });
+
+  test("switching back to 'all colours' keeps the choice if you switch again", async ({ page }) => {
+    await page.goto(URL);
+    await paintSwitch(page).check();
+    await page.getByLabel("ألوان مختارة فقط").check();
+    await section(page).getByLabel(/كريمي/).check();
+    await page.getByLabel("كل ألوان الكتالوج").check();
+    await expect(section(page).getByRole("searchbox")).toHaveCount(0);
+    await page.getByLabel("ألوان مختارة فقط").check();
+    await expect(page.getByTestId("colour-count")).toHaveText("المختار: 1");
+  });
+
+  test("the colours section fits a phone screen", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.goto(URL);
+    await paintSwitch(page).check();
+    await page.getByLabel("ألوان مختارة فقط").check();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+    await section(page).screenshot({ path: "e2e/screenshots/admin-product-colours-375.png" });
+  });
+});

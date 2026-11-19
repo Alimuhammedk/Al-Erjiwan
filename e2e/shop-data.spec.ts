@@ -62,6 +62,7 @@ test("a tinted paint needs a colour, then adds to the cart", async ({ page }) =>
   await page.goto(`/shop/${P(1)}`);
   await page.getByRole("button", { name: "أضف إلى السلة" }).click();
   await expect(page.getByText("اختر لونًا أو اكتب اسمه أو رقمه")).toBeVisible();
+  await page.getByTestId("colour-row").click();
   await page.getByRole("button", { name: "أزرق سماوي" }).click();
   await page.getByRole("button", { name: "أضف إلى السلة" }).click();
   await expect(page.getByText("تمت الإضافة إلى السلة")).toBeVisible();
@@ -91,10 +92,12 @@ test("a hidden product opens the not-found page", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "المنتج غير موجود" })).toBeVisible();
 });
 
-test("the litres calculator link jumps to a working calculator", async ({ page }) => {
+test("the product page has no calculator box, only a link to the calculator page", async ({ page }) => {
   await page.goto(`/shop/${P(1)}`);
+  await expect(page.getByLabel("الطول (متر)")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "احسب كمية الدهان" })).toHaveCount(0);
   await page.getByRole("link", { name: "لست متأكدًا من الكمية؟ احسب كمية الدهان" }).click();
-  await expect(page.getByRole("heading", { name: "احسب كمية الدهان" })).toBeInViewport();
+  await expect(page).toHaveURL(/\/calculator$/);
   await page.getByLabel("الطول (متر)").fill("4");
   await page.getByLabel("العرض (متر)").fill("3");
   await page.getByLabel("الارتفاع (متر)").fill("2.5");

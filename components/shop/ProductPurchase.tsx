@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import { ar } from "@/content/ar";
-import { ColourFinder } from "@/components/colours/ColourFinder";
 import type { PickableColour } from "@/lib/colours/search";
 import { useCart } from "@/lib/cart/CartProvider";
 import type { ProductDetail } from "@/lib/data/shop";
 import { formatPrice } from "@/lib/format";
 import { discountPercent, displayPrice, isSoldOut, stockFor } from "@/lib/shop/product";
+import { ColourPanel } from "./ColourPanel";
 import { TrustStrip } from "./TrustStrip";
 
 type Variant = ProductDetail["variants"][number];
 
-export function ProductPurchase({ detail, initialColour = null }: { detail: ProductDetail; initialColour?: PickableColour | null }) {
+export function ProductPurchase({ detail }: { detail: ProductDetail }) {
   const { product, images, variants, colours } = detail;
   const t = ar.product;
   const { add } = useCart();
@@ -26,7 +26,8 @@ export function ProductPurchase({ detail, initialColour = null }: { detail: Prod
     (sizeOptions.find((v) => v.stock > 0) ?? sizeOptions[0])?.id ?? null,
   );
   // Mixed paint: a shade chosen from the catalogue (or arriving from the colour page); a typed colour is the fallback.
-  const [chosen, setChosen] = useState<PickableColour | null>(product.is_tintable ? initialColour : null);
+  const [chosen, setChosen] = useState<PickableColour | null>(null);
+  const [typing, setTyping] = useState(false); // the typed colour is hidden until asked for
   const [note, setNote] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
@@ -104,11 +105,16 @@ export function ProductPurchase({ detail, initialColour = null }: { detail: Prod
       {product.is_tintable && (
         <div>
           <p className="mb-2 font-semibold text-brand-900">{t.colours}</p>
-          <ColourFinder value={chosen} onChange={setChosen} />
+          <ColourPanel productId={product.id} value={chosen} onChange={setChosen} />
+          {!typing && !note && (
+            <button type="button" onClick={() => setTyping(true)} className="mt-1 min-h-11 text-sm font-bold text-brand-700 underline">
+              {t.notListed}
+            </button>
+          )}
         </div>
       )}
 
-      {product.is_tintable && (
+      {product.is_tintable && (typing || note) && (
         <label className="block">
           <span className="mb-1 block text-sm font-semibold text-brand-900">{t.colourNote}</span>
           <input

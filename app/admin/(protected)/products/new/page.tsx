@@ -7,7 +7,7 @@ export default async function NewProductPage() {
   const db = await createAuthClient();
   const [{ data: categories }, { data: colours }] = await Promise.all([
     db.from("categories").select("id, name_ar").order("sort_order"),
-    db.from("colours").select("id, name_ar, name_en, code, hex, family").order("name_ar").limit(1000),
+    db.from("colours").select("id, name_ar, name_en, code, hex, family").order("name_ar").limit(3000),
   ]);
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 space-y-6 px-4 py-8">

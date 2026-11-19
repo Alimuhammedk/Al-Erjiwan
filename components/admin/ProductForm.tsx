@@ -8,6 +8,7 @@ import type { Category, Product } from "@/types/db";
 import type { PickableColour } from "./ColourPicker";
 import { FormField, inputClass } from "./FormField";
 import { ImageUploader } from "./ImageUploader";
+import { ProductColoursSection, type ColourChoice } from "./ProductColoursSection";
 import { SubmitButton } from "./SubmitButton";
 import { blankVariant, VariantsEditor, type VariantRow } from "./VariantsEditor";
 import { useFormAction } from "./useFormAction";
@@ -16,7 +17,7 @@ type Props = {
   action: (prev: ProductSaveState, formData: FormData) => Promise<ProductSaveState>;
   categories: Pick<Category, "id" | "name_ar">[];
   colours: PickableColour[];
-  initial?: { product: Product; images: string[]; variants: VariantRow[] };
+  initial?: { product: Product; images: string[]; variants: VariantRow[]; colourChoice?: ColourChoice };
 };
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
@@ -46,6 +47,8 @@ export function ProductForm({ action, categories, colours, initial }: Props) {
   const [images, setImages] = useState<string[]>(initial?.images ?? []);
   const [hasSizes, setHasSizes] = useState((initial?.variants.length ?? 0) > 0);
   const [rows, setRows] = useState<VariantRow[]>(initial?.variants ?? []);
+  const [tintable, setTintable] = useState(initial?.product.is_tintable ?? false);
+  const [choice, setChoice] = useState<ColourChoice>(initial?.colourChoice ?? { all: true, ids: [] });
   const err = state.errors ?? {};
   const p = initial?.product;
   const t = ar.admin.products;
@@ -149,8 +152,17 @@ export function ProductForm({ action, categories, colours, initial }: Props) {
       <Section title={f.settings}>
         <Switch name="is_active" label={t.active} defaultChecked={p?.is_active ?? true} />
         <Switch name="is_featured" label={t.featured} defaultChecked={p?.is_featured ?? false} />
-        <Switch name="is_tintable" label={t.tintable} defaultChecked={p?.is_tintable ?? false} />
+        <label className="flex min-h-11 items-center gap-3">
+          <input type="checkbox" name="is_tintable" checked={tintable} onChange={(e) => setTintable(e.target.checked)} className="size-5 accent-[#602f8a]" />
+          <span className="font-semibold text-brand-900">{t.tintable}</span>
+        </label>
       </Section>
+
+      {tintable && (
+        <Section title={f.colours.title} hint={f.colours.hint}>
+          <ProductColoursSection colours={colours} value={choice} onChange={setChoice} error={err.colours} />
+        </Section>
+      )}
 
       <div className="sticky bottom-0 z-20 -mx-4 space-y-2 border-t border-brand-100 bg-paper/95 px-4 py-3 backdrop-blur">
         {state.error && <p role="alert" className="font-semibold text-coral-500">{state.error}</p>}

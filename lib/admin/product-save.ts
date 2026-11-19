@@ -10,7 +10,9 @@ const MAX_IMAGES = 12;
 const MAX_SIZES = 30;
 
 export type SizeRow = VariantInput & { id: string | null };
-export type ProductSavePlan = { id: string | null; product: ProductInput; images: string[]; variants: SizeRow[] };
+export type ProductColours = { all: boolean; ids: string[] };
+export type ProductSavePlan = { id: string | null; product: ProductInput; images: string[]; variants: SizeRow[]; colours: ProductColours };
+const MAX_COLOURS = 3000;
 
 // The form sends photos and sizes as JSON text in hidden fields. Anything that isn't a list becomes null.
 function parseList(v: FormDataEntryValue | undefined): unknown[] | null {
@@ -58,6 +60,17 @@ export function prepareProductSave(formData: FormData): Result<ProductSavePlan> 
     }
   }
 
+  // Colours a mixed paint offers: every catalogue colour, or only the ticked ones (at least one).
+  const tintable = entries.is_tintable === "on" || entries.is_tintable === "true";
+  let colours: ProductColours = { all: true, ids: [] };
+  if (tintable && entries.colour_mode === "some") {
+    const raw = parseList(entries.colour_ids);
+    const ids = raw === null ? null : [...new Set(raw.filter((x): x is string => typeof x === "string" && UUID.test(x)))];
+    if (ids === null || raw!.length > MAX_COLOURS) errors.colours = e.saveFailed;
+    else if (ids.length === 0) errors.colours = e.needColour;
+    else colours = { all: false, ids };
+  }
+
   // Product. With sizes, the price and stock come from them and a sale price does not apply.
   const raw: Record<string, FormDataEntryValue | string[]> = { ...entries, rooms: formData.getAll("rooms").map(String) };
   if (hasSizes) {
@@ -70,7 +83,7 @@ export function prepareProductSave(formData: FormData): Result<ProductSavePlan> 
 
   if (Object.keys(errors).length || !product.ok) return { ok: false, errors };
   const id = typeof entries.id === "string" && UUID.test(entries.id) ? entries.id : null;
-  return { ok: true, value: { id, product: product.value, images, variants } };
+  return { ok: true, value: { id, product: { ...product.value, all_colours: colours.all }, images, variants, colours } };
 }
 
 // Replaces a product's photo list; array position becomes sort_order (first = main photo). Returns an Arabic
@@ -122,4 +135,17 @@ export async function syncVariants(db: SupabaseClient, productId: string, rows: 
     if (error) return e.saveFailed;
   }
   return null;
+}
+
+// Saves which colours a mixed paint offers. Chosen colours are written first and the ones no longer wanted removed
+// after, so a failure leaves the old list rather than an empty one. "All colours" keeps no rows at all.
+export async function syncProductColours(db: SupabaseClient, productId: string, colours: ProductColours): Promise<string | null> {
+  const ids = colours.all ? [] : colours.ids;
+  if (ids.length) {
+    const { error } = await db.from("product_colours").upsert(ids.map((colour_id) => ({ product_id: productId, colour_id })), { onConflict: "product_id,colour_id" });
+    if (error) return e.saveFailed;
+  }
+  const stale = db.from("product_colours").delete().eq("product_id", productId);
+  const { error } = await (ids.length ? stale.not("colour_id", "in", `(${ids.join(",")})`) : stale);
+  return error ? e.saveFailed : null;
 }

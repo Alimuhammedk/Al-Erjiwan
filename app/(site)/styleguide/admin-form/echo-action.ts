@@ -10,6 +10,6 @@ export async function echoAction(_prev: ProductSaveState, formData: FormData): P
   if (process.env.NODE_ENV === "production") notFound();
   const plan = prepareProductSave(formData);
   if (!plan.ok) return { errors: plan.errors };
-  const { id, product, images, variants } = plan.value;
-  return { error: `ECHO:${JSON.stringify({ id, product, images, variants })}` };
+  const { id, product, images, variants, colours } = plan.value;
+  return { error: `ECHO:${JSON.stringify({ id, product, images, variants, colours })}` };
 }

@@ -11,13 +11,14 @@ type VariantDb = { id: string; size_label: string; price: number; stock: number;
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const db = await createAuthClient();
-  const [{ data: product }, { data: categories }, { data: images }, { data: variants }, { data: colours }] =
+  const [{ data: product }, { data: categories }, { data: images }, { data: variants }, { data: colours }, { data: chosen }] =
     await Promise.all([
       db.from("products").select("*").eq("id", id).maybeSingle(),
       db.from("categories").select("id, name_ar").order("sort_order"),
       db.from("product_images").select("url, sort_order").eq("product_id", id).order("sort_order"),
       db.from("product_variants").select("*").eq("product_id", id).order("price"),
-      db.from("colours").select("id, name_ar, name_en, code, hex, family").order("name_ar").limit(1000),
+      db.from("colours").select("id, name_ar, name_en, code, hex, family").order("name_ar").limit(3000),
+      db.from("product_colours").select("colour_id").eq("product_id", id),
     ]);
   if (!product) notFound();
 
@@ -42,6 +43,10 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           product: product as Product,
           images: ((images as { url: string }[] | null) ?? []).map((i) => i.url),
           variants: rows,
+          colourChoice: {
+            all: (product as Product).all_colours !== false,
+            ids: ((chosen as { colour_id: string }[] | null) ?? []).map((r) => r.colour_id),
+          },
         }}
       />
     </main>
