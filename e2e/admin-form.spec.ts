@@ -297,3 +297,80 @@ test.describe("which colours a mixed paint offers", () => {
     await section(page).screenshot({ path: "e2e/screenshots/admin-product-colours-375.png" });
   });
 });
+
+test.describe("several colours for one size", () => {
+  const manyButton = (page: Page) => page.getByRole("button", { name: "إضافة عدة ألوان لهذا الحجم" });
+  const dlg = (page: Page) => page.getByTestId("multi-colour-dialog");
+
+  async function tick(page: Page, ...names: RegExp[]) {
+    for (const n of names) await dlg(page).getByLabel(n).check();
+  }
+
+  test("ticking colours makes one line per colour with the same size and price, each with its own stock and price", async ({ page }) => {
+    await page.goto(URL);
+    await page.waitForLoadState("networkidle");
+    await name(page).fill("دهان جاهز");
+    await sizesSwitch(page).check();
+    await fillSize(page, 0, "4 لتر", "60000", "5");
+    await manyButton(page).click();
+    await expect(dlg(page).getByRole("button", { name: /إضافة الألوان \(0\)/ })).toBeDisabled();
+    await tick(page, /أبيض ثلجي/, /كريمي/, /رمادي فاتح/);
+    await dlg(page).getByRole("button", { name: "إضافة الألوان (3)" }).click();
+    await expect(dlg(page)).toHaveCount(0);
+
+    await expect(sizeBoxes(page, "الحجم")).toHaveCount(3);
+    for (let i = 0; i < 3; i++) {
+      await expect(sizeBoxes(page, "الحجم").nth(i)).toHaveValue("4 لتر");
+      await expect(sizeBoxes(page, "السعر (د.ع)").nth(i)).toHaveValue("60000");
+    }
+    await expect(sizeBoxes(page, "الكمية").nth(0)).toHaveValue("5");
+    await expect(sizeBoxes(page, "الكمية").nth(1)).toHaveValue("0");
+
+    // a different price and a stock for one colour only
+    await sizeBoxes(page, "السعر (د.ع)").nth(1).fill("65000");
+    await sizeBoxes(page, "الكمية").nth(1).fill("7");
+    const out = await saved(page);
+    expect(out.variants.map((v: { colour_id: string; price: number; stock: number }) => [v.colour_id, v.price, v.stock])).toEqual([
+      [C(1), 60000, 5],
+      [C(2), 65000, 7],
+      [C(3), 60000, 0],
+    ]);
+  });
+
+  test("colours the size already offers are not listed again", async ({ page }) => {
+    await page.goto(URL);
+    await page.waitForLoadState("networkidle");
+    await sizesSwitch(page).check();
+    await fillSize(page, 0, "4 لتر", "60000", "5");
+    await manyButton(page).click();
+    await tick(page, /كريمي/);
+    await dlg(page).getByRole("button", { name: "إضافة الألوان (1)" }).click();
+    await manyButton(page).first().click();
+    await expect(dlg(page).getByLabel(/كريمي/)).toHaveCount(0);
+    await expect(dlg(page).getByLabel(/أبيض ثلجي/)).toBeVisible();
+  });
+
+  test("cancelling the window changes nothing", async ({ page }) => {
+    await page.goto(URL);
+    await page.waitForLoadState("networkidle");
+    await sizesSwitch(page).check();
+    await manyButton(page).click();
+    await tick(page, /كريمي/);
+    await dlg(page).getByRole("button", { name: "إلغاء", exact: true }).click();
+    await expect(dlg(page)).toHaveCount(0);
+    await expect(sizeBoxes(page, "الحجم")).toHaveCount(1);
+  });
+
+  test("the window fits a phone screen", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.goto(URL);
+    await page.waitForLoadState("networkidle");
+    await sizesSwitch(page).check();
+    await manyButton(page).click();
+    const box = (await page.getByRole("dialog", { name: "إضافة عدة ألوان لهذا الحجم" }).boundingBox())!;
+    expect(box.width).toBeLessThanOrEqual(375);
+    expect(box.height).toBeLessThanOrEqual(800);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+    await page.screenshot({ path: "e2e/screenshots/admin-many-colours-375.png" });
+  });
+});
