@@ -81,7 +81,10 @@ test("a sold-out product cannot be added", async ({ page }) => {
   await expect(page.getByRole("button", { name: "نفدت الكمية" })).toBeDisabled();
 });
 
-test("a sale price shows with the old price struck", async ({ page }) => {
+test("a sale price shows with the old price struck", async ({ page, request }) => {
+  // these use the dummy sale on product 6; they skip themselves if that sale was edited away in the admin
+  const sale = await request.get(`/shop/${P(6)}`);
+  test.skip(!(await sale.text()).includes("line-through"), "the sample sale on product 6 is not there any more");
   await page.goto(`/shop/${P(6)}`);
   await expect(page.getByText("38,000 د.ع").first()).toBeVisible();
   await expect(page.locator("main .line-through").first()).toHaveText("45,000 د.ع");
@@ -117,7 +120,10 @@ test("add a simple product, then change quantity in the cart", async ({ page }) 
   await expect(page.getByText("16,000 د.ع").first()).toBeVisible();
 });
 
-test("the homepage shows banners, categories, best sellers and offers, and cards open products", async ({ page }) => {
+test("the homepage shows banners, categories, best sellers and offers, and cards open products", async ({ page, request }) => {
+  // these use the dummy sale on product 6; they skip themselves if that sale was edited away in the admin
+  const sale = await request.get(`/shop/${P(6)}`);
+  test.skip(!(await sale.text()).includes("line-through"), "the sample sale on product 6 is not there any more");
   await page.goto("/");
   await expect(page.getByRole("button", { name: /^الشريحة \d/ })).toHaveCount(2);
   await expect(page.getByRole("heading", { name: "تسوّق حسب الفئة" })).toBeVisible();

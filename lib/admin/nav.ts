@@ -2,17 +2,16 @@ import { ar } from "@/content/ar";
 
 const n = ar.admin.nav;
 
-// The admin tabs in order. `match`: the address starts that keep a tab lit (the category and banner pages belong to
-// "الفئات والبانرات"); the first tab is lit only on its exact address.
+// The admin tabs in order. `match`: the address starts that keep a tab lit; the first tab is lit only on its exact address.
 export const ADMIN_TABS = [
   { href: "/admin", label: n.dashboard, icon: "stats", match: [] as string[] },
   { href: "/admin/orders", label: n.orders, icon: "orders", match: ["/admin/orders"] },
-  { href: "/admin/storefront", label: n.storefront, icon: "storefront", match: ["/admin/storefront", "/admin/categories", "/admin/banners"] },
+  { href: "/admin/banners", label: n.banners, icon: "banners", match: ["/admin/banners"] },
+  { href: "/admin/categories", label: n.categories, icon: "categories", match: ["/admin/categories"] },
   { href: "/admin/products", label: n.products, icon: "products", match: ["/admin/products"] },
   { href: "/admin/stock", label: n.stock, icon: "stock", match: ["/admin/stock"] },
   { href: "/admin/colours", label: n.colours, icon: "colours", match: ["/admin/colours"] },
   { href: "/admin/delivery", label: n.delivery, icon: "delivery", match: ["/admin/delivery"] },
-  { href: "/admin/store", label: n.store, icon: "store", match: ["/admin/store"] },
 ] as const;
 
 // The tab that should look selected for an address (or null, for example on the login page).

@@ -3,10 +3,12 @@ import { ADMIN_TABS, activeTab } from "../admin/nav";
 
 describe("ADMIN_TABS", () => {
   it("are in the order the owner asked for", () => {
-    expect(ADMIN_TABS.map((t) => t.label)).toEqual(["الرئيسية", "الطلبات", "الفئات والبانرات", "المنتجات", "المخزون", "الألوان", "التوصيل", "معلومات المتجر"]);
+    expect(ADMIN_TABS.map((t) => t.label)).toEqual(["الرئيسية", "الطلبات", "البانرات", "الفئات", "المنتجات", "المخزون", "الألوان", "التوصيل"]);
   });
-  it("has no separate categories or banners tab", () => {
-    expect(ADMIN_TABS.some((t) => /categories|banners/.test(t.href))).toBe(false);
+  it("has the banners tab before the categories tab", () => {
+    const hrefs = ADMIN_TABS.map((t) => t.href as string);
+    expect(hrefs.indexOf("/admin/banners")).toBeGreaterThan(-1);
+    expect(hrefs.indexOf("/admin/banners")).toBeLessThan(hrefs.indexOf("/admin/categories"));
   });
 });
 
@@ -15,16 +17,16 @@ describe("activeTab", () => {
     ["/admin", "/admin"],
     ["/admin/orders", "/admin/orders"],
     ["/admin/orders/123/print", "/admin/orders"],
-    ["/admin/storefront", "/admin/storefront"],
-    ["/admin/categories/new", "/admin/storefront"],
-    ["/admin/categories/abc", "/admin/storefront"],
-    ["/admin/banners/new", "/admin/storefront"],
+    ["/admin/banners", "/admin/banners"],
+    ["/admin/banners/new", "/admin/banners"],
+    ["/admin/categories", "/admin/categories"],
+    ["/admin/categories/new", "/admin/categories"],
+    ["/admin/categories/abc", "/admin/categories"],
     ["/admin/products/new", "/admin/products"],
     ["/admin/stock", "/admin/stock"],
     ["/admin/colours/import", "/admin/colours"],
     ["/admin/delivery", "/admin/delivery"],
     ["/admin/delivery-companies/new", "/admin/delivery"],
-    ["/admin/store", "/admin/store"],
   ])("%s lights %s", (path, tab) => expect(activeTab(path)).toBe(tab));
 
   it("lights nothing on the login page or an unknown page, and the home tab is not lit on every page", () => {

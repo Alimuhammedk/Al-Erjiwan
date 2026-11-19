@@ -52,14 +52,14 @@ describe("saveBannerAction", () => {
   it("inserts a valid banner and returns to the list", async () => {
     await expect(
       saveBannerAction(null, {}, form({ image_url: image, title: "عروض الشتاء", link: "/shop", is_active: "on" })),
-    ).rejects.toThrow("REDIRECT:/admin/storefront");
+    ).rejects.toThrow("REDIRECT:/admin/banners");
     expect(db.table.insert).toHaveBeenCalledWith(
       expect.objectContaining({ image_url: image, title: "عروض الشتاء", link: "/shop", is_active: true }),
     );
   });
 
   it("updates the right banner when editing", async () => {
-    await expect(saveBannerAction("b1", {}, form({ image_url: image }))).rejects.toThrow("REDIRECT:/admin/storefront");
+    await expect(saveBannerAction("b1", {}, form({ image_url: image }))).rejects.toThrow("REDIRECT:/admin/banners");
     expect(db.eq).toHaveBeenCalledWith("id", "b1");
   });
 
@@ -72,7 +72,7 @@ describe("saveBannerAction", () => {
 
 describe("deleteBannerAction", () => {
   it("deletes only the given banner after checking the admin", async () => {
-    await expect(deleteBannerAction("b1")).rejects.toThrow("REDIRECT:/admin/storefront");
+    await expect(deleteBannerAction("b1")).rejects.toThrow("REDIRECT:/admin/banners");
     expect(db.eq).toHaveBeenCalledWith("id", "b1");
   });
 

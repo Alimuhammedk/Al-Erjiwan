@@ -21,7 +21,7 @@ export async function saveBannerAction(
     ? db.from("banners").update(result.value).eq("id", id)
     : db.from("banners").insert(result.value));
   if (error) return { error: ar.admin.errors.saveFailed };
-  redirect("/admin/storefront");
+  redirect("/admin/banners");
 }
 
 export async function deleteBannerAction(id: string): Promise<void> {
@@ -29,5 +29,5 @@ export async function deleteBannerAction(id: string): Promise<void> {
   const db = await createAuthClient();
   const { error } = await db.from("banners").delete().eq("id", id);
   if (error) throw new Error(ar.admin.errors.saveFailed);
-  redirect("/admin/storefront");
+  redirect("/admin/banners");
 }

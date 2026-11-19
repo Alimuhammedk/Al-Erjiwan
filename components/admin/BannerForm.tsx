@@ -42,7 +42,7 @@ export function BannerForm({ action, initial }: Props) {
       {state.error && <p role="alert" className="font-semibold text-coral-500">{state.error}</p>}
       <div className="flex items-center gap-3">
         <SubmitButton pending={pending} />
-        <Link href="/admin/storefront" className="font-bold text-brand-700">{ar.admin.cancel}</Link>
+        <Link href="/admin/banners" className="font-bold text-brand-700">{ar.admin.cancel}</Link>
       </div>
     </form>
   );

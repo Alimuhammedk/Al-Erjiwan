@@ -21,11 +21,19 @@ const icons: Record<string, ReactNode> = {
       <path d="M16 10a4 4 0 01-8 0" />
     </>
   ),
-  storefront: (
+  banners: (
     <>
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <circle cx="8.5" cy="8.5" r="1.5" />
       <path d="M21 15l-5-5L5 21" />
+    </>
+  ),
+  categories: (
+    <>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
     </>
   ),
   products: (
@@ -46,13 +54,6 @@ const icons: Record<string, ReactNode> = {
       <circle cx="7.5" cy="11" r="1" />
       <circle cx="12" cy="7" r="1" />
       <circle cx="16.5" cy="10" r="1" />
-    </>
-  ),
-  store: (
-    <>
-      <path d="M3 9l1-5h16l1 5" />
-      <path d="M4 9v11h16V9" />
-      <path d="M9 20v-6h6v6" />
     </>
   ),
   delivery: (
