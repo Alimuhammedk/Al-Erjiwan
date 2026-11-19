@@ -91,12 +91,10 @@ export async function getProductDetail(id: string): Promise<ProductDetail | null
     if (images.error || variants.error) return null;
     const vs = (variants.data as ProductDetail["variants"] | null) ?? [];
 
-    // Tinted paint can be any palette colour; ready-made paint offers only the colours its sizes use.
+    // Ready-made paint offers only the colours its sizes use. Mixed paint takes any catalogue shade, found by
+    // searching as the customer types (so the whole catalogue is never loaded into the page).
     let colours: Colour[] = [];
-    if ((product as Product).is_tintable) {
-      const r = await db.from("colours").select("*").order("name_ar");
-      if (!r.error) colours = (r.data as Colour[] | null) ?? [];
-    } else {
+    if (!(product as Product).is_tintable) {
       const ids = [...new Set(vs.map((v) => v.colour_id).filter((c): c is string => c !== null))];
       if (ids.length) {
         const r = await db.from("colours").select("*").in("id", ids);

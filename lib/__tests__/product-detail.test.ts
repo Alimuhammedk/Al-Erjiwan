@@ -91,7 +91,7 @@ describe("getProductDetail", () => {
     expect(state.calls).toContainEqual(["colours", "in", ["id", ["c1"]]]);
   });
 
-  it("loads the whole palette for a tinted product", async () => {
+  it("does not load any colours for a tinted product (the picker searches the catalogue instead)", async () => {
     state.data = {
       products: { ...product, is_tintable: true },
       product_images: [],
@@ -99,7 +99,7 @@ describe("getProductDetail", () => {
       colours: [{ id: "c1", name_ar: "أبيض" }],
     };
     const d = await getProductDetail(ID);
-    expect(d?.colours).toHaveLength(1);
-    expect(state.calls.some(([t, m]) => t === "colours" && m === "in")).toBe(false);
+    expect(d?.colours).toEqual([]);
+    expect(state.calls.some(([t]) => t === "colours")).toBe(false);
   });
 });

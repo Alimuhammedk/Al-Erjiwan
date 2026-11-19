@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { ar } from "@/content/ar";
+import { ColourFinder } from "@/components/colours/ColourFinder";
+import type { PickableColour } from "@/lib/colours/search";
 import { useCart } from "@/lib/cart/CartProvider";
 import type { ProductDetail } from "@/lib/data/shop";
 import { formatPrice } from "@/lib/format";
@@ -10,7 +12,7 @@ import { TrustStrip } from "./TrustStrip";
 
 type Variant = ProductDetail["variants"][number];
 
-export function ProductPurchase({ detail }: { detail: ProductDetail }) {
+export function ProductPurchase({ detail, initialColour = null }: { detail: ProductDetail; initialColour?: PickableColour | null }) {
   const { product, images, variants, colours } = detail;
   const t = ar.product;
   const { add } = useCart();
@@ -23,6 +25,8 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
   const [variantId, setVariantId] = useState<string | null>(
     (sizeOptions.find((v) => v.stock > 0) ?? sizeOptions[0])?.id ?? null,
   );
+  // Mixed paint: a shade chosen from the catalogue (or arriving from the colour page); a typed colour is the fallback.
+  const [chosen, setChosen] = useState<PickableColour | null>(product.is_tintable ? initialColour : null);
   const [note, setNote] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
@@ -43,13 +47,12 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
 
   function addToCart() {
     if (variants.length > 0 && !variant) return setMessage({ text: t.chooseSize, ok: false });
-    if (product.is_tintable && !colourId && !note.trim()) return setMessage({ text: t.chooseColour, ok: false });
+    if (product.is_tintable && !chosen && !note.trim()) return setMessage({ text: t.chooseColour, ok: false });
     add({
       product_id: product.id,
       variant_id: variant?.id ?? null,
-      colour_id: product.is_tintable ? colourId : (variant?.colour_id ?? null),
-      colour_name:
-        colours.find((c) => c.id === (product.is_tintable ? colourId : variant?.colour_id))?.name_ar ?? null,
+      colour_id: product.is_tintable ? (chosen?.id ?? null) : (variant?.colour_id ?? null),
+      colour_name: product.is_tintable ? (chosen?.name_ar ?? null) : (colours.find((c) => c.id === variant?.colour_id)?.name_ar ?? null),
       colour_note: product.is_tintable ? note.trim() || null : null,
       name: product.name_ar,
       size_label: variant?.size_label ?? null,
@@ -95,6 +98,13 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {product.is_tintable && (
+        <div>
+          <p className="mb-2 font-semibold text-brand-900">{t.colours}</p>
+          <ColourFinder value={chosen} onChange={setChosen} />
         </div>
       )}
 

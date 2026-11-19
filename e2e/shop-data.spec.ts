@@ -56,6 +56,9 @@ test("a size changes the price and a sold-out size is disabled", async ({ page }
 });
 
 test("a tinted paint needs a colour, then adds to the cart", async ({ page }) => {
+  await page.route("**/api/colours*", (route) =>
+    route.fulfill({ json: { colours: [{ id: C3, name_ar: "أزرق سماوي", code: "JW-301", hex: "#bfe0f2", family: "الأزرق", system: null }] } }),
+  );
   await page.goto(`/shop/${P(1)}`);
   await page.getByRole("button", { name: "أضف إلى السلة" }).click();
   await expect(page.getByText("اختر لونًا أو اكتب اسمه أو رقمه")).toBeVisible();

@@ -14,8 +14,8 @@ test("the top bar ends with the calculator and then order tracking", async ({ pa
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/");
   const links = page.getByRole("navigation", { name: "القائمة" }).getByRole("link");
-  await expect(links).toHaveText(["الرئيسية", "المتجر", "حاسبة الدهان", "تتبع الطلب"]);
-  await links.nth(2).click();
+  await expect(links).toHaveText(["الرئيسية", "المتجر", "منتقي الألوان", "حاسبة الدهان", "تتبع الطلب"]);
+  await links.nth(3).click();
   await useCalculator(page);
 });
 
