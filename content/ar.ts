@@ -70,6 +70,8 @@ export const ar = {
     backToShop: "العودة إلى المتجر",
     brand: "العلامة التجارية",
     description: "الوصف",
+    chooseColour: "اختر لونًا أو اكتب اسمه أو رقمه",
+    chooseSize: "اختر الحجم",
   },
 
   // Fixed lists Ali picks from; the shop filters use the same values.
