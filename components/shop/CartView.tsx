@@ -70,10 +70,9 @@ export function CartView() {
           <span className="text-2xl font-extrabold text-brand-700">{formatPrice(total)}</span>
         </p>
         <p className="text-sm text-ink/70">{t.deliveryNote}</p>
-        <button type="button" disabled className="w-full cursor-not-allowed rounded-full bg-brand-700 px-6 py-3 font-bold text-white opacity-40">
+        <Link href="/checkout" className="block w-full rounded-full bg-brand-700 px-6 py-3 text-center font-bold text-white hover:bg-brand-900">
           {t.checkout}
-        </button>
-        <p className="text-center text-xs text-ink/70">{t.checkoutSoon}</p>
+        </Link>
         <Link href="/shop" className="block text-center font-bold text-brand-700">
           {t.continueShopping}
         </Link>

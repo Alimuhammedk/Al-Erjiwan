@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ar } from "@/content/ar";
 import { storeInfo } from "@/lib/store-info";
 
@@ -17,6 +18,9 @@ export function Footer() {
           <li>
             <span className="text-white/70">{ar.common.instagram}: </span>
             <a href={storeInfo.instagramUrl} dir="ltr" className="font-semibold hover:text-sun-300">{storeInfo.instagram}</a>
+          </li>
+          <li>
+            <Link href="/track" className="font-bold text-sun-300 hover:underline">{ar.common.trackOrder}</Link>
           </li>
           <li>
             <span className="text-white/70">{ar.common.address}: </span>

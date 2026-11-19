@@ -13,6 +13,8 @@ type CartApi = {
   clear: () => void;
   count: number;
   total: number;
+  // false until the saved cart has been read from this browser
+  ready: boolean;
   // The latest product added, so a pop-up can confirm it. `id` changes on every add.
   lastAdded: { id: number; name: string } | null;
   dismissAdded: () => void;
@@ -55,8 +57,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const remove = useCallback((key: string) => setItems((c) => removeItem(c, key)), []);
 
   const value = useMemo(
-    () => ({ items, add, setQty, remove, clear, count: cartCount(items), total: cartTotal(items), lastAdded, dismissAdded }),
-    [items, add, setQty, remove, clear, lastAdded, dismissAdded],
+    () => ({ items, add, setQty, remove, clear, count: cartCount(items), total: cartTotal(items), ready: loaded, lastAdded, dismissAdded }),
+    [items, add, setQty, remove, clear, loaded, lastAdded, dismissAdded],
   );
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
