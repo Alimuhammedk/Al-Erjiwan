@@ -11,6 +11,21 @@
   --font-sans: var(--font-cairo);
 }
 
+/* Brand colours sampled from the logo (public/logo.jpg). Pending owner approval. */
+@theme {
+  --color-brand-50: #f6f0fa;
+  --color-brand-100: #ebddf3;
+  --color-brand-500: #7f308b;
+  --color-brand-700: #602f8a;
+  --color-brand-900: #3e1b66;
+  --color-magenta-500: #b64b91;
+  --color-coral-500: #e35e7d;
+  --color-orange-400: #f4ae69;
+  --color-sun-300: #f6c461;
+  --color-ink: #1f1530;
+  --color-paper: #ffffff;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
