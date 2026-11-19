@@ -1,0 +1,18 @@
+import { expect, test } from "@playwright/test";
+
+const protectedPaths = [
+  "/admin/products",
+  "/admin/products/new",
+  "/admin/products/123e4567-e89b-12d3-a456-426614174000",
+  "/admin/categories",
+  "/admin/categories/new",
+  "/admin/banners",
+  "/admin/banners/new",
+];
+
+for (const path of protectedPaths) {
+  test(`${path} without login ends at the login page`, async ({ page }) => {
+    await page.goto(path);
+    await expect(page).toHaveURL(/\/admin\/login$/);
+  });
+}
