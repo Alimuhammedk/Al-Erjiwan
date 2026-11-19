@@ -40,6 +40,7 @@ export const ar = {
     delete: "حذف",
     confirmDelete: "هل أنت متأكد من الحذف؟ لا يمكن التراجع",
     save: "حفظ",
+    saved: "تم الحفظ",
     cancel: "إلغاء",
     errors: {
       required: "هذا الحقل مطلوب",
