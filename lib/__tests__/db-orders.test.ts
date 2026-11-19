@@ -66,3 +66,15 @@ describe("supabase/seed/sample-colours.sql", () => {
     }
   }, 90_000);
 });
+
+describe("0007_product_colours.sql", () => {
+  it("passes every check in supabase/tests/0007_product_colours_test.sql", async () => {
+    const db7 = await createDb([...BASE_MIGRATIONS, "0004_orders.sql", "0005_order_changes.sql", "0006_colours.sql", "0007_product_colours.sql"]);
+    try {
+      const results = await db7.exec(readSql("supabase/tests/0007_product_colours_test.sql"));
+      expect((results.at(-1)?.rows[0] as { result: string }).result).toBe("ALL PASSED");
+    } finally {
+      await db7.close();
+    }
+  }, 90_000);
+});
