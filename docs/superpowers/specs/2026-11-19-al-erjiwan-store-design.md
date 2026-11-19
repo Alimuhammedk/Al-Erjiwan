@@ -139,3 +139,10 @@ These are business choices only Ali can make. They do not block phases 0–3, bu
 - A searchable catalogue of shades is the source of truth: system (brand or standard), code, Arabic name, approximate screen colour, family. Ali uploads it from a spreadsheet and can add single colours by hand. Orders record the system, code and name.
 - A colour wheel or photo picker is only a finder on top: it shows the closest catalogue shades with their codes. Ali will supply the catalogue later.
 - The picker must search the database as the customer types, because the catalogue can have thousands of shades.
+
+## 16. Round 2 decisions (after the first trial)
+- Checkout asks for governorate, city or district and nearest landmark (both required); there is no full address box.
+- Order statuses can be changed freely in any direction, including reopening cancelled and returned orders; stock follows automatically and a reopen is refused if an item has sold out.
+- Any order can be deleted from the Orders tab after a confirmation; stock returns unless the order was delivered.
+- Delivery fees for customers are set by the owner in the admin at any time. Delivery companies live in their own admin tab (name, WhatsApp number, notes and a price list per governorate); an order picks one company and the "send to delivery company" button opens WhatsApp to that company with the delivery message.
+- The order page has one notes box, which is included in the delivery message. The home tab of the admin is a dashboard with order statuses, sales and stock levels.
