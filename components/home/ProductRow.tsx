@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FadeIn } from "@/components/ui/FadeIn";
+import { SideScroller } from "@/components/ui/SideScroller";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { ar } from "@/content/ar";
 import type { ProductWithImage } from "@/types/db";
@@ -29,10 +30,12 @@ export function ProductRow({
       {products.length === 0 ? (
         <EmptyState message={emptyMessage} />
       ) : (
-        <FadeIn className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {products.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
+        <FadeIn>
+          <SideScroller label={title} itemClassName="w-[46%] sm:w-[31%] lg:w-[23.5%]">
+            {products.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </SideScroller>
         </FadeIn>
       )}
     </section>

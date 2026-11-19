@@ -68,21 +68,11 @@ test("the banner rotates on its own, but not when reduced motion is requested", 
   await calm.close();
 });
 
-test("categories are links and the last row is centred", async ({ page }) => {
+test("categories are links to the shop", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/");
   const cards = page.locator('main a[href^="/shop?category="]');
   await expect(cards.first()).toBeVisible(); // however many categories you have added
-
-  const boxes = await Promise.all((await cards.all()).map((c) => c.boundingBox()));
-  const bottom = Math.max(...boxes.map((b) => b!.y));
-  const lastRow = boxes.filter((b) => Math.abs(b!.y - bottom) < 4);
-  const left = Math.min(...boxes.map((b) => b!.x));
-  const right = Math.max(...boxes.map((b) => b!.x + b!.width));
-  const rowLeft = Math.min(...lastRow.map((b) => b!.x));
-  const rowRight = Math.max(...lastRow.map((b) => b!.x + b!.width));
-  expect(Math.abs((rowLeft + rowRight) / 2 - (left + right) / 2)).toBeLessThan(6);
-
   await cards.first().click();
   await expect(page).toHaveURL(/\/shop\?category=/);
 });

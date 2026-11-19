@@ -91,6 +91,7 @@ export const ar = {
   },
 
   trust: {
+    label: "لماذا نحن",
     delivery: "توصيل إلى جميع محافظات العراق",
     cod: "الدفع عند الاستلام",
     support: "دعم عبر واتساب",
@@ -611,6 +612,8 @@ export const ar = {
     outOfStock: "نفدت الكمية",
     whatsapp: "تواصل عبر واتساب",
     viewAll: "عرض الكل",
+    slideBack: "السابق",
+    slideForward: "التالي",
     menu: "القائمة",
     closeMenu: "إغلاق القائمة",
     cart: "السلة",

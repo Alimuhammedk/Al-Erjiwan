@@ -32,7 +32,7 @@ export default async function Home() {
       <CalculatorBanner />
       {/* Last thing before the footer */}
       <section className="mx-auto w-full max-w-6xl px-4 pt-12">
-        <TrustStrip className="sm:grid-cols-3" />
+        <TrustStrip />
       </section>
     </main>
   );
