@@ -6,6 +6,7 @@ export const ar = {
   // Links appear in the header only when `enabled` is true (turn on as each page is built).
   nav: [
     { key: "home", label: "الرئيسية", href: "/", enabled: true },
+    { key: "calculator", label: "حاسبة الدهان", href: "/calculator", enabled: true },
     { key: "shop", label: "المتجر", href: "/shop", enabled: true },
     { key: "colours", label: "منتقي الألوان", href: "/colours", enabled: false },
     { key: "gallery", label: "معرض الأعمال", href: "/gallery", enabled: false },
@@ -73,6 +74,12 @@ export const ar = {
     chooseColour: "اختر لونًا أو اكتب اسمه أو رقمه",
     chooseSize: "اختر الحجم",
     notSure: "لست متأكدًا من الكمية؟ احسب كمية الدهان",
+  },
+
+  calculator: {
+    title: "حاسبة كمية الدهان",
+    intro: "أدخل قياسات الغرفة لتعرف الكمية التقريبية من الدهان التي تحتاجها.",
+    browse: "تصفح الدهانات",
   },
 
   cart: {
