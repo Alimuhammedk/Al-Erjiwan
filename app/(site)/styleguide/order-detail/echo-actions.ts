@@ -29,3 +29,8 @@ export async function echoAssign(companyId: string | null): Promise<ActionState>
   dev();
   return companyId === "c3" ? { error: "ECHO:assign:c3" } : {};
 }
+
+export async function echoSaveTemplate(kind: string, template: string): Promise<ActionState> {
+  dev();
+  return template.includes("FAIL") ? { error: "ECHO:template-failed" } : {};
+}

@@ -2,10 +2,11 @@ import Link from "next/link";
 import { ar } from "@/content/ar";
 import type { ActionState } from "@/lib/admin/types";
 import type { CompanyOption } from "@/lib/admin/delivery";
-import { customerWhatsAppUrl, type AdminOrder } from "@/lib/admin/orders";
+import { DEFAULT_TEMPLATES, type AdminOrder, type MessageKind } from "@/lib/admin/orders";
 import { formatDateTime, formatPrice } from "@/lib/format";
 import { DeleteOrderButton } from "./DeleteOrderButton";
 import { DeliveryCompanyPicker } from "./DeliveryCompanyPicker";
+import { MessageComposer } from "./MessageComposer";
 import { NotesForm } from "./NotesForm";
 import { OrderActions } from "./OrderActions";
 import { StatusBadge } from "./StatusBadge";
@@ -21,6 +22,8 @@ type Props = {
   deleteOrder: () => Promise<ActionState>;
   assignCompany: (companyId: string | null) => Promise<ActionState>;
   companies: CompanyOption[];
+  templates: Record<MessageKind, string>;
+  saveTemplate: (kind: MessageKind, template: string) => Promise<ActionState>;
 };
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
@@ -42,7 +45,7 @@ const Row = ({ label, children }: { label: string; children: React.ReactNode }) 
 const button = "inline-flex min-h-11 items-center justify-center rounded-full px-5 font-bold";
 
 // The whole order page. The pieces that change data come in as actions, so the same page can be shown with sample data.
-export function OrderDetailView({ order, problemCount, printHref, setStatus, saveNotes, deleteOrder, assignCompany, companies }: Props) {
+export function OrderDetailView({ order, problemCount, printHref, setStatus, saveNotes, deleteOrder, assignCompany, companies, templates, saveTemplate }: Props) {
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 space-y-5 px-4 py-6">
       <Link href="/admin/orders" className="inline-flex min-h-11 items-center font-bold text-brand-700 print:hidden">
@@ -128,12 +131,8 @@ export function OrderDetailView({ order, problemCount, printHref, setStatus, sav
 
           <Card title={t.messages}>
             <div className="flex flex-col gap-2">
-              <a href={customerWhatsAppUrl(order, "confirm")} target="_blank" rel="noopener noreferrer" className={`${button} bg-[#25D366] text-white hover:opacity-90`}>
-                {t.confirmWhatsApp}
-              </a>
-              <a href={customerWhatsAppUrl(order, "update")} target="_blank" rel="noopener noreferrer" className={`${button} border-2 border-[#25D366] text-ink hover:bg-[#25D366]/10`}>
-                {t.updateWhatsApp}
-              </a>
+              <MessageComposer order={order} kind="confirm" label={t.confirmWhatsApp} initialTemplate={templates.confirm} defaultTemplate={DEFAULT_TEMPLATES.confirm} saveTemplate={saveTemplate} primary />
+              <MessageComposer order={order} kind="update" label={t.updateWhatsApp} initialTemplate={templates.update} defaultTemplate={DEFAULT_TEMPLATES.update} saveTemplate={saveTemplate} />
               <Link href={printHref} className={`${button} border-2 border-brand-100 text-brand-900 hover:bg-brand-50`}>
                 {t.print}
               </Link>

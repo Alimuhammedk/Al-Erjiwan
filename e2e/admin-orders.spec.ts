@@ -109,14 +109,68 @@ for (const [from, text] of [
   });
 }
 
-test("the customer WhatsApp buttons open ready messages", async ({ page }) => {
+const composer = (page: Page, kind: "confirm" | "update") => page.getByTestId(`composer-${kind}`);
+const open = async (page: Page, kind: "confirm" | "update") => {
+  const c = composer(page, kind);
+  await c.locator("summary").click();
+  return c;
+};
+
+test("the confirm message opens ready, filled from the order, and sends to the customer's number", async ({ page }) => {
   await page.goto(URL);
-  const confirm = await page.getByRole("link", { name: "تأكيد الطلب عبر واتساب" }).getAttribute("href");
-  expect(confirm).toMatch(/^https:\/\/wa\.me\/9647701234567\?text=/);
-  const confirmText = decode(confirm!);
-  for (const part of ["علي حسين", "ABCD1234", "بنتلايت داخلي ممتاز (4 لتر) كريمي JW-102 × 2", "123,000 د.ع", "يرجى التأكيد"]) expect(confirmText, part).toContain(part);
-  await expect(page.getByRole("link", { name: "تأكيد الطلب عبر واتساب" })).toHaveAttribute("target", "_blank");
-  await expect(page.getByRole("link", { name: "تأكيد الطلب عبر واتساب" })).toHaveAttribute("rel", /noopener/);
+  const c = await open(page, "confirm");
+  const preview = await c.getByTestId("preview-confirm").innerText();
+  for (const part of ["علي حسين", "ABCD1234", "بنتلايت داخلي ممتاز (4 لتر) كريمي JW-102 × 2", "123,000 د.ع", "يرجى التأكيد"]) expect(preview, part).toContain(part);
+  expect(preview).not.toMatch(/\{\w+\}/);
+  const link = c.getByRole("link", { name: "إرسال عبر واتساب" });
+  const href = await link.getAttribute("href");
+  expect(href).toMatch(/^https:\/\/wa\.me\/9647701234567\?text=/);
+  expect(decode(href!)).toBe(preview);
+  await expect(link).toHaveAttribute("target", "_blank");
+  await expect(link).toHaveAttribute("rel", /noopener/);
+});
+
+test("reword the message for this order: the preview and the WhatsApp link follow the text", async ({ page }) => {
+  await page.goto(URL);
+  const c = await open(page, "update");
+  const box = c.getByRole("textbox");
+  await expect(box).toHaveValue(/شكرًا لثقتكم/); // the saved preset is what opens
+  await box.fill("أهلاً {name}، حالة طلبك: {status}");
+  await expect(c.getByTestId("preview-update")).toHaveText("أهلاً علي حسين، حالة طلبك: قيد المراجعة");
+  expect(decode((await c.getByRole("link", { name: "إرسال عبر واتساب" }).getAttribute("href"))!)).toBe("أهلاً علي حسين، حالة طلبك: قيد المراجعة");
+});
+
+test("the insert buttons add a {word} where the cursor is", async ({ page }) => {
+  await page.goto(URL);
+  const c = await open(page, "update");
+  const box = c.getByRole("textbox");
+  await box.fill("");
+  await c.getByRole("button", { name: "الاسم", exact: true }).click();
+  await c.getByRole("button", { name: "رقم الطلب", exact: true }).click();
+  await expect(box).toHaveValue("{name}{code}");
+  await expect(c.getByTestId("preview-update")).toHaveText("علي حسينABCD1234");
+});
+
+test("a line with nothing to show (no delivery company yet) is left out of the message", async ({ page }) => {
+  await page.goto(URL);
+  const c = await open(page, "update");
+  await c.getByRole("textbox").fill("طلبك {status}\nشركة التوصيل: {company}");
+  await expect(c.getByTestId("preview-update")).toHaveText("طلبك قيد المراجعة");
+});
+
+test("saving as a preset says so, shows an error when it fails, and reset brings back the original", async ({ page }) => {
+  await page.goto(URL);
+  const c = await open(page, "confirm");
+  const box = c.getByRole("textbox");
+  const original = await box.inputValue();
+  await box.fill("نص جديد {name}");
+  await c.getByRole("button", { name: "حفظ كقالب للطلبات القادمة" }).click();
+  await expect(c.getByRole("status")).toContainText("تم الحفظ");
+  await box.fill("FAIL");
+  await c.getByRole("button", { name: "حفظ كقالب للطلبات القادمة" }).click();
+  await expect(c.getByRole("alert").filter({ hasText: "ECHO:template-failed" })).toBeVisible();
+  await c.getByRole("button", { name: "استرجاع النص الأصلي" }).click();
+  await expect(box).toHaveValue(original);
 });
 
 test("there is no copy-message button and no old delivery card", async ({ page }) => {
@@ -146,7 +200,7 @@ test("sending to the delivery company needs a chosen company, then opens WhatsAp
   await expect(link).toHaveAttribute("href", /wa\.me\/9647901234567/);
 
   await page.getByRole("combobox").selectOption({ label: "شركة بلا سعر" });
-  await expect(page.getByTestId("company-price")).toHaveText("لا يوجد سعر لهذه المحافظة");
+  await expect(page.getByTestId("company-price")).toHaveCount(0);
   await expect(page.getByTestId("company-difference")).toHaveCount(0);
 });
 
@@ -164,6 +218,7 @@ test("a customer with earlier cancelled or returned orders gets a warning", asyn
 
 test("there is one notes box; it keeps what was typed, says saved, and shows errors on the field", async ({ page }) => {
   await page.goto(URL);
+  await page.waitForLoadState("networkidle");
   await expect(page.getByLabel(/ملاحظات لشركة التوصيل/)).toHaveValue("زبون جديد");
   await page.getByLabel(/ملاحظات لشركة التوصيل/).fill("اتصل قبل الوصول بنصف ساعة");
   await page.getByRole("button", { name: "حفظ", exact: true }).click();

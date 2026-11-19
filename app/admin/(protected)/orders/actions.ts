@@ -3,7 +3,7 @@
 import { ar } from "@/content/ar";
 import type { ActionState } from "@/lib/admin/types";
 import { priceForGovernorate, type PriceRow } from "@/lib/admin/delivery";
-import { STATUS_ORDER } from "@/lib/admin/orders";
+import { DEFAULT_TEMPLATES, MAX_TEMPLATE_LENGTH, MESSAGE_KINDS, STATUS_ORDER, TEMPLATE_SETTING, type MessageKind } from "@/lib/admin/orders";
 import { requireAdmin } from "@/lib/auth";
 import { createAuthClient } from "@/lib/supabase/auth-server";
 
@@ -73,5 +73,22 @@ export async function assignDeliveryCompanyAction(orderId: string, companyId: st
     };
   }
   const { error } = await db.from("orders").update(values).eq("id", orderId);
+  return error ? failed : {};
+}
+
+// Saves the owner's wording of a customer message as the preset for every future order. Saving the built-in text
+// (or nothing) removes the preset so the built-in one is used again.
+export async function saveMessageTemplateAction(kind: string, template: string): Promise<ActionState> {
+  await requireAdmin();
+  if (!(MESSAGE_KINDS as readonly string[]).includes(kind)) return failed;
+  const key = TEMPLATE_SETTING[kind as MessageKind];
+  const text = template.replace(/\r\n/g, "\n").trim();
+  if (text.length > MAX_TEMPLATE_LENGTH) return { error: ar.admin.errors.tooLong };
+
+  const db = await createAuthClient();
+  const { error } =
+    text === "" || text === DEFAULT_TEMPLATES[kind as MessageKind]
+      ? await db.from("settings").delete().eq("key", key)
+      : await db.from("settings").upsert({ key, value: text }, { onConflict: "key" });
   return error ? failed : {};
 }

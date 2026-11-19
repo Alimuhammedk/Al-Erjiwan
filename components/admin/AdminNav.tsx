@@ -11,8 +11,7 @@ const links = [
   { href: "/admin/products", label: ar.admin.nav.products },
   { href: "/admin/categories", label: ar.admin.nav.categories },
   { href: "/admin/banners", label: ar.admin.nav.banners },
-  { href: "/admin/delivery-fees", label: ar.admin.nav.deliveryFees },
-  { href: "/admin/delivery-companies", label: ar.admin.nav.deliveryCompanies },
+  { href: "/admin/delivery", label: ar.admin.nav.delivery },
 ];
 
 export function AdminNav({ newOrders = 0 }: { newOrders?: number }) {

@@ -63,12 +63,12 @@ export function DeliveryCompanyPicker({ order, companies, assign }: Props) {
         </select>
       </label>
 
-      {company && (
+      {company && company.price !== null && (
         <dl className="space-y-1 rounded-xl bg-brand-50 p-3 text-sm">
           <div className="flex justify-between gap-3">
             <dt className="text-ink/70">{t.companyPrice}</dt>
             <dd data-testid="company-price" className="font-bold">
-              {company.price === null ? t.noCompanyPrice : formatPrice(company.price)}
+              {formatPrice(company.price)}
             </dd>
           </div>
           <div className="flex justify-between gap-3">

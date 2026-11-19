@@ -35,3 +35,18 @@ export function planStockChange(mode: string, amountText: string, current: numbe
   }
   return { ok: false, error: t.invalidAmount };
 }
+
+// Makes Arabic spellings comparable: أ/إ/آ → ا, ى → ي, ة → ه, no diacritics, lower case.
+const normalise = (s: string) =>
+  s
+    .replace(/[ً-ْـ]/g, "")
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .toLowerCase();
+
+// Every word typed must appear in the product name or size, in any order. An empty search matches everything.
+export function matchesSearch(row: { name: string; size: string | null }, query: string): boolean {
+  const hay = normalise(`${row.name} ${row.size ?? ""}`);
+  return normalise(query).split(/\s+/).filter(Boolean).every((w) => hay.includes(w));
+}

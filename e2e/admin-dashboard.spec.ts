@@ -85,6 +85,22 @@ test("each stock button sends the right change, and a bad number is explained", 
   await expect(box).toHaveValue("abc");
 });
 
+test("the stock search narrows the list as you type and says when nothing matches", async ({ page }) => {
+  await page.goto(`${URL}?view=stock`);
+  const search = page.getByRole("searchbox", { name: "ابحث عن منتج أو حجم" });
+  await search.fill("بنتلايت");
+  await expect(page.getByTestId("stock-row")).toHaveCount(1);
+  await search.fill("لتر");
+  await expect(page.getByTestId("stock-row")).toHaveCount(1);
+  await search.fill("رولة");
+  await expect(page.getByTestId("stock-row")).toContainText("مخفي");
+  await search.fill("غير موجود");
+  await expect(page.getByTestId("stock-row")).toHaveCount(0);
+  await expect(page.getByText("لا توجد نتائج مطابقة")).toBeVisible();
+  await search.fill("");
+  await expect(page.getByTestId("stock-row")).toHaveCount(3);
+});
+
 test("the stock list fits a phone screen", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 800 });
   await page.goto(`${URL}?view=stock`);

@@ -30,6 +30,9 @@ export async function saveCompanyAction(id: string | null, _prev: ActionState, f
     companyId = (data as { id: string }).id;
   }
 
+  // The form no longer has a price list; prices already saved are left alone unless a form sends one.
+  if (!formData.has("ids")) redirect("/admin/delivery");
+
   if (prices.length) {
     const { error } = await db
       .from("delivery_company_prices")
@@ -40,7 +43,7 @@ export async function saveCompanyAction(id: string | null, _prev: ActionState, f
   const { error } = await (prices.length ? stale.not("zone_id", "in", `(${prices.map((p) => p.zone_id).join(",")})`) : stale);
   if (error) return failed;
 
-  redirect("/admin/delivery-companies");
+  redirect("/admin/delivery");
 }
 
 // Old orders keep the company's name and cost (the database clears only the link).
@@ -50,5 +53,5 @@ export async function deleteCompanyAction(id: string): Promise<void> {
   const db = await createAuthClient();
   const { error } = await db.from("delivery_companies").delete().eq("id", id);
   if (error) throw new Error(ar.admin.errors.saveFailed);
-  redirect("/admin/delivery-companies");
+  redirect("/admin/delivery");
 }

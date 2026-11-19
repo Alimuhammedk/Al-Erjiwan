@@ -169,8 +169,9 @@ test("tracking with strange input never shows an error page", async ({ page }) =
   }
 });
 
-test("the footer links to order tracking", async ({ page }) => {
+
+test("the footer no longer has the yellow tracking link (tracking stays in the top bar)", async ({ page }) => {
   await page.goto("/shop");
-  await page.getByRole("contentinfo").getByRole("link", { name: "تتبع طلبك" }).click();
-  await expect(page).toHaveURL(/\/track$/);
+  await expect(page.getByRole("contentinfo").getByRole("link", { name: /تتبع/ })).toHaveCount(0);
+  await expect(page.getByRole("banner").getByRole("link", { name: "تتبع الطلب" }).first()).toBeVisible();
 });

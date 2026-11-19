@@ -6,6 +6,8 @@ import {
   internationalPhone,
   otherStatuses,
   costDifference,
+  fillTemplate,
+  DEFAULT_TEMPLATES,
   type AdminOrder,
 } from "../admin/orders";
 
@@ -148,5 +150,37 @@ describe("parseOrderListQuery", () => {
   });
   it("takes the first value when a parameter is repeated", () => {
     expect(parseOrderListQuery({ status: ["new", "shipped"] }).status).toBe("new");
+  });
+});
+
+describe("fillTemplate", () => {
+  it("fills every placeholder from the order", () => {
+    const text = fillTemplate("{name}|{code}|{status}|{total}|{address}|{items}", order);
+    expect(text).toContain("علي حسين|ABCD1234|قيد المراجعة|123,000 د.ع (يشمل التوصيل 5,000 د.ع)|بابل - الكفل - حي الجامعة، شارع 5|- بنتلايت داخلي (4 لتر) كريمي JW-102 × 2");
+    expect(text).toContain("- فرشاة طلاء × 1");
+  });
+  it("fills a placeholder used more than once, and keeps unknown words as typed", () => {
+    expect(fillTemplate("{name} {name} {nothing}", order)).toBe("علي حسين علي حسين {nothing}");
+  });
+  it("leaves out a line whose only value is empty, but keeps lines that have text of their own", () => {
+    expect(fillTemplate("مرحبًا {name}\nشركة التوصيل: {company}\nشكرًا", order)).toBe("مرحبًا علي حسين\nشكرًا");
+    expect(fillTemplate("شركة التوصيل: {company}", { ...order, delivery_company: "شركة النور" })).toBe("شركة التوصيل: شركة النور");
+    expect(fillTemplate("سطر عادي\n\nسطر", order)).toBe("سطر عادي\n\nسطر");
+  });
+  it("is safe with special characters in the order's own text", () => {
+    expect(fillTemplate("{name}", { ...order, customer_name: "$& {code} $1" })).toBe("$& {code} $1");
+  });
+  it("the built-in templates read well and match the old fixed messages", () => {
+    const confirm = fillTemplate(DEFAULT_TEMPLATES.confirm, order);
+    for (const part of ["علي حسين", "ABCD1234", "123,000 د.ع", "بابل", "يرجى التأكيد"]) expect(confirm).toContain(part);
+    expect(confirm).not.toMatch(/\{\w+\}/);
+  });
+});
+
+describe("customerWhatsAppUrl with a template", () => {
+  it("uses the given wording instead of the built-in one", () => {
+    const url = customerWhatsAppUrl(order, "update", "أهلاً {name}، طلبك {status}");
+    expect(url).toMatch(/^https:\/\/wa\.me\/9647701234567\?text=/);
+    expect(decode(url)).toBe("أهلاً علي حسين، طلبك قيد المراجعة");
   });
 });

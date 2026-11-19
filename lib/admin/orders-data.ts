@@ -1,5 +1,5 @@
 import { createAuthClient } from "@/lib/supabase/auth-server";
-import { ORDERS_PER_PAGE, type AdminOrder, type OrderListQuery } from "./orders";
+import { DEFAULT_TEMPLATES, MESSAGE_KINDS, ORDERS_PER_PAGE, TEMPLATE_SETTING, type AdminOrder, type MessageKind, type OrderListQuery } from "./orders";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -88,4 +88,20 @@ export async function listOrders(q: OrderListQuery): Promise<{ orders: OrderRow[
   } catch {
     return { orders: [], total: 0 };
   }
+}
+
+// The message texts the owner saved as presets, or the built-in ones where nothing was saved.
+export async function getMessageTemplates(): Promise<Record<MessageKind, string>> {
+  const result = { ...DEFAULT_TEMPLATES };
+  try {
+    const db = await createAuthClient();
+    const { data } = await db.from("settings").select("key, value").in("key", MESSAGE_KINDS.map((k) => TEMPLATE_SETTING[k]));
+    for (const row of (data as { key: string; value: string }[] | null) ?? []) {
+      const kind = MESSAGE_KINDS.find((k) => TEMPLATE_SETTING[k] === row.key);
+      if (kind && row.value.trim()) result[kind] = row.value;
+    }
+  } catch {
+    // keep the built-in texts
+  }
+  return result;
 }

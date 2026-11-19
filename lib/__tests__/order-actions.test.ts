@@ -4,6 +4,8 @@ const db = vi.hoisted(() => ({
   rpc: vi.fn(),
   update: vi.fn(),
   order: { value: { governorate: "بغداد" } as { governorate: string } | null },
+  upsert: vi.fn(),
+  del: vi.fn(),
   company: { value: null as unknown },
 }));
 const guard = vi.hoisted(() => ({ requireAdmin: vi.fn() }));
@@ -15,14 +17,18 @@ vi.mock("@/lib/supabase/auth-server", () => ({
     from: (table: string) => ({
       select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: table === "orders" ? db.order.value : db.company.value, error: null }) }) }),
       update: (v: unknown) => ({ eq: (c: string, id: string) => db.update(v, c, id) }),
+      upsert: (v: unknown, o: unknown) => db.upsert(table, v, o),
+      delete: () => ({ eq: (c: string, id: string) => db.del(table, c, id) }),
     }),
   }),
 }));
 
 import { ar } from "@/content/ar";
+import { DEFAULT_TEMPLATES } from "@/lib/admin/orders";
 import {
   assignDeliveryCompanyAction,
   deleteOrderAction,
+  saveMessageTemplateAction,
   saveOrderNotesAction,
   setOrderStatusAction,
 } from "../../app/admin/(protected)/orders/actions";
@@ -40,6 +46,8 @@ beforeEach(() => {
   guard.requireAdmin.mockResolvedValue({ id: "admin" });
   db.rpc.mockResolvedValue({ error: null });
   db.update.mockResolvedValue({ error: null });
+  db.upsert.mockResolvedValue({ error: null });
+  db.del.mockResolvedValue({ error: null });
   db.order.value = { governorate: "بغداد" };
   db.company.value = {
     name: "شركة النور",
@@ -154,5 +162,33 @@ describe("assignDeliveryCompanyAction", () => {
     guard.requireAdmin.mockRejectedValue(new Error("REDIRECT:/admin/login"));
     await expect(assignDeliveryCompanyAction(ID, CID)).rejects.toThrow("REDIRECT:/admin/login");
     expect(db.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("saveMessageTemplateAction", () => {
+  it("saves the owner's wording under the setting for that message", async () => {
+    expect(await saveMessageTemplateAction("confirm", "  أهلاً {name}  ")).toEqual({});
+    expect(db.upsert).toHaveBeenCalledWith("settings", { key: "message_confirm", value: "أهلاً {name}" }, { onConflict: "key" });
+    await saveMessageTemplateAction("update", "تحديث {status}");
+    expect(db.upsert).toHaveBeenLastCalledWith("settings", { key: "message_update", value: "تحديث {status}" }, { onConflict: "key" });
+  });
+  it("saving the built-in text or nothing removes the preset instead", async () => {
+    await saveMessageTemplateAction("confirm", DEFAULT_TEMPLATES.confirm);
+    expect(db.del).toHaveBeenCalledWith("settings", "key", "message_confirm");
+    await saveMessageTemplateAction("update", "   ");
+    expect(db.del).toHaveBeenLastCalledWith("settings", "key", "message_update");
+    expect(db.upsert).not.toHaveBeenCalled();
+  });
+  it("refuses an unknown kind and a text that is too long", async () => {
+    expect((await saveMessageTemplateAction("delivery", "x")).error).toBe(ar.admin.errors.saveFailed);
+    expect((await saveMessageTemplateAction("confirm", "ا".repeat(1501))).error).toBe(ar.admin.errors.tooLong);
+    expect(db.upsert).not.toHaveBeenCalled();
+    expect(db.del).not.toHaveBeenCalled();
+  });
+  it("shows a save error, and refuses non-admins", async () => {
+    db.upsert.mockResolvedValue({ error: { message: "x" } });
+    expect((await saveMessageTemplateAction("confirm", "نص")).error).toBe(ar.admin.errors.saveFailed);
+    guard.requireAdmin.mockRejectedValue(new Error("REDIRECT:/admin/login"));
+    await expect(saveMessageTemplateAction("confirm", "نص")).rejects.toThrow("REDIRECT:/admin/login");
   });
 });

@@ -89,7 +89,7 @@ describe("saveCompanyAction", () => {
   const company = { name: "شركة السرعة", whatsapp: "07801234567", notes: null, is_active: true };
 
   it("creates a company, saves its typed prices, removes other prices and goes back to the list", async () => {
-    await expect(saveCompanyAction(null, {}, form(good))).rejects.toThrow("REDIRECT:/admin/delivery-companies");
+    await expect(saveCompanyAction(null, {}, form(good))).rejects.toThrow("REDIRECT:/admin/delivery");
     expect(calls.log[0]).toEqual(["delivery_companies", "insert", company]);
     expect(ops("upsert")).toEqual([
       ["delivery_company_prices", "upsert", [{ company_id: calls.insertedId, zone_id: Z1, price: 4000 }], { onConflict: "company_id,zone_id" }],
@@ -105,6 +105,11 @@ describe("saveCompanyAction", () => {
     await expect(saveCompanyAction(CID, {}, form({ ...good, [`price_${Z1}`]: "" }))).rejects.toThrow("REDIRECT:");
     expect(ops("upsert")).toHaveLength(0);
     expect(ops("delete")).toEqual([["delivery_company_prices", "delete", "company_id", CID]]);
+  });
+  it("without a price list in the form (the current form), saved prices are left alone", async () => {
+    const { ids: _ids, ...noPrices } = good;
+    await expect(saveCompanyAction(CID, {}, form(noPrices))).rejects.toThrow("REDIRECT:/admin/delivery");
+    expect(calls.log).toEqual([["delivery_companies", "update", company, "id", CID]]);
   });
   it("returns field errors and writes nothing for bad input", async () => {
     const r = await saveCompanyAction(null, {}, form({ ...good, name: "", whatsapp: "1", [`price_${Z1}`]: "x" }));
@@ -125,7 +130,7 @@ describe("saveCompanyAction", () => {
 
 describe("deleteCompanyAction", () => {
   it("deletes the company and returns to the list", async () => {
-    await expect(deleteCompanyAction(CID)).rejects.toThrow("REDIRECT:/admin/delivery-companies");
+    await expect(deleteCompanyAction(CID)).rejects.toThrow("REDIRECT:/admin/delivery");
     expect(calls.log).toEqual([["delivery_companies", "delete", "id", CID]]);
   });
   it("refuses a bad id and non-admins, and reports a failure", async () => {

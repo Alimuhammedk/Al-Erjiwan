@@ -58,27 +58,45 @@ function itemLine(i: AdminOrderItem): string {
 
 const place = (o: AdminOrder) => [o.governorate, o.city].filter(Boolean).join(" - ");
 
-// A ready message to the customer. "confirm" asks them to confirm the order and address; "update" tells them the status.
-export function customerWhatsAppUrl(order: AdminOrder, kind: "confirm" | "update"): string {
-  const base = fill(kind === "confirm" ? m.confirmGreeting : m.update, {
+export type MessageKind = "confirm" | "update";
+export const MESSAGE_KINDS: readonly MessageKind[] = ["confirm", "update"];
+export const DEFAULT_TEMPLATES: Record<MessageKind, string> = m.templates;
+export const PLACEHOLDERS = Object.keys(m.placeholders);
+export const TEMPLATE_SETTING: Record<MessageKind, string> = { confirm: "message_confirm", update: "message_update" };
+export const MAX_TEMPLATE_LENGTH = 1500;
+
+// The values a message template can use for one order.
+function templateValues(order: AdminOrder): Record<string, string> {
+  return {
     name: order.customer_name,
     code: order.code,
     status: (ar.order.statuses as Record<string, string>)[order.status] ?? order.status,
-  });
-  const lines =
-    kind === "confirm"
-      ? [
-          base,
-          ...order.items.map(itemLine),
-          `${ar.order.total}: ${formatPrice(order.total)} ${fill(m.includesDelivery, { fee: formatPrice(order.delivery_fee) })}`,
-          `${m.address}: ${place(order)} - ${order.address}`,
-          m.confirmAsk,
-        ]
-      : [
-          base,
-          ...(order.delivery_company ? [`${m.company}: ${order.delivery_company}`] : []),
-        ];
-  return `https://wa.me/${internationalPhone(order.phone)}?text=${encodeURIComponent(lines.join("\n"))}`;
+    items: order.items.map(itemLine).join("\n"),
+    total: `${formatPrice(order.total)} ${fill(m.includesDelivery, { fee: formatPrice(order.delivery_fee) })}`,
+    address: `${place(order)} - ${order.address}`,
+    company: order.delivery_company ?? "",
+  };
+}
+
+// Fills {name}, {code}... in a template. A line whose values are all empty (for example the company line before a
+// company is chosen) is left out; unknown {words} are kept as typed.
+export function fillTemplate(template: string, order: AdminOrder): string {
+  const values = templateValues(order);
+  return template
+    .split("\n")
+    .flatMap((line) => {
+      const used = [...line.matchAll(/\{(\w+)\}/g)].map((x) => x[1]).filter((k) => k in values);
+      if (used.length > 0 && used.every((k) => values[k].trim() === "")) return [];
+      return [line.replace(/\{(\w+)\}/g, (whole, k: string) => (k in values ? values[k] : whole))];
+    })
+    .join("\n");
+}
+
+// A ready message to the customer, from the owner's saved template or the built-in one. "confirm" asks them to confirm
+// the order and address; "update" tells them the status.
+export function customerWhatsAppUrl(order: AdminOrder, kind: MessageKind, template?: string): string {
+  const text = fillTemplate(template ?? DEFAULT_TEMPLATES[kind], order);
+  return `https://wa.me/${internationalPhone(order.phone)}?text=${encodeURIComponent(text)}`;
 }
 
 // Everything a delivery company needs, including the exact cash to collect.

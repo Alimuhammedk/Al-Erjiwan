@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { OrderDetailView } from "@/components/admin/OrderDetailView";
 import { STATUS_ORDER, type AdminOrder } from "@/lib/admin/orders";
-import { echoAssign, echoDelete, echoSaveNotes, echoSetStatus } from "./echo-actions";
+import { DEFAULT_TEMPLATES } from "@/lib/admin/orders";
+import { echoAssign, echoDelete, echoSaveNotes, echoSaveTemplate, echoSetStatus } from "./echo-actions";
 
 // Dev-only copy of the admin order page with sample data, so it can be tried (and tested) without logging in.
 // Remove before launch.
@@ -42,6 +43,9 @@ export default async function OrderDetailHarness({ searchParams }: { searchParam
       saveNotes={echoSaveNotes}
       deleteOrder={echoDelete}
       assignCompany={echoAssign}
+      templates={{ ...DEFAULT_TEMPLATES, update: `${DEFAULT_TEMPLATES.update}
+شكرًا لثقتكم` }}
+      saveTemplate={echoSaveTemplate}
       companies={[
         { id: "c1", name: "شركة السرعة", whatsapp: "07801234567", price: 4000 },
         { id: "c2", name: "شركة النور", whatsapp: "07901234567", price: 6500 },

@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ar } from "@/content/ar";
 import type { StockRow } from "@/lib/admin/stock-data";
-import { stockLevel, type StockLevel } from "@/lib/admin/stock";
+import { matchesSearch, stockLevel, type StockLevel } from "@/lib/admin/stock";
 import type { ActionState } from "@/lib/admin/types";
 import { inputClass } from "./FormField";
 import { useFormAction } from "./useFormAction";
@@ -87,12 +87,30 @@ function Row({ row, threshold, adjust }: { row: StockRow; threshold: number; adj
 
 // The stock list: one row per product (or per size) with quick buttons. Each row saves on its own.
 export function StockTable({ rows, threshold, adjust }: Props) {
+  const [query, setQuery] = useState("");
   if (rows.length === 0) return <p className="rounded-2xl bg-paper p-8 text-center text-brand-700">{t.empty}</p>;
+  const shown = rows.filter((r) => matchesSearch(r, query));
   return (
-    <ul className="divide-y divide-brand-100 rounded-2xl bg-paper">
-      {rows.map((r) => (
-        <Row key={r.key} row={r} threshold={threshold} adjust={adjust} />
-      ))}
-    </ul>
+    <div className="space-y-3">
+      <input
+        type="search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder={t.searchPlaceholder}
+        aria-label={t.searchPlaceholder}
+        className="h-11 w-full rounded-xl border border-brand-100 bg-paper px-4 focus:border-brand-500 focus:outline-none"
+      />
+      {shown.length === 0 ? (
+        <p role="status" className="rounded-2xl bg-paper p-8 text-center text-brand-700">
+          {t.noMatch}
+        </p>
+      ) : (
+        <ul className="divide-y divide-brand-100 rounded-2xl bg-paper">
+          {shown.map((r) => (
+            <Row key={r.key} row={r} threshold={threshold} adjust={adjust} />
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

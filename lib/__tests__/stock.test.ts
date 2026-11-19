@@ -67,3 +67,28 @@ describe("parseDashboardStats", () => {
     for (const bad of [null, undefined, "x", 5, []]) expect(parseDashboardStats(bad)).toBeNull();
   });
 });
+
+import { matchesSearch } from "../admin/stock";
+
+describe("matchesSearch", () => {
+  const row = { name: "بنتلايت داخلي ممتاز", size: "4 لتر" };
+  it("matches part of the name or the size, in any word order", () => {
+    expect(matchesSearch(row, "بنت")).toBe(true);
+    expect(matchesSearch(row, "لتر داخلي")).toBe(true);
+    expect(matchesSearch(row, "4")).toBe(true);
+  });
+  it("treats empty or blank text as matching everything", () => {
+    expect(matchesSearch(row, "")).toBe(true);
+    expect(matchesSearch(row, "   ")).toBe(true);
+  });
+  it("ignores alef, ta marbuta and ya spelling differences and letter case", () => {
+    expect(matchesSearch({ name: "إسمنت أبيض", size: null }, "اسمنت ابيض")).toBe(true);
+    expect(matchesSearch({ name: "فرشاة", size: null }, "فرشاه")).toBe(true);
+    expect(matchesSearch({ name: "Jotun Paint", size: null }, "jotun")).toBe(true);
+  });
+  it("does not match what is not there, or when one of the words is missing", () => {
+    expect(matchesSearch(row, "فرشاة")).toBe(false);
+    expect(matchesSearch(row, "بنتلايت خارجي")).toBe(false);
+    expect(matchesSearch({ name: "فرشاة", size: null }, "null")).toBe(false);
+  });
+});
