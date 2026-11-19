@@ -45,5 +45,5 @@ Online store for paints and decor: [Al-Erjiwan]. Full requirements are in `SPEC.
 
 ## Admin
 - Admin lives at `/admin`, login required
-- Admin users: [ali.mohamemed.96@gmail.com]
+- Admin users: [mhmdkbyhanly@gmail.com]
 - Admin can manage: products, prices, stock, images, categories, colours, banners, orders, settings

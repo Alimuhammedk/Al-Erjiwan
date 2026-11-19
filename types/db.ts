@@ -28,6 +28,7 @@ export type Product = {
   stock: number;
   is_active: boolean;
   is_featured: boolean;
+  is_tintable: boolean;
   created_at: string;
 };
 
