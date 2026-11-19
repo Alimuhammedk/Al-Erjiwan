@@ -2,29 +2,35 @@
 
 import { redirect } from "next/navigation";
 import { ar } from "@/content/ar";
-import type { ActionState } from "@/lib/admin/types";
-import { validateProduct } from "@/lib/admin/validate";
+import { prepareProductSave, replaceProductImages, syncVariants } from "@/lib/admin/product-save";
+import type { ProductSaveState } from "@/lib/admin/types";
 import { requireAdmin } from "@/lib/auth";
 import { createAuthClient } from "@/lib/supabase/auth-server";
 
-export async function saveProductAction(
-  id: string | null,
-  _prev: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
+// One save for the whole product: details, photos and sizes. Everything is checked first; then the product is
+// written, then its photos and sizes. If a later step fails the product already exists, so the form is told its
+// id and the next save updates it instead of creating a second copy.
+export async function saveProductAction(_prev: ProductSaveState, formData: FormData): Promise<ProductSaveState> {
   await requireAdmin();
-  const result = validateProduct({ ...Object.fromEntries(formData), rooms: formData.getAll("rooms").map(String) });
-  if (!result.ok) return { errors: result.errors };
+  const plan = prepareProductSave(formData);
+  if (!plan.ok) return { errors: plan.errors };
+  const { product, images, variants } = plan.value;
 
   const db = await createAuthClient();
+  let id = plan.value.id;
   if (id) {
-    const { error } = await db.from("products").update(result.value).eq("id", id);
-    if (error) return { error: ar.admin.errors.saveFailed };
-    redirect("/admin/products");
+    const { error } = await db.from("products").update(product).eq("id", id);
+    if (error) return { error: ar.admin.errors.saveFailed, savedId: id };
+  } else {
+    const { data, error } = await db.from("products").insert(product).select("id").single();
+    if (error || !data) return { error: ar.admin.errors.saveFailed };
+    id = data.id as string;
   }
-  const { data, error } = await db.from("products").insert(result.value).select("id").single();
-  if (error || !data) return { error: ar.admin.errors.saveFailed };
-  redirect(`/admin/products/${data.id}`); // open it so photos and sizes can be added
+
+  const imagesError = await replaceProductImages(db, id, images);
+  const sizesError = await syncVariants(db, id, variants);
+  if (imagesError || sizesError) return { error: ar.admin.errors.partialSave, savedId: id };
+  redirect("/admin/products");
 }
 
 export async function toggleProductActiveAction(id: string, active: boolean): Promise<void> {

@@ -1,17 +1,17 @@
 "use client";
 
-import { useActionState } from "react";
 import { signInAction, type LoginState } from "@/app/admin/login/actions";
 import { ar } from "@/content/ar";
+import { useFormAction } from "./useFormAction";
 
 const initial: LoginState = { error: null };
 
 export function LoginForm({ notice }: { notice?: string }) {
-  const [state, action, pending] = useActionState(signInAction, initial);
+  const { state, onSubmit, pending } = useFormAction(signInAction, initial);
   const message = state.error ?? notice;
 
   return (
-    <form action={action} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4">
       <label className="block">
         <span className="mb-1 block font-semibold text-brand-900">{ar.admin.email}</span>
         <input

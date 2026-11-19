@@ -1,24 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { ar } from "@/content/ar";
 import type { ActionState } from "@/lib/admin/types";
 import type { Banner } from "@/types/db";
 import { FormField, inputClass } from "./FormField";
 import { ImageUploader } from "./ImageUploader";
 import { SubmitButton } from "./SubmitButton";
+import { useFormAction } from "./useFormAction";
 
 type Props = { action: (prev: ActionState, formData: FormData) => Promise<ActionState>; initial?: Banner };
 
 export function BannerForm({ action, initial }: Props) {
-  const [state, formAction] = useActionState(action, {});
+  const { state, onSubmit, pending } = useFormAction(action, {} as ActionState);
   const [images, setImages] = useState<string[]>(initial?.image_url ? [initial.image_url] : []);
   const err = state.errors ?? {};
   const t = ar.admin.banners;
 
   return (
-    <form action={formAction} className="max-w-xl space-y-5 rounded-2xl bg-paper p-6">
+    <form onSubmit={onSubmit} className="max-w-xl space-y-5 rounded-2xl bg-paper p-6">
       <div>
         <span className="mb-1 block font-semibold text-brand-900">{t.image}</span>
         <ImageUploader folder="banners" value={images} onChange={setImages} />
@@ -40,7 +41,7 @@ export function BannerForm({ action, initial }: Props) {
       </label>
       {state.error && <p role="alert" className="font-semibold text-coral-500">{state.error}</p>}
       <div className="flex items-center gap-3">
-        <SubmitButton />
+        <SubmitButton pending={pending} />
         <Link href="/admin/banners" className="font-bold text-brand-700">{ar.admin.cancel}</Link>
       </div>
     </form>

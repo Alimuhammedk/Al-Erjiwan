@@ -1,23 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { ar } from "@/content/ar";
 import type { ActionState } from "@/lib/admin/types";
 import type { Category } from "@/types/db";
 import { FormField, inputClass } from "./FormField";
 import { ImageUploader } from "./ImageUploader";
 import { SubmitButton } from "./SubmitButton";
+import { useFormAction } from "./useFormAction";
 
 type Props = { action: (prev: ActionState, formData: FormData) => Promise<ActionState>; initial?: Category };
 
 export function CategoryForm({ action, initial }: Props) {
-  const [state, formAction] = useActionState(action, {});
+  const { state, onSubmit, pending } = useFormAction(action, {} as ActionState);
   const [images, setImages] = useState<string[]>(initial?.image_url ? [initial.image_url] : []);
   const err = state.errors ?? {};
 
   return (
-    <form action={formAction} className="max-w-xl space-y-5 rounded-2xl bg-paper p-6">
+    <form onSubmit={onSubmit} className="max-w-xl space-y-5 rounded-2xl bg-paper p-6">
       <FormField label={ar.admin.categories.nameAr} error={err.name_ar}>
         <input name="name_ar" defaultValue={initial?.name_ar} required maxLength={200} className={inputClass} />
       </FormField>
@@ -35,7 +36,7 @@ export function CategoryForm({ action, initial }: Props) {
       </div>
       {state.error && <p role="alert" className="font-semibold text-coral-500">{state.error}</p>}
       <div className="flex items-center gap-3">
-        <SubmitButton />
+        <SubmitButton pending={pending} />
         <Link href="/admin/categories" className="font-bold text-brand-700">{ar.admin.cancel}</Link>
       </div>
     </form>
