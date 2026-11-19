@@ -5,7 +5,7 @@ import { useState } from "react";
 import { checkImageFile, uploadImage } from "@/lib/images";
 
 type Props = {
-  folder: "products" | "categories" | "banners";
+  folder: "products" | "categories" | "banners" | "articles";
   value: string[];
   onChange: (urls: string[]) => void;
   multiple?: boolean;

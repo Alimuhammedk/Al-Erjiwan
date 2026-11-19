@@ -11,3 +11,10 @@ export function formatDateTime(iso: string): string {
   if (!iso || Number.isNaN(date.getTime())) return "—";
   return date.toLocaleString("ar-IQ-u-nu-latn", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Baghdad" });
 }
+
+// Just the date (no time), for articles: Baghdad time, Arabic words, ordinary digits.
+export function formatDate(iso: string): string {
+  const date = new Date(iso);
+  if (!iso || Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("ar-IQ-u-nu-latn", { dateStyle: "long", timeZone: "Asia/Baghdad" });
+}

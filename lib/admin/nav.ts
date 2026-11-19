@@ -8,6 +8,7 @@ export const ADMIN_TABS = [
   { href: "/admin/orders", label: n.orders, icon: "orders", match: ["/admin/orders"] },
   { href: "/admin/banners", label: n.banners, icon: "banners", match: ["/admin/banners"] },
   { href: "/admin/categories", label: n.categories, icon: "categories", match: ["/admin/categories"] },
+  { href: "/admin/articles", label: n.articles, icon: "articles", match: ["/admin/articles"] },
   { href: "/admin/products", label: n.products, icon: "products", match: ["/admin/products"] },
   { href: "/admin/stock", label: n.stock, icon: "stock", match: ["/admin/stock"] },
   { href: "/admin/colours", label: n.colours, icon: "colours", match: ["/admin/colours"] },
