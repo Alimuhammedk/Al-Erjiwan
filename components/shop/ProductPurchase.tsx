@@ -165,7 +165,7 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
         </p>
       )}
 
-      <TrustStrip className="sm:grid-cols-1" />
+      <TrustStrip />
 
       {/* Phone only: price and add button stay in reach while scrolling. The end padding leaves room for the WhatsApp button. */}
       <div

@@ -209,6 +209,8 @@ export const ar = {
     discount: "خصم {n}%",
     viewCart: "عرض السلة",
     close: "إغلاق",
+    searchSite: "ابحث في المتجر",
+    search: "بحث",
     skip: "تخطي إلى المحتوى",
     breadcrumb: "مسار التنقل",
     contactUs: "تواصل معنا",

@@ -15,7 +15,7 @@ export function TrustStrip({ className = "" }: { className?: string }) {
     ["support", ar.trust.support],
   ] as const;
   return (
-    <ul className={`grid gap-3 sm:grid-cols-3 ${className}`}>
+    <ul className={`grid gap-3 ${className}`}>
       {items.map(([key, label]) => (
         <li key={key} className="flex items-center gap-3 rounded-2xl border border-brand-100 bg-brand-50 px-4 py-3">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-brand-700" aria-hidden="true">

@@ -193,3 +193,50 @@ test("a card with two photos shows the second on hover and lifts", async ({ page
   // Tailwind v4 lifts with the `translate` property, not `transform`.
   await expect.poll(() => two.evaluate((el) => getComputedStyle(el).translate)).toMatch(/-\d/);
 });
+
+test("the homepage has a trust strip and the banner has a shop-now button", async ({ page }) => {
+  await page.goto("/");
+  for (const text of ["توصيل إلى جميع محافظات العراق", "الدفع عند الاستلام", "دعم عبر واتساب"]) {
+    await expect(page.getByText(text).first()).toBeVisible();
+  }
+  await expect(page.locator("main section").first().getByText("تسوّق الآن")).toBeVisible();
+});
+
+test("the header gets a shadow once you scroll", async ({ page }) => {
+  await page.goto("/shop");
+  const header = page.locator("header").first();
+  await expect(header).toHaveAttribute("data-scrolled", "false");
+  await page.mouse.wheel(0, 600);
+  await expect(header).toHaveAttribute("data-scrolled", "true");
+  await page.mouse.wheel(0, -2000);
+  await expect(header).toHaveAttribute("data-scrolled", "false");
+});
+
+test("the header search finds a product", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+  const search = page.getByRole("search").getByRole("searchbox", { name: "ابحث في المتجر" });
+  await search.fill("فرشاة");
+  await search.press("Enter");
+  await expect(page).toHaveURL(/\/shop\?q=/);
+  await expect(page.locator('main a[href^="/shop/0000"]')).toHaveCount(1);
+});
+
+test("the phone menu has a search box that closes the menu", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "القائمة" }).click();
+  const search = page.locator("#mobile-menu").getByRole("searchbox", { name: "ابحث في المتجر" });
+  await search.fill("رولر");
+  await search.press("Enter");
+  await expect(page).toHaveURL(/\/shop\?q=/);
+  await expect(page.locator("#mobile-menu")).toHaveCount(0);
+});
+
+test("an empty header search just opens the shop", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/calculator");
+  const search = page.getByRole("search").getByRole("searchbox", { name: "ابحث في المتجر" });
+  await search.press("Enter");
+  await expect(page).toHaveURL(/\/shop(\?q=)?$/);
+});
