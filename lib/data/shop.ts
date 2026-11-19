@@ -17,8 +17,6 @@ export async function getShopProducts(q: ShopQuery): Promise<{ products: Product
     if (q.q) query = query.or(`name_ar.ilike.%${q.q}%,name_en.ilike.%${q.q}%`);
     if (q.category) query = query.eq("category_id", q.category);
     if (q.brand) query = query.eq("brand", q.brand);
-    if (q.room) query = query.contains("rooms", [q.room]);
-    if (q.finish) query = query.eq("finish", q.finish);
     if (q.min !== null) query = query.gte("base_price", q.min);
     if (q.max !== null) query = query.lte("base_price", q.max);
 

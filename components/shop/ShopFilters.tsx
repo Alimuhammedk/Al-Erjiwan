@@ -53,22 +53,6 @@ export function ShopFilters({ query, categories, brands }: Props) {
             </option>
           ))}
         </Select>
-        <Select name="room" label={t.room} value={query.room ?? ""}>
-          <option value="">{t.all}</option>
-          {ar.options.rooms.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </Select>
-        <Select name="finish" label={t.finish} value={query.finish ?? ""}>
-          <option value="">{t.all}</option>
-          {ar.options.finishes.map((f) => (
-            <option key={f} value={f}>
-              {f}
-            </option>
-          ))}
-        </Select>
         <label className="block">
           <span className="mb-1 block text-sm font-semibold text-brand-900">{t.minPrice}</span>
           <input name="min" inputMode="numeric" defaultValue={query.min ?? ""} className={field} />

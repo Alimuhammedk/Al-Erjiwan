@@ -30,8 +30,6 @@ export const ar = {
     searchPlaceholder: "ابحث عن منتج",
     category: "الفئة",
     brand: "العلامة التجارية",
-    room: "الغرفة",
-    finish: "نوع اللمعة",
     minPrice: "أقل سعر",
     maxPrice: "أعلى سعر",
     sort: "الترتيب",
@@ -203,12 +201,6 @@ export const ar = {
     size: "الحجم",
     colour: "اللون",
     deliveryNote: "تكلفة التوصيل تُحسب عند إتمام الطلب",
-  },
-
-  // Fixed lists Ali picks from; the shop filters use the same values.
-  options: {
-    finishes: ["مطفي", "نصف لامع", "لامع", "ساتان"],
-    rooms: ["غرفة المعيشة", "غرفة النوم", "المطبخ", "الحمام", "الواجهات الخارجية"],
   },
 
   admin: {
@@ -564,8 +556,6 @@ export const ar = {
       sizeLabel: "الحجم (مثل 4 لتر)",
       colour: "اللون (اختياري)",
       noCategory: "بدون فئة",
-      finish: "نوع اللمعة",
-      rooms: "الغرف المناسبة",
       noFinish: "غير محدد",
       basePriceHint: "للمنتجات ذات الأحجام اكتب أقل سعر. سعر التخفيض لا ينطبق على الأحجام",
     },

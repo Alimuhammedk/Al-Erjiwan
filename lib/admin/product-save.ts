@@ -72,7 +72,7 @@ export function prepareProductSave(formData: FormData): Result<ProductSavePlan> 
   }
 
   // Product. With sizes, the price and stock come from them and a sale price does not apply.
-  const raw: Record<string, FormDataEntryValue | string[]> = { ...entries, rooms: formData.getAll("rooms").map(String) };
+  const raw: Record<string, FormDataEntryValue | string[]> = { ...entries };
   if (hasSizes) {
     raw.base_price = String(variants.length ? Math.min(...variants.map((v) => v.price)) : 0);
     raw.stock = String(variants.reduce((n, v) => n + v.stock, 0));

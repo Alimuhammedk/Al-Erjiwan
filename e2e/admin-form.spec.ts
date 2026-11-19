@@ -205,7 +205,9 @@ test.describe("editing an existing product", () => {
       "223e4567-e89b-12d3-a456-426614174001",
       "323e4567-e89b-12d3-a456-426614174002",
     ]);
-    expect(r.product).toMatchObject({ base_price: 18000, stock: 35, finish: "مطفي", rooms: ["المطبخ"] });
+    expect(r.product).toMatchObject({ base_price: 18000, stock: 35 });
+    expect(r.product).not.toHaveProperty("finish");
+    expect(r.product).not.toHaveProperty("rooms");
   });
 
   test("reordering the photos changes the saved order", async ({ page }) => {

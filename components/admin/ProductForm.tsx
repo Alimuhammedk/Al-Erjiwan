@@ -92,29 +92,7 @@ export function ProductForm({ action, categories, colours, initial }: Props) {
           <FormField label={t.brand} error={err.brand}>
             <input name="brand" defaultValue={p?.brand ?? ""} maxLength={100} className={inputClass} />
           </FormField>
-          <FormField label={t.finish} error={err.finish}>
-            <select name="finish" defaultValue={p?.finish ?? ""} className={inputClass}>
-              <option value="">{t.noFinish}</option>
-              {ar.options.finishes.map((x) => (
-                <option key={x} value={x}>
-                  {x}
-                </option>
-              ))}
-            </select>
-          </FormField>
         </div>
-        <fieldset className="space-y-2">
-          <legend className="mb-1 font-semibold text-brand-900">{t.rooms}</legend>
-          <div className="flex flex-wrap gap-x-5">
-            {ar.options.rooms.map((room) => (
-              <label key={room} className="flex min-h-11 items-center gap-2">
-                <input type="checkbox" name="rooms" value={room} defaultChecked={p?.rooms?.includes(room)} className="size-5 accent-[#602f8a]" />
-                <span>{room}</span>
-              </label>
-            ))}
-          </div>
-          {err.rooms && <p role="alert" className="text-sm font-semibold text-coral-500">{err.rooms}</p>}
-        </fieldset>
       </Section>
 
       <Section title={f.photos} hint={f.photosHint}>

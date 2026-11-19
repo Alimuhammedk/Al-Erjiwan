@@ -23,11 +23,9 @@ test("search finds a product by name", async ({ page }) => {
   await expect(cards(page).first()).toContainText("فرشاة طلاء احترافية");
 });
 
-test("room, finish, category and price filters narrow the list", async ({ page }) => {
-  await page.goto("/shop?room=المطبخ");
-  await expect(cards(page)).toHaveCount(2);
-  await page.goto("/shop?finish=لامع");
-  await expect(cards(page)).toHaveCount(2);
+test("category and price filters narrow the list, and the old room and finish links just show everything", async ({ page }) => {
+  await page.goto("/shop?room=المطبخ&finish=لامع");
+  await expect(cards(page)).toHaveCount(10);
   await page.goto(`/shop?category=${C3}`);
   await expect(cards(page)).toHaveCount(2);
   await page.goto("/shop?min=8000&max=9000");
@@ -39,12 +37,15 @@ test("sorting by price puts the cheapest first", async ({ page }) => {
   await expect(cards(page).first()).toContainText("فرشاة طلاء احترافية");
 });
 
-test("the filter form works without typing a URL", async ({ page }) => {
+test("the filter form has no room or finish boxes, and works without typing a URL", async ({ page }) => {
   await page.goto("/shop");
-  await page.getByLabel("الغرفة").selectOption("المطبخ");
+  await expect(page.getByLabel("الغرفة")).toHaveCount(0);
+  await expect(page.getByLabel("نوع اللمعة")).toHaveCount(0);
+  await page.getByLabel("أقل سعر").fill("8000");
+  await page.getByLabel("أعلى سعر").fill("9000");
   await page.getByRole("button", { name: "تطبيق" }).click();
-  await expect(page).toHaveURL(/room=/);
-  await expect(cards(page)).toHaveCount(2);
+  await expect(page).toHaveURL(/min=8000/);
+  await expect(cards(page)).toHaveCount(1);
 });
 
 test("a size changes the price and a sold-out size is disabled", async ({ page }) => {

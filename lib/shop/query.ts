@@ -1,4 +1,3 @@
-import { ar } from "@/content/ar";
 import { parsePrice } from "@/lib/admin/validate";
 
 export const PAGE_SIZE = 24;
@@ -10,8 +9,6 @@ export type ShopQuery = {
   q: string;
   category: string | null;
   brand: string | null;
-  room: string | null;
-  finish: string | null;
   min: number | null;
   max: number | null;
   sort: Sort;
@@ -36,16 +33,12 @@ export function parseShopQuery(params: Params): ShopQuery {
 
   const page = parsePrice(first(params.page));
   const category = first(params.category);
-  const room = first(params.room);
-  const finish = first(params.finish);
   const brand = first(params.brand).trim().slice(0, 100);
 
   return {
     q: sanitiseSearch(first(params.q)),
     category: UUID.test(category) ? category : null,
     brand: brand || null,
-    room: (ar.options.rooms as readonly string[]).includes(room) ? room : null,
-    finish: (ar.options.finishes as readonly string[]).includes(finish) ? finish : null,
     min,
     max,
     sort: (SORTS as readonly string[]).includes(sort) ? (sort as Sort) : "newest",
