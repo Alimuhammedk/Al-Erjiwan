@@ -6,11 +6,12 @@ export const ar = {
   // Links appear in the header only when `enabled` is true (turn on as each page is built).
   nav: [
     { key: "home", label: "الرئيسية", href: "/", enabled: true },
-    { key: "calculator", label: "حاسبة الدهان", href: "/calculator", enabled: true },
     { key: "shop", label: "المتجر", href: "/shop", enabled: true },
     { key: "colours", label: "منتقي الألوان", href: "/colours", enabled: false },
     { key: "gallery", label: "معرض الأعمال", href: "/gallery", enabled: false },
     { key: "about", label: "من نحن", href: "/about", enabled: false },
+    // Keep this last in the list so it stays the last link in the top bar.
+    { key: "calculator", label: "حاسبة الدهان", href: "/calculator", enabled: true },
   ],
 
   home: {
@@ -65,7 +66,9 @@ export const ar = {
     windows: "عدد النوافذ",
     coats: "عدد الطبقات",
     calculate: "احسب",
-    estimate: "الكمية المقدّرة: {n} لتر تقريبًا. هذا تقدير والكمية الفعلية تختلف حسب السطح",
+    resultLabel: "الكمية المقدّرة",
+    resultUnit: "لتر تقريبًا",
+    resultNote: "هذا تقدير، والكمية الفعلية تختلف حسب السطح",
     invalidInput: "أدخل قياسات صحيحة",
     notFoundTitle: "المنتج غير موجود",
     backToShop: "العودة إلى المتجر",

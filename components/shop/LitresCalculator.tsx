@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { ar } from "@/content/ar";
 import { estimateLitres } from "@/lib/shop/product";
 
@@ -18,8 +19,12 @@ const input =
 
 export function LitresCalculator() {
   const t = ar.product;
+  const reduceMotion = useReducedMotion();
+  const resultRef = useRef<HTMLDivElement>(null);
   const [v, setV] = useState({ length: "", width: "", height: "", doors: "1", windows: "1", coats: "2" });
+  // undefined: not calculated yet, null: bad input, number: litres
   const [result, setResult] = useState<number | null | undefined>(undefined);
+  const [runs, setRuns] = useState(0);
 
   const set = (k: keyof typeof v) => (e: React.ChangeEvent<HTMLInputElement>) => setV({ ...v, [k]: e.target.value });
 
@@ -34,7 +39,13 @@ export function LitresCalculator() {
         coats: num(v.coats),
       }),
     );
+    setRuns((n) => n + 1);
   }
+
+  // Bring the answer into view, so a customer on a phone can't miss it below the button.
+  useEffect(() => {
+    if (runs > 0) resultRef.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+  }, [runs, reduceMotion]);
 
   const fields: [keyof typeof v, string][] = [
     ["length", t.length],
@@ -59,11 +70,33 @@ export function LitresCalculator() {
       <button type="button" onClick={calculate} className="rounded-full bg-brand-700 px-6 py-2.5 font-bold text-white hover:bg-brand-900">
         {t.calculate}
       </button>
-      {result !== undefined && (
-        <p role="status" className="font-semibold text-brand-700">
-          {result === null ? t.invalidInput : t.estimate.replace("{n}", String(result))}
-        </p>
-      )}
+
+      <div ref={resultRef} className="scroll-mt-24">
+        {typeof result === "number" && (
+          <motion.div
+            key={runs}
+            role="status"
+            initial={reduceMotion ? false : { opacity: 0, y: 12, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="rounded-2xl bg-gradient-to-br from-brand-900 via-brand-700 to-magenta-500 p-6 text-center text-white shadow-lg ring-4 ring-sun-300/60"
+          >
+            <p className="text-base font-semibold text-white/90">{t.resultLabel}</p>
+            <p className="my-1 flex items-baseline justify-center gap-3">
+              <span data-testid="litres-result" className="text-6xl font-extrabold leading-none text-sun-300 sm:text-7xl">
+                {result}
+              </span>{" "}
+              <span className="text-2xl font-bold">{t.resultUnit}</span>
+            </p>
+            <p className="mt-3 text-sm text-white/80">{t.resultNote}</p>
+          </motion.div>
+        )}
+        {result === null && (
+          <p role="alert" className="rounded-xl border-2 border-coral-500 bg-coral-500/10 px-4 py-3 text-base font-bold text-coral-500">
+            {t.invalidInput}
+          </p>
+        )}
+      </div>
     </section>
   );
 }

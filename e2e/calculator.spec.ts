@@ -10,14 +10,38 @@ async function useCalculator(page: import("@playwright/test").Page) {
   await expect(page.getByRole("status").filter({ hasText: "7 لتر" })).toBeVisible();
 }
 
-test("the top bar has a calculator link right after the home link", async ({ page }) => {
+test("the calculator link is the last link in the top bar", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/");
   const links = page.getByRole("navigation", { name: "القائمة" }).getByRole("link");
-  await expect(links.nth(0)).toHaveText("الرئيسية");
-  await expect(links.nth(1)).toHaveText("حاسبة الدهان");
-  await links.nth(1).click();
+  await expect(links).toHaveText(["الرئيسية", "المتجر", "حاسبة الدهان"]);
+  await links.last().click();
   await useCalculator(page);
+});
+
+test("the result is big, separate from the form and scrolled into view", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 700 });
+  await page.goto("/calculator");
+  await page.getByLabel("الطول (متر)").fill("4");
+  await page.getByLabel("العرض (متر)").fill("3");
+  await page.getByLabel("الارتفاع (متر)").fill("2.5");
+  await page.getByRole("button", { name: "احسب", exact: true }).click();
+
+  const number = page.getByTestId("litres-result");
+  await expect(number).toHaveText("7");
+  await expect(number).toBeInViewport();
+  const size = await number.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+  expect(size).toBeGreaterThanOrEqual(48);
+  await expect(page.getByText("هذا تقدير")).toBeVisible();
+  await page.waitForTimeout(600); // let the entrance animation finish before the screenshot
+  await page.screenshot({ path: "e2e/screenshots/calculator-result-375.png" });
+});
+
+test("a wrong input shows a clear error instead of a number", async ({ page }) => {
+  await page.goto("/calculator");
+  await page.getByRole("button", { name: "احسب", exact: true }).click();
+  await expect(page.getByTestId("litres-result")).toHaveCount(0);
+  await expect(page.getByRole("alert").filter({ hasText: "أدخل قياسات صحيحة" })).toBeVisible();
 });
 
 test("the calculator is in the phone menu too", async ({ page }) => {
@@ -36,8 +60,3 @@ test("the calculator page works by address and has no sideways scroll at 375px",
   await page.screenshot({ path: "e2e/screenshots/calculator-375.png", fullPage: true });
 });
 
-test("bad measurements show the Arabic message", async ({ page }) => {
-  await page.goto("/calculator");
-  await page.getByRole("button", { name: "احسب", exact: true }).click();
-  await expect(page.getByRole("status").filter({ hasText: "أدخل قياسات صحيحة" })).toBeVisible();
-});
