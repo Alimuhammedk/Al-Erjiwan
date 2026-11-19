@@ -1,9 +1,9 @@
 import { createServerClient } from "@/lib/supabase/server";
 import type { Product, ProductImage, ProductWithImage } from "@/types/db";
 
-type Row = Product & { product_images: Pick<ProductImage, "url" | "sort_order">[] | null };
+export type Row = Product & { product_images: Pick<ProductImage, "url" | "sort_order">[] | null };
 
-function withFirstImage(row: Row): ProductWithImage {
+export function withFirstImage(row: Row): ProductWithImage {
   const { product_images, ...product } = row;
   const first = [...(product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0];
   return { ...product, image_url: first?.url ?? null };

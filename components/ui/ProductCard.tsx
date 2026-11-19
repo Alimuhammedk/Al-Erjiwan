@@ -1,12 +1,18 @@
 import Image from "next/image";
-import { ar } from "@/content/ar";
+import Link from "next/link";
 import { formatPrice } from "@/lib/format";
+import { displayPrice } from "@/lib/shop/product";
 import type { ProductWithImage } from "@/types/db";
 
+// No "sold out" badge here: a sized product's stock lives on its sizes, which the card doesn't load.
+// The product page shows the real stock.
 export function ProductCard({ product }: { product: ProductWithImage }) {
-  const onSale = product.sale_price !== null && product.sale_price < product.base_price;
+  const { price, oldPrice } = displayPrice(product);
   return (
-    <article className="group overflow-hidden rounded-2xl border border-brand-100 bg-paper">
+    <Link
+      href={`/shop/${product.id}`}
+      className="group block overflow-hidden rounded-2xl border border-brand-100 bg-paper"
+    >
       <div className="relative aspect-square overflow-hidden bg-brand-50">
         {product.image_url && (
           <Image
@@ -17,21 +23,14 @@ export function ProductCard({ product }: { product: ProductWithImage }) {
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         )}
-        {product.stock <= 0 && (
-          <span className="absolute start-2 top-2 rounded-full bg-ink px-3 py-1 text-xs font-bold text-white">
-            {ar.common.outOfStock}
-          </span>
-        )}
       </div>
       <div className="space-y-1 p-3">
         <h3 className="line-clamp-2 break-words font-bold text-brand-900">{product.name_ar}</h3>
         <p className="flex flex-wrap items-baseline gap-2">
-          <span className="font-extrabold text-brand-700">
-            {formatPrice(onSale ? product.sale_price! : product.base_price)}
-          </span>
-          {onSale && <span className="text-sm text-ink/50 line-through">{formatPrice(product.base_price)}</span>}
+          <span className="font-extrabold text-brand-700">{formatPrice(price)}</span>
+          {oldPrice !== null && <span className="text-sm text-ink/50 line-through">{formatPrice(oldPrice)}</span>}
         </p>
       </div>
-    </article>
+    </Link>
   );
 }
