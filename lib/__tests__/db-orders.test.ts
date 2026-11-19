@@ -35,3 +35,15 @@ describe("0005_order_changes.sql", () => {
     }
   }, 90_000);
 });
+
+describe("0006_colours.sql", () => {
+  it("passes every check in supabase/tests/0006_colours_test.sql", async () => {
+    const db6 = await createDb([...BASE_MIGRATIONS, "0004_orders.sql", "0005_order_changes.sql", "0006_colours.sql"]);
+    try {
+      const results = await db6.exec(readSql("supabase/tests/0006_colours_test.sql"));
+      expect((results.at(-1)?.rows[0] as { result: string }).result).toBe("ALL PASSED");
+    } finally {
+      await db6.close();
+    }
+  }, 90_000);
+});
