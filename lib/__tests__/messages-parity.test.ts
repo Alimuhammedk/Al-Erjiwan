@@ -40,12 +40,12 @@ describe("Arabic and English messages", () => {
     // every text in a message set, skipping the language switch (it shows the other language on purpose) and nav addresses
     const texts = (v: unknown, key = ""): string[] => {
       if (key === "language" || key === "key" || key === "href") return [];
-      if (typeof v === "string") return [v.replace(/{w+}/g, "")];
+      if (typeof v === "string") return [v.replace(/\{\w+\}/g, "")];
       if (Array.isArray(v)) return v.flatMap((x) => texts(x));
       if (v && typeof v === "object") return Object.entries(v).flatMap(([k, x]) => texts(x, k));
       return [];
     };
-    const arabicInEnglish = texts(messagesFor("en")).filter((t) => /[؀-ۿ]/.test(t));
+    const arabicInEnglish = texts(messagesFor("en")).filter((t) => /[\u0600-\u06FF]/.test(t));
     const latinInArabic = texts(messagesFor("ar")).filter((t) => /[A-Za-z]{3,}/.test(t));
     expect(arabicInEnglish).toEqual([]);
     expect(latinInArabic).toEqual([]);
