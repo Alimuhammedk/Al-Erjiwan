@@ -26,8 +26,6 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
   );
   // Mixed paint: a shade chosen from the catalogue (or arriving from the colour page); a typed colour is the fallback.
   const [chosen, setChosen] = useState<PickableColour | null>(null);
-  const [typing, setTyping] = useState(false); // the typed colour is hidden until asked for
-  const [note, setNote] = useState("");
   // The box keeps what is typed (it can be empty while typing); the real quantity is always 1 to 99.
   const [quantityText, setQuantityText] = useState("1");
   const quantity = Math.min(99, Math.max(1, Math.floor(Number(quantityText)) || 1));
@@ -49,13 +47,13 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
 
   function addToCart() {
     if (variants.length > 0 && !variant) return setMessage({ text: t.chooseSize, ok: false });
-    if (product.is_tintable && !chosen && !note.trim()) return setMessage({ text: t.chooseColour, ok: false });
+    if (product.is_tintable && !chosen) return setMessage({ text: t.chooseColour, ok: false });
     add({
       product_id: product.id,
       variant_id: variant?.id ?? null,
       colour_id: product.is_tintable ? (chosen?.id ?? null) : (variant?.colour_id ?? null),
       colour_name: product.is_tintable ? (chosen?.name_ar ?? null) : (colours.find((c) => c.id === variant?.colour_id)?.name_ar ?? null),
-      colour_note: product.is_tintable ? note.trim() || null : null,
+      colour_note: null,
       name: product.name_ar,
       size_label: variant?.size_label ?? null,
       unit_price: price,
@@ -107,24 +105,7 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
         <div>
           <p className="mb-2 font-semibold text-brand-900">{t.colours}</p>
           <ColourPanel productId={product.id} value={chosen} onChange={setChosen} />
-          {!typing && !note && (
-            <button type="button" onClick={() => setTyping(true)} className="mt-1 min-h-11 text-sm font-bold text-brand-700 underline">
-              {t.notListed}
-            </button>
-          )}
         </div>
-      )}
-
-      {product.is_tintable && (typing || note) && (
-        <label className="block">
-          <span className="mb-1 block text-sm font-semibold text-brand-900">{t.colourNote}</span>
-          <input
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            maxLength={100}
-            className="w-full rounded-xl border border-brand-100 bg-paper px-4 py-2.5 focus:border-brand-500 focus:outline-none"
-          />
-        </label>
       )}
 
       {sizeOptions.length > 0 && (

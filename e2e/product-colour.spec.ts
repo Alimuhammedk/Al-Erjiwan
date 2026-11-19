@@ -97,7 +97,7 @@ test("a picked shade goes into the cart with its name and id", async ({ page }) 
   expect(cart).toContain("00000000-0000-4001-8000-0000000000a1");
 });
 
-test("clearing the shade brings back the requirement to choose or type a colour", async ({ page }) => {
+test("clearing the shade brings back the requirement to choose a colour", async ({ page }) => {
   await mockColours(page);
   await page.goto(P1);
   await row(page).click();
@@ -105,29 +105,24 @@ test("clearing the shade brings back the requirement to choose or type a colour"
   await page.getByRole("button", { name: "مسح", exact: true }).click();
   await expect(row(page)).toContainText("اختر اللون");
   await page.getByRole("button", { name: "أضف إلى السلة" }).click();
-  await expect(page.getByText("اختر لونًا أو اكتب اسمه أو رقمه")).toBeVisible();
+  await expect(page.getByText("اختر اللون أولًا")).toBeVisible();
 });
 
-test("a colour that is not listed can be typed, but the box is hidden until asked for", async ({ page }) => {
+test("there is no typed-colour box or link on the product page", async ({ page }) => {
   await mockColours(page);
   await page.goto(P1);
+  await expect(page.getByText("لونك غير موجود")).toHaveCount(0);
   await expect(page.getByLabel("اسم اللون أو رقمه")).toHaveCount(0);
-  await page.getByRole("button", { name: "لونك غير موجود؟ اكتب اسمه أو رقمه" }).click();
-  await page.getByLabel("اسم اللون أو رقمه").fill("٤٢٠ أخضر زيتي");
-  await page.getByRole("button", { name: "أضف إلى السلة" }).click();
-  await expect(page.getByText("تمت الإضافة إلى السلة")).toBeVisible();
 });
 
-test("when the colour search is down, the panel says so and a typed colour still works", async ({ page }) => {
+test("when the colour search is down, the panel says so, and a colour is still needed to add to the cart", async ({ page }) => {
   await page.route("**/api/colours*", (route) => route.fulfill({ status: 500, body: "boom" }));
   await page.goto(P1);
   await row(page).click();
   await expect(dialog(page).getByRole("status")).toContainText("تعذر تحميل الألوان");
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "لونك غير موجود؟ اكتب اسمه أو رقمه" }).click();
-  await page.getByLabel("اسم اللون أو رقمه").fill("12");
   await page.getByRole("button", { name: "أضف إلى السلة" }).click();
-  await expect(page.getByText("تمت الإضافة إلى السلة")).toBeVisible();
+  await expect(page.getByText("اختر اللون أولًا")).toBeVisible();
 });
 
 test("an empty answer says nothing matched", async ({ page }) => {

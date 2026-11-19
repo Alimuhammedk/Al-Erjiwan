@@ -50,8 +50,6 @@ export const ar = {
   product: {
     sizes: "الحجم",
     colours: "اللون",
-    colourNote: "اسم اللون أو رقمه",
-    notListed: "لونك غير موجود؟ اكتب اسمه أو رقمه",
     panel: {
       title: "اختر اللون",
       choose: "اختر اللون",
@@ -61,7 +59,7 @@ export const ar = {
       families: "العائلات",
       all: "الكل",
       none: "لا توجد ألوان مطابقة",
-      failed: "تعذر تحميل الألوان الآن، يمكنك كتابة اللون بدل ذلك",
+      failed: "تعذر تحميل الألوان الآن، حاول بعد قليل",
     },
     quantity: "الكمية",
     addToCart: "أضف إلى السلة",
@@ -86,7 +84,7 @@ export const ar = {
     backToShop: "العودة إلى المتجر",
     brand: "العلامة التجارية",
     description: "الوصف",
-    chooseColour: "اختر لونًا أو اكتب اسمه أو رقمه",
+    chooseColour: "اختر اللون أولًا",
     chooseSize: "اختر الحجم",
     notSure: "لست متأكدًا من الكمية؟ احسب كمية الدهان",
   },

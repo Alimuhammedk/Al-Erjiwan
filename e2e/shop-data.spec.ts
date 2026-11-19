@@ -61,7 +61,7 @@ test("a tinted paint needs a colour, then adds to the cart", async ({ page }) =>
   );
   await page.goto(`/shop/${P(1)}`);
   await page.getByRole("button", { name: "أضف إلى السلة" }).click();
-  await expect(page.getByText("اختر لونًا أو اكتب اسمه أو رقمه")).toBeVisible();
+  await expect(page.getByText("اختر اللون أولًا")).toBeVisible();
   await page.getByTestId("colour-row").click();
   await page.getByRole("button", { name: "أزرق سماوي" }).click();
   await page.getByRole("button", { name: "أضف إلى السلة" }).click();
