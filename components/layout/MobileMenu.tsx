@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ar } from "@/content/ar";
+import { isCurrent } from "@/lib/nav";
 
 type NavLink = { key: string; label: string; href: string };
 
 export function MobileMenu({ links }: { links: NavLink[] }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!open) return;
@@ -35,7 +38,12 @@ export function MobileMenu({ links }: { links: NavLink[] }) {
           <ul className="flex flex-col px-4 py-2">
             {links.map((l) => (
               <li key={l.key}>
-                <Link href={l.href} onClick={() => setOpen(false)} className="block py-3 text-lg font-semibold text-brand-900">
+                <Link
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  aria-current={isCurrent(pathname, l.href) ? "page" : undefined}
+                  className={`block py-3 text-lg font-semibold ${isCurrent(pathname, l.href) ? "text-coral-500" : "text-brand-900"}`}
+                >
                   {l.label}
                 </Link>
               </li>

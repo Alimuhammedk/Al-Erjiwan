@@ -83,3 +83,46 @@ test("categories are links and the last row is centred", async ({ page }) => {
   await cards.first().click();
   await expect(page).toHaveURL(/\/shop\?category=/);
 });
+
+test("a skip link is the first Tab stop and jumps to the content", async ({ page }) => {
+  await page.goto("/shop");
+  await page.keyboard.press("Tab");
+  const skip = page.getByRole("link", { name: "تخطي إلى المحتوى" });
+  await expect(skip).toBeFocused();
+  await expect(skip).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect.poll(() => page.evaluate(() => document.activeElement?.id)).toBe("main-content");
+});
+
+test("the top bar marks the page you are on", async ({ page }) => {
+  const nav = page.getByRole("navigation", { name: "القائمة" });
+  await page.setViewportSize({ width: 1280, height: 800 });
+  for (const [path, label] of [["/", "الرئيسية"], ["/shop", "المتجر"], ["/calculator", "حاسبة الدهان"]]) {
+    await page.goto(path);
+    await expect(nav.getByRole("link", { name: label })).toHaveAttribute("aria-current", "page");
+    await expect(nav.locator('a[aria-current="page"]')).toHaveCount(1);
+  }
+});
+
+test("the phone menu marks the page you are on", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto("/shop");
+  await page.getByRole("button", { name: "القائمة" }).click();
+  await expect(page.locator("#mobile-menu").getByRole("link", { name: "المتجر" })).toHaveAttribute("aria-current", "page");
+});
+
+test("a product page has breadcrumbs back to the shop", async ({ page }) => {
+  await page.goto("/shop/00000000-0000-4002-8000-000000000001");
+  const crumbs = page.getByRole("navigation", { name: "مسار التنقل" });
+  await expect(crumbs.getByRole("link", { name: "الرئيسية" })).toHaveAttribute("href", "/");
+  await expect(crumbs.getByRole("link", { name: "المتجر" })).toHaveAttribute("href", "/shop");
+  await expect(crumbs.locator('[aria-current="page"]')).toHaveText("بنتلايت داخلي ممتاز");
+});
+
+test("homepage product sections have a view-all link to the shop", async ({ page }) => {
+  await page.goto("/");
+  for (const heading of ["الأكثر مبيعًا", "العروض"]) {
+    const section = page.locator("section", { has: page.getByRole("heading", { name: heading }) });
+    await expect(section.getByRole("link", { name: "عرض الكل" })).toHaveAttribute("href", "/shop");
+  }
+});

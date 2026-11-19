@@ -200,6 +200,8 @@ export const ar = {
     closeMenu: "إغلاق القائمة",
     cart: "السلة",
     slide: "الشريحة",
+    skip: "تخطي إلى المحتوى",
+    breadcrumb: "مسار التنقل",
     contactUs: "تواصل معنا",
     address: "العنوان", 
     phone: "الهاتف",

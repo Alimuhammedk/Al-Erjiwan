@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Breadcrumbs } from "@/components/shop/Breadcrumbs";
 import { Gallery } from "@/components/shop/Gallery";
 import { LitresCalculator } from "@/components/shop/LitresCalculator";
 import { ProductPurchase } from "@/components/shop/ProductPurchase";
@@ -14,7 +15,14 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const { product, images } = detail;
 
   return (
-    <main className="mx-auto w-full max-w-6xl flex-1 space-y-10 px-4 py-8">
+    <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-6">
+      <Breadcrumbs
+        items={[
+          { label: ar.nav[0].label, href: "/" },
+          { label: ar.shop.title, href: "/shop" },
+          { label: product.name_ar },
+        ]}
+      />
       <div className="grid gap-8 md:grid-cols-2">
         <Gallery images={images} alt={product.name_ar} />
         <div className="space-y-5">

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ar } from "@/content/ar";
 import { CartLink } from "@/components/shop/CartLink";
 import { MobileMenu } from "./MobileMenu";
+import { NavLinks } from "./NavLinks";
 
 export function Header() {
   const links = ar.nav.filter((l) => l.enabled);
@@ -14,13 +15,7 @@ export function Header() {
           <Image src="/logo-icon.jpg" alt="" width={48} height={43} priority className="h-10 w-auto" />
           <span className="text-xl font-extrabold text-brand-900">{ar.siteName}</span>
         </Link>
-        <nav className="hidden items-center gap-6 md:flex" aria-label={ar.common.menu}>
-          {links.map((l) => (
-            <Link key={l.key} href={l.href} className="font-semibold text-brand-900 hover:text-coral-500">
-              {l.label}
-            </Link>
-          ))}
-        </nav>
+        <NavLinks links={links} />
         <div className="flex items-center gap-1">
           <CartLink />
           <MobileMenu links={links} />
