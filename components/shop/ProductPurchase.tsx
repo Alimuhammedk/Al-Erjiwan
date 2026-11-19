@@ -8,7 +8,6 @@ import type { ProductDetail } from "@/lib/data/shop";
 import { formatPrice } from "@/lib/format";
 import { discountPercent, displayPrice, isSoldOut, stockFor } from "@/lib/shop/product";
 import { ColourPanel } from "./ColourPanel";
-import { TrustStrip } from "./TrustStrip";
 
 type Variant = ProductDetail["variants"][number];
 
@@ -29,7 +28,9 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
   const [chosen, setChosen] = useState<PickableColour | null>(null);
   const [typing, setTyping] = useState(false); // the typed colour is hidden until asked for
   const [note, setNote] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  // The box keeps what is typed (it can be empty while typing); the real quantity is always 1 to 99.
+  const [quantityText, setQuantityText] = useState("1");
+  const quantity = Math.min(99, Math.max(1, Math.floor(Number(quantityText)) || 1));
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
 
   const variant: Variant | null = sizeOptions.find((v) => v.id === variantId) ?? null;
@@ -161,8 +162,9 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
             type="number"
             min={1}
             max={99}
-            value={quantity}
-            onChange={(e) => setQuantity(Math.min(99, Math.max(1, Math.floor(Number(e.target.value)) || 1)))}
+            value={quantityText}
+            onChange={(e) => setQuantityText(e.target.value)}
+            onBlur={() => setQuantityText(String(quantity))}
             className="w-24 rounded-xl border border-brand-100 bg-paper px-3 py-2.5"
           />
         </label>
@@ -180,8 +182,6 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
           {message.text}
         </p>
       )}
-
-      <TrustStrip />
 
       {/* Phone only: price and add button stay in reach while scrolling. The end padding leaves room for the WhatsApp button. */}
       <div

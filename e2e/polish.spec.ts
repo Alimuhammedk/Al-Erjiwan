@@ -140,10 +140,10 @@ test("a sale shows a discount badge on the card and on the product page", async 
   await expect(page.getByText("خصم 16%")).toBeVisible();
 });
 
-test("the product page reassures with delivery, cash on delivery and support", async ({ page }) => {
+test("the product page no longer has the three reassurance boxes (they stay on the homepage)", async ({ page }) => {
   await page.goto(`/shop/${P(7)}`);
-  for (const text of ["توصيل إلى جميع محافظات العراق", "الدفع عند الاستلام", "دعم عبر واتساب"]) {
-    await expect(page.getByText(text).first()).toBeVisible();
+  for (const text of ["توصيل إلى جميع محافظات العراق", "الدفع عند الاستلام"]) {
+    await expect(page.getByRole("main").getByText(text)).toHaveCount(0);
   }
 });
 
