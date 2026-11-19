@@ -1,0 +1,114 @@
+import { describe, expect, it } from "vitest";
+import { ar } from "@/content/ar";
+import {
+  parsePrice,
+  validateBanner,
+  validateCategory,
+  validateProduct,
+  validateVariant,
+} from "../admin/validate";
+
+const e = ar.admin.errors;
+const UUID = "123e4567-e89b-12d3-a456-426614174000";
+
+describe("parsePrice", () => {
+  it.each([
+    ["25000", 25000],
+    ["25,000", 25000],
+    ["٢٥٬٠٠٠", 25000],
+    ["٢٥٠٠٠", 25000],
+    [" 0 ", 0],
+  ])("reads %s as %i", (input, expected) => {
+    expect(parsePrice(input)).toBe(expected);
+  });
+  it.each(["", "-5", "12.5", "abc", "1e6"])("rejects %j", (input) => {
+    expect(parsePrice(input)).toBeNull();
+  });
+});
+
+describe("validateProduct", () => {
+  const base = { name_ar: "دهان أبيض", base_price: "25,000", stock: "10" };
+
+  it("accepts a valid product and defaults the switches to false", () => {
+    const r = validateProduct(base);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.base_price).toBe(25000);
+      expect(r.value.stock).toBe(10);
+      expect(r.value.is_active).toBe(false);
+      expect(r.value.is_featured).toBe(false);
+      expect(r.value.is_tintable).toBe(false);
+      expect(r.value.sale_price).toBeNull();
+    }
+  });
+  it("requires an Arabic name", () => {
+    const r = validateProduct({ ...base, name_ar: "  " });
+    expect(r).toEqual({ ok: false, errors: { name_ar: e.required } });
+  });
+  it("rejects a sale price that is not lower than the price", () => {
+    const r = validateProduct({ ...base, sale_price: "25000" });
+    expect(r.ok === false && r.errors.sale_price).toBe(e.salePriceTooHigh);
+  });
+  it("accepts a lower sale price", () => {
+    const r = validateProduct({ ...base, sale_price: "20000" });
+    expect(r.ok && r.value.sale_price).toBe(20000);
+  });
+  it("rejects a name over 200 characters", () => {
+    const r = validateProduct({ ...base, name_ar: "ا".repeat(201) });
+    expect(r.ok === false && r.errors.name_ar).toBe(e.tooLong);
+  });
+  it("rejects a negative stock", () => {
+    const r = validateProduct({ ...base, stock: "-1" });
+    expect(r.ok === false && r.errors.stock).toBe(e.invalidStock);
+  });
+  it("rejects a bad price", () => {
+    const r = validateProduct({ ...base, base_price: "abc" });
+    expect(r.ok === false && r.errors.base_price).toBe(e.invalidPrice);
+  });
+  it("rejects a category that is not a UUID", () => {
+    const r = validateProduct({ ...base, category_id: "not-a-uuid" });
+    expect(r.ok).toBe(false);
+  });
+  it("accepts a UUID category and an empty one", () => {
+    expect(validateProduct({ ...base, category_id: UUID }).ok).toBe(true);
+    const empty = validateProduct({ ...base, category_id: "" });
+    expect(empty.ok && empty.value.category_id).toBeNull();
+  });
+});
+
+describe("validateVariant", () => {
+  it("requires a size label and a valid price", () => {
+    expect(validateVariant({ size_label: "", price: "5000", stock: "1" }).ok).toBe(false);
+    expect(validateVariant({ size_label: "4 لتر", price: "x", stock: "1" }).ok).toBe(false);
+  });
+  it("accepts an empty colour as null", () => {
+    const r = validateVariant({ size_label: "4 لتر", price: "5000", stock: "3", colour_id: "" });
+    expect(r.ok && r.value).toEqual({ size_label: "4 لتر", price: 5000, stock: 3, colour_id: null });
+  });
+});
+
+describe("validateCategory", () => {
+  it("requires an Arabic name", () => {
+    const r = validateCategory({ name_ar: "" });
+    expect(r.ok === false && r.errors.name_ar).toBe(e.required);
+  });
+  it("accepts a valid category with a sort order", () => {
+    const r = validateCategory({ name_ar: "دهانات داخلية", sort_order: "2" });
+    expect(r.ok && r.value.sort_order).toBe(2);
+  });
+});
+
+describe("validateBanner", () => {
+  const image = { image_url: "https://x.supabase.co/storage/v1/object/public/images/banners/a.webp" };
+  it.each(["", "/shop", "https://example.com/x"])("accepts link %j", (link) => {
+    expect(validateBanner({ ...image, link }).ok).toBe(true);
+  });
+  it.each(["javascript:alert(1)", "//evil.com"])("rejects link %j", (link) => {
+    const r = validateBanner({ ...image, link });
+    expect(r.ok === false && r.errors.link).toBe(e.invalidLink);
+  });
+  it("requires an image", () => {
+    const r = validateBanner({ image_url: "" });
+    expect(r.ok === false && r.errors.image_url).toBe(e.required);
+  });
+});
