@@ -1,6 +1,28 @@
 import { describe, expect, it } from "vitest";
 import { ar } from "@/content/ar";
-import { checkImageFile, fitWithin, storagePathFromUrl } from "../images";
+import { afterEach, vi } from "vitest";
+import { checkImageFile, fitWithin, randomId, storagePathFromUrl } from "../images";
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe("randomId", () => {
+  it("is 32 hex characters and different each time", () => {
+    const a = randomId();
+    expect(a).toMatch(/^[0-9a-f]{32}$/);
+    expect(randomId()).not.toBe(a);
+  });
+  it("works on a plain http page, where crypto.randomUUID does not exist (a phone on the local network)", () => {
+    // Only getRandomValues, exactly what a browser offers outside https and localhost.
+    vi.stubGlobal("crypto", {
+      getRandomValues: (bytes: Uint8Array) => {
+        for (let i = 0; i < bytes.length; i++) bytes[i] = (i * 37 + 11) % 256;
+        return bytes;
+      },
+    });
+    expect((globalThis.crypto as { randomUUID?: unknown }).randomUUID).toBeUndefined();
+    expect(randomId()).toMatch(/^[0-9a-f]{32}$/);
+  });
+});
 
 describe("storagePathFromUrl", () => {
   it("extracts the bucket path from a public URL", () => {

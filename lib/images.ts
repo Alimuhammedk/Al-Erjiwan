@@ -37,10 +37,17 @@ export async function compressImage(file: File): Promise<Blob> {
   return blob;
 }
 
+// A random file name. crypto.randomUUID only exists on secure pages (https or localhost), so it fails on a
+// phone that opens the dev server over plain http; getRandomValues works everywhere.
+export function randomId(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 // Browser only: only a signed-in admin can write to the bucket (storage security rules).
 export async function uploadImage(file: File, folder: "products" | "categories" | "banners"): Promise<string> {
   const blob = await compressImage(file);
-  const path = `${folder}/${crypto.randomUUID()}.webp`;
+  const path = `${folder}/${randomId()}.webp`;
   const storage = getBrowserClient().storage.from("images");
   const { error } = await storage.upload(path, blob, { contentType: "image/webp" });
   if (error) throw new Error(ar.admin.errors.saveFailed);
