@@ -73,3 +73,47 @@ describe("getOrder", () => {
     expect(await getOrder("123e4567-e89b-12d3-a456-426614174000")).toBeNull();
   });
 });
+
+import { listOrders } from "../admin/orders-data";
+
+// A chain that remembers every call, then yields the scripted result when awaited.
+function recording(result: unknown) {
+  const calls: [string, unknown[]][] = [];
+  const b: Record<string, unknown> = {};
+  for (const m of ["select", "eq", "or", "order", "range"]) b[m] = (...args: unknown[]) => (calls.push([m, args]), b);
+  b.then = (resolve: (v: unknown) => void) => resolve(result);
+  return { b, calls };
+}
+
+describe("listOrders", () => {
+  it("asks for the right page, newest first, with the filters", async () => {
+    const { b, calls } = recording({ data: [], count: 0, error: null });
+    db.from.mockReturnValue(b);
+    await listOrders({ status: "shipped", q: "علي", page: 3 });
+    expect(calls).toContainEqual(["eq", ["status", "shipped"]]);
+    expect(calls).toContainEqual(["or", ["code.ilike.%علي%,customer_name.ilike.%علي%,phone.ilike.%علي%"]]);
+    expect(calls).toContainEqual(["order", ["created_at", { ascending: false }]]);
+    expect(calls).toContainEqual(["range", [40, 59]]);
+  });
+  it("adds no filter when none is chosen", async () => {
+    const { b, calls } = recording({ data: [], count: 0, error: null });
+    db.from.mockReturnValue(b);
+    await listOrders({ status: null, q: "", page: 1 });
+    expect(calls.some(([m]) => m === "eq" || m === "or")).toBe(false);
+  });
+  it("returns the orders with numbers and the total count", async () => {
+    const { b } = recording({ data: [{ id: "o1", code: "ABCD1234", customer_name: "علي", phone: "0770", governorate: "بابل", total: "13000", status: "new", created_at: "x" }], count: 41, error: null });
+    db.from.mockReturnValue(b);
+    const r = await listOrders({ status: null, q: "", page: 1 });
+    expect(r.total).toBe(41);
+    expect(r.orders[0].total).toBe(13000);
+  });
+  it("returns an empty list on an error or a throw", async () => {
+    db.from.mockReturnValue(recording({ data: null, count: null, error: { message: "x" } }).b);
+    expect(await listOrders({ status: null, q: "", page: 1 })).toEqual({ orders: [], total: 0 });
+    db.from.mockImplementation(() => {
+      throw new Error("boom");
+    });
+    expect(await listOrders({ status: null, q: "", page: 1 })).toEqual({ orders: [], total: 0 });
+  });
+});

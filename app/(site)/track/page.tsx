@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { inputClass } from "@/components/admin/FormField";
 import { ar } from "@/content/ar";
 import { trackOrder } from "@/lib/data/orders";
-import { formatPrice } from "@/lib/format";
+import { formatDateTime, formatPrice } from "@/lib/format";
 import { customerStatusLabel, timeline } from "@/lib/shop/status";
 
 export const metadata: Metadata = { title: `${ar.track.title} | ${ar.siteName}`, robots: { index: false } };
@@ -10,9 +10,6 @@ export const dynamic = "force-dynamic";
 
 type Params = Record<string, string | string[] | undefined>;
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
-
-const when = (iso: string) =>
-  new Date(iso).toLocaleString("ar-IQ-u-nu-latn", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Baghdad" });
 
 export default async function TrackPage({ searchParams }: { searchParams: Promise<Params> }) {
   const params = await searchParams;
@@ -72,11 +69,11 @@ export default async function TrackPage({ searchParams }: { searchParams: Promis
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between gap-3">
               <dt className="text-ink/70">{t.placed}</dt>
-              <dd className="font-semibold">{when(order.created_at)}</dd>
+              <dd className="font-semibold">{formatDateTime(order.created_at)}</dd>
             </div>
             <div className="flex justify-between gap-3">
               <dt className="text-ink/70">{t.updated}</dt>
-              <dd className="font-semibold">{when(order.updated_at)}</dd>
+              <dd className="font-semibold">{formatDateTime(order.updated_at)}</dd>
             </div>
             {order.delivery_company && (
               <div className="flex justify-between gap-3">

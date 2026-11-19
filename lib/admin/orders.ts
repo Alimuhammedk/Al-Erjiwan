@@ -1,5 +1,6 @@
 import { ar } from "@/content/ar";
 import { formatPrice } from "@/lib/format";
+import { sanitiseSearch } from "@/lib/shop/query";
 
 const m = ar.admin.orders.msg;
 
@@ -108,3 +109,20 @@ export function deliveryMessage(order: AdminOrder): string {
 
 // wa.me without a number opens WhatsApp's chat picker, so Ali can send it to any delivery company.
 export const deliveryWhatsAppUrl = (order: AdminOrder) => `https://wa.me/?text=${encodeURIComponent(deliveryMessage(order))}`;
+
+export const ORDERS_PER_PAGE = 20;
+
+export type OrderListQuery = { status: string | null; q: string; page: number };
+
+// The orders list reads its filters from the page address. The search text is cleaned because it goes into a
+// database filter, and a bad page number just becomes a valid one.
+export function parseOrderListQuery(params: Record<string, string | string[] | undefined>): OrderListQuery {
+  const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
+  const status = first(params.status);
+  const page = Number(first(params.page));
+  return {
+    status: (STATUS_ORDER as readonly string[]).includes(status) ? status : null,
+    q: sanitiseSearch(first(params.q)).slice(0, 40).trim(),
+    page: Number.isInteger(page) && page >= 1 ? Math.min(page, 500) : 1,
+  };
+}

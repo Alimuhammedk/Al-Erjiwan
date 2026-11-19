@@ -1,0 +1,55 @@
+"use client";
+
+import { useState, type FormEvent } from "react";
+import { ar } from "@/content/ar";
+import type { ActionState } from "@/lib/admin/types";
+import { FormField, inputClass } from "./FormField";
+import { SubmitButton } from "./SubmitButton";
+import { useFormAction } from "./useFormAction";
+
+const t = ar.admin.orders;
+
+type Props = {
+  initial: { delivery_company: string | null; tracking_note: string | null; internal_note: string | null };
+  action: (prev: ActionState, formData: FormData) => Promise<ActionState>;
+};
+
+// Delivery company, tracking note and a private note. Saving keeps what was typed and says it was saved.
+export function NotesForm({ initial, action }: Props) {
+  const { state, onSubmit, pending } = useFormAction(action, {} as ActionState);
+  const [submitted, setSubmitted] = useState(false);
+  const err = state.errors ?? {};
+  const saved = submitted && !pending && !state.error && !state.errors;
+
+  const submit = (e: FormEvent<HTMLFormElement>) => {
+    setSubmitted(true);
+    onSubmit(e);
+  };
+
+  return (
+    <form onSubmit={submit} className="space-y-4">
+      <FormField label={t.deliveryCompany} error={err.delivery_company}>
+        <input name="delivery_company" defaultValue={initial.delivery_company ?? ""} maxLength={100} className={inputClass} />
+      </FormField>
+      <FormField label={t.trackingNote} error={err.tracking_note}>
+        <input name="tracking_note" defaultValue={initial.tracking_note ?? ""} maxLength={200} className={inputClass} />
+      </FormField>
+      <FormField label={t.internalNote} error={err.internal_note}>
+        <textarea name="internal_note" rows={3} defaultValue={initial.internal_note ?? ""} maxLength={1000} className={inputClass} />
+      </FormField>
+      {state.error && (
+        <p role="alert" className="font-semibold text-coral-500">
+          {state.error}
+        </p>
+      )}
+      <div className="flex items-center gap-3">
+        <SubmitButton label={t.saveNotes} pending={pending} />
+        {saved && (
+          <span role="status" className="font-semibold text-brand-700">
+            {t.saved}
+          </span>
+        )}
+      </div>
+    </form>
+  );
+}

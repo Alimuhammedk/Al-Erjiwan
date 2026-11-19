@@ -1,5 +1,5 @@
 import { createAuthClient } from "@/lib/supabase/auth-server";
-import type { AdminOrder } from "./orders";
+import { ORDERS_PER_PAGE, type AdminOrder, type OrderListQuery } from "./orders";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -57,5 +57,35 @@ export async function getOrder(id: string): Promise<AdminOrder | null> {
     };
   } catch {
     return null;
+  }
+}
+
+export type OrderRow = {
+  id: string;
+  code: string;
+  customer_name: string;
+  phone: string;
+  governorate: string;
+  total: number;
+  status: string;
+  created_at: string;
+};
+
+// One page of the orders list, newest first, with the chosen status and search.
+export async function listOrders(q: OrderListQuery): Promise<{ orders: OrderRow[]; total: number }> {
+  try {
+    const db = await createAuthClient();
+    let query = db
+      .from("orders")
+      .select("id, code, customer_name, phone, governorate, total, status, created_at", { count: "exact" });
+    if (q.status) query = query.eq("status", q.status);
+    if (q.q) query = query.or(`code.ilike.%${q.q}%,customer_name.ilike.%${q.q}%,phone.ilike.%${q.q}%`);
+    const from = (q.page - 1) * ORDERS_PER_PAGE;
+    const { data, count, error } = await query.order("created_at", { ascending: false }).range(from, from + ORDERS_PER_PAGE - 1);
+    if (error) return { orders: [], total: 0 };
+    const rows = (data as (Omit<OrderRow, "total"> & { total: number | string })[] | null) ?? [];
+    return { orders: rows.map((r) => ({ ...r, total: Number(r.total) })), total: count ?? 0 };
+  } catch {
+    return { orders: [], total: 0 };
   }
 }

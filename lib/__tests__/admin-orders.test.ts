@@ -110,3 +110,29 @@ describe("deliveryWhatsAppUrl", () => {
     expect(decode(url)).toContain("الطابق 2 & الباب الأزرق #5 ؟");
   });
 });
+
+import { parseOrderListQuery } from "../admin/orders";
+
+describe("parseOrderListQuery", () => {
+  it("defaults to every status, no search and the first page", () => {
+    expect(parseOrderListQuery({})).toEqual({ status: null, q: "", page: 1 });
+  });
+  it("keeps a real status and drops an unknown one", () => {
+    expect(parseOrderListQuery({ status: "shipped" }).status).toBe("shipped");
+    expect(parseOrderListQuery({ status: "hacked" }).status).toBeNull();
+  });
+  it("cleans the search text so it cannot break the database filter", () => {
+    expect(parseOrderListQuery({ q: "  علي,(حسين)%  " }).q).toBe("علي حسين");
+    expect(parseOrderListQuery({ q: "ا".repeat(200) }).q).toHaveLength(40);
+  });
+  it("keeps the page between 1 and 500", () => {
+    expect(parseOrderListQuery({ page: "0" }).page).toBe(1);
+    expect(parseOrderListQuery({ page: "-4" }).page).toBe(1);
+    expect(parseOrderListQuery({ page: "abc" }).page).toBe(1);
+    expect(parseOrderListQuery({ page: "3" }).page).toBe(3);
+    expect(parseOrderListQuery({ page: "999999" }).page).toBe(500);
+  });
+  it("takes the first value when a parameter is repeated", () => {
+    expect(parseOrderListQuery({ status: ["new", "shipped"] }).status).toBe("new");
+  });
+});
