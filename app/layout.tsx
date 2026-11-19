@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Cairo } from "next/font/google";
 import { ar } from "@/content/ar";
 import "./globals.css";
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
   description: ar.tagline,
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ar" dir="rtl" className={`${cairo.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>

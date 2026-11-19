@@ -23,6 +23,19 @@ export const ar = {
     emptyProjects: "ستظهر صور أعمالنا هنا قريبًا",
   },
 
+  admin: {
+    loginTitle: "تسجيل دخول المدير",
+    email: "البريد الإلكتروني",
+    password: "كلمة المرور",
+    signIn: "دخول",
+    signOut: "تسجيل الخروج",
+    badCredentials: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    forbidden: "هذا الحساب لا يملك صلاحية الدخول",
+    genericError: "حدث خطأ، حاول مرة أخرى",
+    dashboardTitle: "لوحة التحكم",
+    welcome: "مرحبًا بك في لوحة تحكم أصباغ الأرجوان",
+  },
+
   common: {
     addToCart: "أضف إلى السلة",
     outOfStock: "نفدت الكمية",
