@@ -39,6 +39,17 @@ test("the cart page lists saved items, changes quantity and removes them", async
   await expect(page.getByText("السلة فارغة")).toBeVisible();
 });
 
+test("cart buttons are big enough to tap (44px)", async ({ page }) => {
+  await page.addInitScript((i) => localStorage.setItem("al-erjiwan-cart", JSON.stringify([i])), item);
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto("/cart");
+  for (const name of ["زيادة الكمية", "تقليل الكمية", "حذف"]) {
+    const box = await page.getByRole("button", { name }).boundingBox();
+    expect(box!.width, `${name} width`).toBeGreaterThanOrEqual(44);
+    expect(box!.height, `${name} height`).toBeGreaterThanOrEqual(44);
+  }
+});
+
 test("a corrupted saved cart is ignored", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("al-erjiwan-cart", "{not json"));
   const response = await page.goto("/cart");

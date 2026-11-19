@@ -55,7 +55,7 @@ export function ProductForm({ action, categories, initial }: Props) {
         </FormField>
         <FormField label={t.basePrice} error={err.base_price}>
           <input name="base_price" inputMode="numeric" defaultValue={initial?.base_price} required className={inputClass} />
-          <span className="mt-1 block text-xs text-ink/60">{t.basePriceHint}</span>
+          <span className="mt-1 block text-xs text-ink/70">{t.basePriceHint}</span>
         </FormField>
         <FormField label={t.finish} error={err.finish}>
           <select name="finish" defaultValue={initial?.finish ?? ""} className={inputClass}>

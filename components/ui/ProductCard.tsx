@@ -28,7 +28,7 @@ export function ProductCard({ product }: { product: ProductWithImage }) {
         <h3 className="line-clamp-2 break-words font-bold text-brand-900">{product.name_ar}</h3>
         <p className="flex flex-wrap items-baseline gap-2">
           <span className="font-extrabold text-brand-700">{formatPrice(price)}</span>
-          {oldPrice !== null && <span className="text-sm text-ink/50 line-through">{formatPrice(oldPrice)}</span>}
+          {oldPrice !== null && <span className="text-sm text-ink/70 line-through">{formatPrice(oldPrice)}</span>}
         </p>
       </div>
     </Link>

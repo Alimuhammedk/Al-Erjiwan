@@ -6,7 +6,7 @@ import { ar } from "@/content/ar";
 import { useCart } from "@/lib/cart/CartProvider";
 import { formatPrice } from "@/lib/format";
 
-const step = "grid size-9 place-items-center rounded-full border-2 border-brand-100 font-bold text-brand-900 hover:bg-brand-50";
+const step = "grid size-11 place-items-center rounded-full border-2 border-brand-100 font-bold text-brand-900 hover:bg-brand-50";
 
 export function CartView() {
   const { items, setQty, remove, total } = useCart();
@@ -56,7 +56,7 @@ export function CartView() {
                 <button type="button" aria-label={t.increase} onClick={() => setQty(i.key, i.quantity + 1)} className={step}>
                   +
                 </button>
-                <button type="button" onClick={() => remove(i.key)} className="ms-auto text-sm font-bold text-coral-500">
+                <button type="button" onClick={() => remove(i.key)} className="ms-auto min-h-11 min-w-11 px-3 text-sm font-bold text-coral-500">
                   {t.remove}
                 </button>
               </div>
@@ -73,7 +73,7 @@ export function CartView() {
         <button type="button" disabled className="w-full cursor-not-allowed rounded-full bg-brand-700 px-6 py-3 font-bold text-white opacity-40">
           {t.checkout}
         </button>
-        <p className="text-center text-xs text-ink/60">{t.checkoutSoon}</p>
+        <p className="text-center text-xs text-ink/70">{t.checkoutSoon}</p>
         <Link href="/shop" className="block text-center font-bold text-brand-700">
           {t.continueShopping}
         </Link>

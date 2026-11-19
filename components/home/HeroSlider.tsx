@@ -1,63 +1,82 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ar } from "@/content/ar";
 import type { Banner } from "@/types/db";
 
+const control =
+  "grid size-11 place-items-center rounded-full bg-white/85 text-brand-900 shadow hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+
+function Chevron({ dir }: { dir: "left" | "right" }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={dir === "right" ? "M9 6l6 6-6 6" : "M15 6l-6 6 6 6"} />
+    </svg>
+  );
+}
+
 export function HeroSlider({ banners }: { banners: Banner[] }) {
+  const reduceMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [hovering, setHovering] = useState(false);
+  const [playing, setPlaying] = useState(true);
   const count = banners.length;
+  const active = count > 0 ? index % count : 0;
+  // Auto-rotation stops while hovered or paused, and never runs for people who asked for less motion.
+  const rotating = count > 1 && playing && !hovering && !reduceMotion;
 
   useEffect(() => {
-    if (count < 2 || paused) return;
+    if (!rotating) return;
     const id = setInterval(() => setIndex((i) => (i + 1) % count), 5000);
     return () => clearInterval(id);
-  }, [count, paused]);
+  }, [rotating, count]);
 
   // Brand text, not a banner: shown until the owner adds banners in admin.
   if (count === 0) {
     return (
       <section className="grid min-h-64 place-items-center bg-gradient-to-br from-brand-900 via-brand-700 to-magenta-500 px-4 py-16 text-center text-white md:min-h-96">
-        <div>
+        <div className="space-y-5">
           <h1 className="text-4xl font-extrabold md:text-6xl">{ar.siteName}</h1>
-          <p className="mt-3 text-lg text-white/90 md:text-2xl">{ar.tagline}</p>
+          <p className="text-lg text-white/90 md:text-2xl">{ar.tagline}</p>
+          <Link href="/shop" className="inline-block rounded-full bg-sun-300 px-8 py-3 text-lg font-extrabold text-brand-900 transition-transform hover:scale-105">
+            {ar.hero.shopNow}
+          </Link>
         </div>
       </section>
     );
   }
 
-  const banner = banners[index % count];
+  const banner = banners[active];
   const slide = (
     <>
-      <Image src={banner.image_url} alt={banner.title ?? ar.siteName} fill priority={index === 0} sizes="100vw" className="object-cover" />
-      {banner.title && (
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-900/80 to-transparent p-6 pb-10">
-          <h2 className="text-2xl font-extrabold text-white md:text-4xl">{banner.title}</h2>
-        </div>
-      )}
+      <Image src={banner.image_url} alt={banner.title ?? ar.siteName} fill priority={active === 0} sizes="100vw" className="object-cover" />
+      <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-3 bg-gradient-to-t from-brand-900/85 to-transparent p-5 pb-14 md:p-8 md:pb-14">
+        {banner.title && <h2 className="text-2xl font-extrabold text-white md:text-4xl">{banner.title}</h2>}
+        {banner.link && (
+          <span className="rounded-full bg-sun-300 px-6 py-2.5 font-extrabold text-brand-900">{ar.hero.shopNow}</span>
+        )}
+      </div>
     </>
   );
 
   return (
     <section
       className="relative aspect-[16/9] max-h-[32rem] w-full overflow-hidden bg-brand-50 md:aspect-[21/9]"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onTouchStart={() => setPaused(true)}
-      onTouchEnd={() => setPaused(false)}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
     >
-      <AnimatePresence mode="wait">
+      {/* initial={false}: the first banner is in the page at once, only later changes animate */}
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={banner.id}
           className="absolute inset-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: reduceMotion ? 0 : 0.5 }}
         >
           {banner.link ? (
             <Link href={banner.link} className="absolute inset-0 block">
@@ -68,19 +87,41 @@ export function HeroSlider({ banners }: { banners: Banner[] }) {
           )}
         </motion.div>
       </AnimatePresence>
+
       {count > 1 && (
-        <div className="absolute inset-x-0 bottom-3 flex justify-center gap-2">
-          {banners.map((b, i) => (
-            <button
-              key={b.id}
-              type="button"
-              aria-label={`${ar.common.slide} ${i + 1}`}
-              aria-current={i === index % count}
-              onClick={() => setIndex(i)}
-              className={`size-2.5 rounded-full ${i === index % count ? "bg-white" : "bg-white/50"}`}
-            />
-          ))}
-        </div>
+        <>
+          <button type="button" onClick={() => setIndex((i) => (i - 1 + count) % count)} aria-label={ar.hero.prev} className={`${control} absolute start-3 top-1/2 -translate-y-1/2`}>
+            <Chevron dir="right" />
+          </button>
+          <button type="button" onClick={() => setIndex((i) => (i + 1) % count)} aria-label={ar.hero.next} className={`${control} absolute end-3 top-1/2 -translate-y-1/2`}>
+            <Chevron dir="left" />
+          </button>
+          <div className="absolute inset-x-0 bottom-1 flex items-center justify-center">
+            {banners.map((b, i) => (
+              <button
+                key={b.id}
+                type="button"
+                aria-label={`${ar.common.slide} ${i + 1}`}
+                aria-current={i === active}
+                onClick={() => setIndex(i)}
+                className="grid size-11 place-items-center"
+              >
+                <span className={`block h-2.5 rounded-full transition-all ${i === active ? "w-7 bg-white" : "w-2.5 bg-white/55"}`} />
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setPlaying((p) => !p)}
+            aria-label={playing ? ar.hero.pause : ar.hero.play}
+            aria-pressed={!playing}
+            className={`${control} absolute bottom-1.5 end-3 size-9`}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              {playing ? <path d="M7 5h4v14H7zM13 5h4v14h-4z" /> : <path d="M8 5v14l11-7z" />}
+            </svg>
+          </button>
+        </>
       )}
     </section>
   );

@@ -65,7 +65,7 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
     <div className="space-y-5">
       <p className="flex flex-wrap items-baseline gap-3">
         <span className="text-3xl font-extrabold text-brand-700">{formatPrice(price)}</span>
-        {oldPrice !== null && <span className="text-lg text-ink/50 line-through">{formatPrice(oldPrice)}</span>}
+        {oldPrice !== null && <span className="text-lg text-ink/70 line-through">{formatPrice(oldPrice)}</span>}
       </p>
 
       {swatchColours.length > 0 && (
