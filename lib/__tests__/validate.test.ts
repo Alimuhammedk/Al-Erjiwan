@@ -76,6 +76,28 @@ describe("validateProduct", () => {
   });
 });
 
+describe("validateProduct room and finish", () => {
+  const base = { name_ar: "دهان", base_price: "1000", stock: "1" };
+  it("defaults to no finish and no rooms", () => {
+    const r = validateProduct(base);
+    expect(r.ok && r.value.finish).toBeNull();
+    expect(r.ok && r.value.rooms).toEqual([]);
+  });
+  it("accepts allowed values", () => {
+    const r = validateProduct({ ...base, finish: "مطفي", rooms: ["المطبخ", "الحمام"] });
+    expect(r.ok && r.value.finish).toBe("مطفي");
+    expect(r.ok && r.value.rooms).toEqual(["المطبخ", "الحمام"]);
+  });
+  it("rejects a finish that is not in the list", () => {
+    const r = validateProduct({ ...base, finish: "غير موجود" });
+    expect(r.ok === false && r.errors.finish).toBeTruthy();
+  });
+  it("rejects a room that is not in the list", () => {
+    const r = validateProduct({ ...base, rooms: ["المطبخ", "قبو"] });
+    expect(r.ok === false && r.errors.rooms).toBeTruthy();
+  });
+});
+
 describe("validateVariant", () => {
   it("requires a size label and a valid price", () => {
     expect(validateVariant({ size_label: "", price: "5000", stock: "1" }).ok).toBe(false);

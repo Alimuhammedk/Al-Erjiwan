@@ -23,6 +23,12 @@ export const ar = {
     emptyProjects: "ستظهر صور أعمالنا هنا قريبًا",
   },
 
+  // Fixed lists Ali picks from; the shop filters use the same values.
+  options: {
+    finishes: ["مطفي", "نصف لامع", "لامع", "ساتان"],
+    rooms: ["غرفة المعيشة", "غرفة النوم", "المطبخ", "الحمام", "الواجهات الخارجية"],
+  },
+
   admin: {
     loginTitle: "تسجيل دخول المدير",
     email: "البريد الإلكتروني",
@@ -84,6 +90,10 @@ export const ar = {
       sizeLabel: "الحجم (مثل 4 لتر)",
       colour: "اللون (اختياري)",
       noCategory: "بدون فئة",
+      finish: "نوع اللمعة",
+      rooms: "الغرف المناسبة",
+      noFinish: "غير محدد",
+      basePriceHint: "للمنتجات ذات الأحجام اكتب أقل سعر. سعر التخفيض لا ينطبق على الأحجام",
     },
     banners: {
       title: "البانرات",

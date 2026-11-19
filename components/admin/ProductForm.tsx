@@ -55,6 +55,17 @@ export function ProductForm({ action, categories, initial }: Props) {
         </FormField>
         <FormField label={t.basePrice} error={err.base_price}>
           <input name="base_price" inputMode="numeric" defaultValue={initial?.base_price} required className={inputClass} />
+          <span className="mt-1 block text-xs text-ink/60">{t.basePriceHint}</span>
+        </FormField>
+        <FormField label={t.finish} error={err.finish}>
+          <select name="finish" defaultValue={initial?.finish ?? ""} className={inputClass}>
+            <option value="">{t.noFinish}</option>
+            {ar.options.finishes.map((f) => (
+              <option key={f} value={f}>
+                {f}
+              </option>
+            ))}
+          </select>
         </FormField>
         <FormField label={t.salePrice} error={err.sale_price}>
           <input name="sale_price" inputMode="numeric" defaultValue={initial?.sale_price ?? ""} className={inputClass} />
@@ -63,6 +74,18 @@ export function ProductForm({ action, categories, initial }: Props) {
           <input name="stock" inputMode="numeric" defaultValue={initial?.stock ?? 0} className={inputClass} />
         </FormField>
       </div>
+      <fieldset className="space-y-2">
+        <legend className="mb-1 font-semibold text-brand-900">{t.rooms}</legend>
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          {ar.options.rooms.map((room) => (
+            <label key={room} className="flex items-center gap-2">
+              <input type="checkbox" name="rooms" value={room} defaultChecked={initial?.rooms?.includes(room)} className="size-5 accent-[#602f8a]" />
+              <span>{room}</span>
+            </label>
+          ))}
+        </div>
+        {err.rooms && <p role="alert" className="text-sm font-semibold text-coral-500">{err.rooms}</p>}
+      </fieldset>
       <div className="space-y-3">
         <Switch name="is_active" label={t.active} defaultChecked={initial?.is_active ?? true} />
         <Switch name="is_featured" label={t.featured} defaultChecked={initial?.is_featured ?? false} />

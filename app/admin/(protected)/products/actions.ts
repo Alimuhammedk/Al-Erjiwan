@@ -13,7 +13,7 @@ export async function saveProductAction(
   formData: FormData,
 ): Promise<ActionState> {
   await requireAdmin();
-  const result = validateProduct(Object.fromEntries(formData));
+  const result = validateProduct({ ...Object.fromEntries(formData), rooms: formData.getAll("rooms").map(String) });
   if (!result.ok) return { errors: result.errors };
 
   const db = await createAuthClient();

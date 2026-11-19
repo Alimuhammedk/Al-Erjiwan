@@ -29,6 +29,8 @@ export type Product = {
   is_active: boolean;
   is_featured: boolean;
   is_tintable: boolean;
+  finish: string | null;
+  rooms: string[];
   created_at: string;
 };
 
