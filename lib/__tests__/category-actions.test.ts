@@ -38,7 +38,7 @@ beforeEach(() => {
 describe("saveCategoryAction", () => {
   it("inserts a valid new category and goes back to the list", async () => {
     await expect(saveCategoryAction(null, {}, form({ name_ar: "دهانات داخلية", sort_order: "1" }))).rejects.toThrow(
-      "REDIRECT:/admin/categories",
+      "REDIRECT:/admin/storefront",
     );
     expect(db.from).toHaveBeenCalledWith("categories");
     expect(db.table.insert).toHaveBeenCalledWith(
@@ -53,7 +53,7 @@ describe("saveCategoryAction", () => {
   });
 
   it("updates the right row when editing", async () => {
-    await expect(saveCategoryAction("c1", {}, form({ name_ar: "جديد" }))).rejects.toThrow("REDIRECT:/admin/categories");
+    await expect(saveCategoryAction("c1", {}, form({ name_ar: "جديد" }))).rejects.toThrow("REDIRECT:/admin/storefront");
     expect(db.table.update).toHaveBeenCalledWith(expect.objectContaining({ name_ar: "جديد" }));
     expect(db.eq).toHaveBeenCalledWith("id", "c1");
   });
@@ -73,7 +73,7 @@ describe("saveCategoryAction", () => {
 
 describe("deleteCategoryAction", () => {
   it("deletes only the given row after checking the admin", async () => {
-    await expect(deleteCategoryAction("c1")).rejects.toThrow("REDIRECT:/admin/categories");
+    await expect(deleteCategoryAction("c1")).rejects.toThrow("REDIRECT:/admin/storefront");
     expect(guard.requireAdmin).toHaveBeenCalled();
     expect(db.eq).toHaveBeenCalledWith("id", "c1");
   });

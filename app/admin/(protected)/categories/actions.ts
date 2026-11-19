@@ -21,7 +21,7 @@ export async function saveCategoryAction(
     ? db.from("categories").update(result.value).eq("id", id)
     : db.from("categories").insert(result.value));
   if (error) return { error: ar.admin.errors.saveFailed };
-  redirect("/admin/categories");
+  redirect("/admin/storefront");
 }
 
 // Products in the category stay; their category becomes empty (database rule).
@@ -30,5 +30,5 @@ export async function deleteCategoryAction(id: string): Promise<void> {
   const db = await createAuthClient();
   const { error } = await db.from("categories").delete().eq("id", id);
   if (error) throw new Error(ar.admin.errors.saveFailed);
-  redirect("/admin/categories");
+  redirect("/admin/storefront");
 }
