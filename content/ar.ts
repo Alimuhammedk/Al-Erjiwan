@@ -220,6 +220,25 @@ export const ar = {
     deliveryNote: "تكلفة التوصيل تُحسب عند إتمام الطلب",
   },
 
+  language: {
+    switchLabel: "English",
+    switchAria: "Switch the site to English",
+  },
+
+  pages: {
+    about: "من نحن",
+    faq: "الأسئلة الشائعة",
+    returns: "سياسة الإرجاع",
+    privacy: "سياسة الخصوصية",
+    footerTitle: "معلومات",
+    mapTitle: "موقع المتجر",
+    openInMaps: "افتح في خرائط جوجل",
+    back: "العودة إلى الرئيسية",
+    notFound: "الصفحة غير موجودة",
+    notFoundText: "ربما تغيّر عنوان الصفحة أو لم تعد متاحة.",
+    emptyPage: "لم يُكتب نص هذه الصفحة بعد.",
+  },
+
   admin: {
     loginTitle: "تسجيل دخول المدير",
     email: "البريد الإلكتروني",
@@ -611,6 +630,7 @@ export const ar = {
     addToCart: "أضف إلى السلة",
     outOfStock: "نفدت الكمية",
     whatsapp: "تواصل عبر واتساب",
+    currency: "د.ع",
     viewAll: "عرض الكل",
     slideBack: "السابق",
     slideForward: "التالي",
