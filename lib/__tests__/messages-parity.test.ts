@@ -36,15 +36,19 @@ describe("Arabic and English messages", () => {
     expect(problems).toEqual([]);
   });
 
-  it("English never contains Arabic letters, and Arabic never contains English words (except the language switch and the brand)", () => {
-    const en = JSON.stringify(messagesFor("en"));
-    const ar = messagesFor("ar") as unknown as Record<string, unknown>;
-    // The English switch label shows the Arabic word "عربي" on purpose, and the aria text too.
-    const withoutSwitch = JSON.stringify({ ...(messagesFor("en") as object), language: undefined });
-    expect(withoutSwitch).not.toMatch(/[؀-ۿ]/);
-    expect(en).toContain("عربي");
-    const arText = JSON.stringify({ ...ar, language: undefined, nav: undefined });
-    expect(arText.replace(/\{\w+\}/g, "")).not.toMatch(/[A-Za-z]{3,}/);
+  it("English never contains Arabic letters, and Arabic never contains English words (the language switch and nav addresses excepted)", () => {
+    // every text in a message set, skipping the language switch (it shows the other language on purpose) and nav addresses
+    const texts = (v: unknown, key = ""): string[] => {
+      if (key === "language" || key === "key" || key === "href") return [];
+      if (typeof v === "string") return [v.replace(/{w+}/g, "")];
+      if (Array.isArray(v)) return v.flatMap((x) => texts(x));
+      if (v && typeof v === "object") return Object.entries(v).flatMap(([k, x]) => texts(x, k));
+      return [];
+    };
+    const arabicInEnglish = texts(messagesFor("en")).filter((t) => /[؀-ۿ]/.test(t));
+    const latinInArabic = texts(messagesFor("ar")).filter((t) => /[A-Za-z]{3,}/.test(t));
+    expect(arabicInEnglish).toEqual([]);
+    expect(latinInArabic).toEqual([]);
   });
 
   it("the shown language word is the other language, on both sides", () => {
