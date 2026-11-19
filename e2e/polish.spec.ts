@@ -47,8 +47,11 @@ test("banner dots are at least 44px and the arrows and pause button work", async
   await page.getByRole("button", { name: "الشريحة السابقة" }).click();
   await expect.poll(() => current(page)).toBe(start);
 
-  await page.getByRole("button", { name: "إيقاف التشغيل التلقائي" }).click();
-  await expect(page.getByRole("button", { name: "تشغيل التلقائي" })).toBeVisible();
+  // The pause button is hidden from view; keyboard users reach it with Tab, so the test uses the keyboard too.
+  const pause = page.getByRole("button", { name: "إيقاف التشغيل التلقائي" });
+  await pause.focus();
+  await pause.press("Enter");
+  await expect(page.getByRole("button", { name: "تشغيل التلقائي" })).toHaveAttribute("aria-pressed", "true");
 });
 
 test("the banner rotates on its own, but not when reduced motion is requested", async ({ page, browser }) => {
@@ -239,4 +242,99 @@ test("an empty header search just opens the shop", async ({ page }) => {
   const search = page.getByRole("search").getByRole("searchbox", { name: "ابحث في المتجر" });
   await search.press("Enter");
   await expect(page).toHaveURL(/\/shop(\?q=)?$/);
+});
+
+// ---- Phone fixes: logo, banner layout, reassurance lines, dark mode ----
+type Box = { x: number; y: number; width: number; height: number };
+const overlaps = (a: Box, b: Box) =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+test("the header logo is a transparent PNG, so it blends with the page", async ({ page }) => {
+  await page.goto("/");
+  const logo = page.locator('header img[src*="logo-icon"]').first();
+  await expect(logo).toHaveAttribute("src", /logo-icon.*\.png|\.png/);
+  const corner = await logo.evaluate(async (el) => {
+    const img = el as HTMLImageElement;
+    await img.decode();
+    const c = document.createElement("canvas");
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    const ctx = c.getContext("2d")!;
+    ctx.drawImage(img, 0, 0);
+    return Array.from(ctx.getImageData(1, 1, 1, 1).data).concat(img.naturalWidth, img.naturalHeight);
+  });
+  expect(corner[3]).toBe(0); // top-left pixel is fully transparent
+  expect(corner[4] / corner[5]).toBeGreaterThan(0.6); // cropped to the mark, not the old tall lockup
+  expect(corner[4] / corner[5]).toBeLessThan(1.6);
+});
+
+test("the login page and the browser tab use the same new logo", async ({ page }) => {
+  await page.goto("/admin/login");
+  await expect(page.locator('img[src*="logo-icon"]').first()).toHaveAttribute("src", /\.png/);
+  const icon = await page.locator('link[rel~="icon"]').first().getAttribute("href");
+  expect(icon).toMatch(/icon/);
+});
+
+test.describe("banner on a phone", () => {
+  test.use({ viewport: { width: 375, height: 800 } });
+
+  test("arrows are small to look at but still 44px to tap, and nothing overlaps", async ({ page }) => {
+    await page.goto("/");
+    const hero = page.locator("main section").first();
+    const prev = hero.getByRole("button", { name: "الشريحة السابقة" });
+    const next = hero.getByRole("button", { name: "الشريحة التالية" });
+    for (const b of [prev, next]) {
+      const hit = (await b.boundingBox())!;
+      expect(hit.width).toBeGreaterThanOrEqual(44);
+      const look = (await b.locator("span").first().boundingBox())!;
+      expect(look.width).toBeLessThanOrEqual(34);
+    }
+
+    const title = (await hero.locator("h2").boundingBox())!;
+    const cta = (await hero.getByText("تسوّق الآن").boundingBox())!;
+    const dotsBox = (await hero.getByRole("button", { name: /^الشريحة \d/ }).first().boundingBox())!;
+    const visuals = await Promise.all([prev, next].map((b) => b.locator("span").first().boundingBox()));
+    for (const v of visuals) {
+      expect(overlaps(title, v!), "title vs arrow").toBe(false);
+      expect(overlaps(cta, v!), "button vs arrow").toBe(false);
+    }
+    expect(overlaps(title, cta), "title vs button").toBe(false);
+    expect(overlaps(cta, dotsBox), "button vs dots").toBe(false);
+    expect(overlaps(title, dotsBox), "title vs dots").toBe(false);
+  });
+
+  test("the title fits: smaller type and at most two lines", async ({ page }) => {
+    await page.goto("/");
+    const title = page.locator("main section").first().locator("h2");
+    const { size, lines } = await title.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { size: parseFloat(s.fontSize), lines: Math.round(el.getBoundingClientRect().height / parseFloat(s.lineHeight)) };
+    });
+    expect(size).toBeLessThanOrEqual(22);
+    expect(lines).toBeLessThanOrEqual(2);
+  });
+});
+
+test("the banner pause button is hidden, but a keyboard user can still reach it", async ({ page }) => {
+  await page.goto("/");
+  const pause = page.getByRole("button", { name: "إيقاف التشغيل التلقائي" });
+  expect((await pause.boundingBox())!.width).toBeLessThan(4);
+  await pause.focus();
+  expect((await pause.boundingBox())!.width).toBeGreaterThan(20);
+});
+
+test("the reassurance lines sit at the very bottom of the homepage", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/");
+  const y = async (loc: ReturnType<Page["locator"]>) => (await loc.first().boundingBox())!.y;
+  const strip = page.getByText("توصيل إلى جميع محافظات العراق").first();
+  const stripY = await y(strip);
+  expect(stripY).toBeGreaterThan(await y(page.getByRole("heading", { name: "من أعمالنا" })));
+  expect(stripY).toBeLessThan(await y(page.locator("footer")));
+  expect(stripY).toBeGreaterThan(await y(page.getByRole("heading", { name: "تسوّق حسب الفئة" })));
+});
+
+test("the site asks browsers not to force dark mode", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator('meta[name="color-scheme"]')).toHaveAttribute("content", "light");
 });

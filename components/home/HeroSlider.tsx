@@ -7,14 +7,21 @@ import { useEffect, useState } from "react";
 import { ar } from "@/content/ar";
 import type { Banner } from "@/types/db";
 
-const control =
-  "grid size-11 place-items-center rounded-full bg-white/85 text-brand-900 shadow hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
-
-function Chevron({ dir }: { dir: "left" | "right" }) {
+// The button is a 44px tap area; only the small circle inside it is drawn (32px on phones).
+function Arrow({ dir, label, onClick, side }: { dir: "left" | "right"; label: string; onClick: () => void; side: string }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d={dir === "right" ? "M9 6l6 6-6 6" : "M15 6l-6 6 6 6"} />
-    </svg>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className={`group absolute top-1/2 grid size-11 -translate-y-1/2 place-items-center ${side}`}
+    >
+      <span className="grid size-8 place-items-center rounded-full bg-white/80 text-brand-900 shadow transition-colors group-hover:bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-white md:size-10">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d={dir === "right" ? "M9 6l6 6-6 6" : "M15 6l-6 6 6 6"} />
+        </svg>
+      </span>
+    </button>
   );
 }
 
@@ -53,10 +60,15 @@ export function HeroSlider({ banners }: { banners: Banner[] }) {
   const slide = (
     <>
       <Image src={banner.image_url} alt={banner.title ?? ar.siteName} fill priority={active === 0} sizes="100vw" className="object-cover" />
-      <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-3 bg-gradient-to-t from-brand-900/85 to-transparent p-5 pb-14 md:p-8 md:pb-14">
-        {banner.title && <h2 className="text-2xl font-extrabold text-white md:text-4xl">{banner.title}</h2>}
+      {/* Wide side padding keeps the text clear of the arrows; bottom padding keeps it clear of the dots. */}
+      <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-2 bg-gradient-to-t from-brand-900/85 to-transparent px-12 pb-12 pt-10 md:flex-row md:items-end md:justify-between md:gap-4 md:px-16 md:pb-14">
+        {banner.title && (
+          <h2 className="line-clamp-2 text-lg font-extrabold leading-snug text-white md:text-4xl">{banner.title}</h2>
+        )}
         {banner.link && (
-          <span className="rounded-full bg-sun-300 px-6 py-2.5 font-extrabold text-brand-900">{ar.hero.shopNow}</span>
+          <span className="shrink-0 rounded-full bg-sun-300 px-4 py-1.5 text-sm font-extrabold text-brand-900 md:px-6 md:py-2.5 md:text-base">
+            {ar.hero.shopNow}
+          </span>
         )}
       </div>
     </>
@@ -64,7 +76,7 @@ export function HeroSlider({ banners }: { banners: Banner[] }) {
 
   return (
     <section
-      className="relative aspect-[16/9] max-h-[32rem] w-full overflow-hidden bg-brand-50 md:aspect-[21/9]"
+      className="relative aspect-[4/3] max-h-[32rem] w-full overflow-hidden bg-brand-50 md:aspect-[21/9]"
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
@@ -90,12 +102,8 @@ export function HeroSlider({ banners }: { banners: Banner[] }) {
 
       {count > 1 && (
         <>
-          <button type="button" onClick={() => setIndex((i) => (i - 1 + count) % count)} aria-label={ar.hero.prev} className={`${control} absolute start-3 top-1/2 -translate-y-1/2`}>
-            <Chevron dir="right" />
-          </button>
-          <button type="button" onClick={() => setIndex((i) => (i + 1) % count)} aria-label={ar.hero.next} className={`${control} absolute end-3 top-1/2 -translate-y-1/2`}>
-            <Chevron dir="left" />
-          </button>
+          <Arrow dir="right" label={ar.hero.prev} side="start-1 md:start-3" onClick={() => setIndex((i) => (i - 1 + count) % count)} />
+          <Arrow dir="left" label={ar.hero.next} side="end-1 md:end-3" onClick={() => setIndex((i) => (i + 1) % count)} />
           <div className="absolute inset-x-0 bottom-1 flex items-center justify-center">
             {banners.map((b, i) => (
               <button
@@ -110,12 +118,13 @@ export function HeroSlider({ banners }: { banners: Banner[] }) {
               </button>
             ))}
           </div>
+          {/* Hidden from view, but a keyboard user can Tab to it: it appears while focused (WCAG: moving content needs a pause control). */}
           <button
             type="button"
             onClick={() => setPlaying((p) => !p)}
             aria-label={playing ? ar.hero.pause : ar.hero.play}
             aria-pressed={!playing}
-            className={`${control} absolute bottom-1.5 end-3 size-9`}
+            className="sr-only focus:not-sr-only focus:absolute focus:bottom-14 focus:end-3 focus:z-10 focus:grid focus:size-11 focus:place-items-center focus:rounded-full focus:bg-white focus:text-brand-900 focus:shadow"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               {playing ? <path d="M7 5h4v14H7zM13 5h4v14h-4z" /> : <path d="M8 5v14l11-7z" />}

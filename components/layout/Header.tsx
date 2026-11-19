@@ -14,7 +14,7 @@ export function Header() {
     <HeaderShell>
       <div className="relative mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4">
         <Link href="/" className="flex items-center gap-3" aria-label={ar.siteName}>
-          <Image src="/logo-icon.jpg" alt="" width={48} height={43} priority className="h-10 w-auto" />
+          <Image src="/logo-icon.png" alt="" width={44} height={40} priority className="h-10 w-auto" />
           <span className="text-xl font-extrabold text-brand-900">{ar.siteName}</span>
         </Link>
         <NavLinks links={links} />

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Cairo } from "next/font/google";
 import { ar } from "@/content/ar";
@@ -9,6 +9,9 @@ const cairo = Cairo({
   subsets: ["arabic", "latin"],
   display: "swap",
 });
+
+// The site is designed in light colours only. This stops phone browsers from forcing their own dark mode on it.
+export const viewport: Viewport = { colorScheme: "light" };
 
 export const metadata: Metadata = {
   title: `${ar.siteName} | ${ar.tagline}`,
