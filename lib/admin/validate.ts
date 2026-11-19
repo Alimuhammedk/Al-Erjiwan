@@ -101,13 +101,18 @@ export function validateVariant(raw: Raw): Result<VariantInput> {
   return done(errors, { size_label, price: price ?? 0, stock, colour_id });
 }
 
+// An https address, or a path on this site (not //other-site).
+export function isImageUrl(v: string): boolean {
+  return /^https:\/\/\S+$/.test(v) || /^\/(?!\/)\S+$/.test(v);
+}
+
 function imageUrl(raw: Raw, key: string, errors: Errors, required: boolean): string | null {
   const v = str(raw[key]);
   if (!v) {
     if (required) errors[key] = e.required;
     return null;
   }
-  if (!/^https:\/\//.test(v)) errors[key] = e.invalidImage;
+  if (!isImageUrl(v)) errors[key] = e.invalidImage;
   return v;
 }
 

@@ -2,7 +2,7 @@
 
 import { ar } from "@/content/ar";
 import type { ActionState } from "@/lib/admin/types";
-import { validateVariant } from "@/lib/admin/validate";
+import { isImageUrl, validateVariant } from "@/lib/admin/validate";
 import { requireAdmin } from "@/lib/auth";
 import { storagePathFromUrl } from "@/lib/images";
 import { createAuthClient } from "@/lib/supabase/auth-server";
@@ -14,7 +14,7 @@ const failed: ActionState = { error: ar.admin.errors.saveFailed };
 // (files are only removed from storage after a successful save), upgrade if that ever hurts.
 export async function saveProductImagesAction(productId: string, urls: string[]): Promise<ActionState> {
   await requireAdmin();
-  if (urls.some((u) => !/^https:\/\//.test(u))) return { error: ar.admin.errors.invalidImage };
+  if (urls.some((u) => !isImageUrl(u))) return { error: ar.admin.errors.invalidImage };
 
   const db = await createAuthClient();
   const { data: old } = await db.from("product_images").select("url").eq("product_id", productId);
