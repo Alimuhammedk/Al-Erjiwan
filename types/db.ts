@@ -32,6 +32,15 @@ export type Product = {
   created_at: string;
 };
 
+export type Colour = {
+  id: string;
+  name_ar: string;
+  name_en: string | null;
+  code: string | null;
+  hex: string;
+  family: string | null;
+};
+
 export type ProductImage = {
   id: string;
   product_id: string;

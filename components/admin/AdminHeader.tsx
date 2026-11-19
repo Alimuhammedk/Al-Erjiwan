@@ -1,5 +1,6 @@
 import { signOutAction } from "@/app/admin/login/actions";
 import { ar } from "@/content/ar";
+import { AdminNav } from "./AdminNav";
 
 export function AdminHeader({ email }: { email: string }) {
   return (
@@ -15,6 +16,7 @@ export function AdminHeader({ email }: { email: string }) {
           </form>
         </div>
       </div>
+      <AdminNav />
     </header>
   );
 }
