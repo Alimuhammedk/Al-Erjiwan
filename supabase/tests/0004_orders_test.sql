@@ -15,42 +15,54 @@ end $$;
 create function pg_temp.order_as(
   p_role text, p_items jsonb, p_gov text default 'بغداد', p_phone text default '07701234567', p_name text default 'علي حسين'
 ) returns text language plpgsql as $$
-declare v_code text;
+declare v_code text; v_prev text := current_user;
 begin
   execute format('set local role %I', p_role);
   begin
     v_code := public.place_order(p_name, p_phone, p_gov, 'الكفل', 'شارع الجامعة قرب المدرسة', 'قرب الجامع', null, p_items);
-    execute 'reset role';
+    execute format('set local role %I', v_prev);
     return v_code;
   exception when others then
-    execute 'reset role';
+    execute format('set local role %I', v_prev);
     return 'ERR:' || sqlerrm;
   end;
+end $$;
+
+-- Places an order as a visitor and expects it to be refused with an error starting with p_expect.
+create function pg_temp.expect_refused(p_label text, p_expect text, p_items jsonb, p_gov text default 'بغداد',
+                                       p_phone text default '07701234567', p_name text default 'علي حسين')
+returns void language plpgsql as $$
+declare v text;
+begin
+  v := pg_temp.order_as('anon', p_items, p_gov, p_phone, p_name);
+  perform pg_temp.check(v like p_expect || '%', p_label || ': expected ' || p_expect || ' but got ' || v);
 end $$;
 
 -- Runs a statement as a role and expects it to fail with an error containing p_expected.
 create function pg_temp.expect_err(p_sql text, p_expected text, p_role text default 'postgres', p_claims text default null)
 returns void language plpgsql as $$
+declare v_prev text := current_user;
 begin
   begin
     if p_role <> 'postgres' then execute format('set local role %I', p_role); end if;
     if p_claims is not null then perform set_config('request.jwt.claims', p_claims, true); end if;
     execute p_sql;
   exception when others then
-    execute 'reset role';
+    execute format('set local role %I', v_prev);
     if sqlerrm like '%' || p_expected || '%' then return; end if;
     raise exception 'TEST FAILED: wrong error for [%]: %', p_sql, sqlerrm;
   end;
-  execute 'reset role';
+  execute format('set local role %I', v_prev);
   raise exception 'TEST FAILED: expected error "%" for [%] but it worked', p_expected, p_sql;
 end $$;
 
 -- Runs a statement as a role and expects it to WORK.
 create function pg_temp.expect_ok(p_sql text, p_role text default 'postgres') returns void language plpgsql as $$
+declare v_prev text := current_user;
 begin
   if p_role <> 'postgres' then execute format('set local role %I', p_role); end if;
   execute p_sql;
-  execute 'reset role';
+  execute format('set local role %I', v_prev);
 end $$;
 
 create function pg_temp.as_admin() returns void language sql as $$
@@ -94,6 +106,8 @@ begin
   perform pg_temp.check((select unit_price from public.order_items where order_id = v_o.id) = 8000, 'item price is the database price');
   perform pg_temp.check((select stock from public.products where id = 'a0000000-0000-4000-8000-000000000001') = 2, 'stock dropped from 3 to 2');
   perform pg_temp.check((select delta from public.stock_movements where order_id = v_o.id) = -1, 'the movement was logged');
+exception when others then
+  raise exception '[section 1] %', sqlerrm;
 end $$;
 
 -- ---------- 2. the last unit can be bought once ----------
@@ -106,47 +120,53 @@ begin
   perform pg_temp.check(v2 = 'ERR:OUT_OF_STOCK:منتج بأحجام', 'the second buyer is refused: ' || v2);
   perform pg_temp.check((select stock from public.product_variants where id = 'c1000000-0000-4000-8000-000000000001') = 0, 'size stock is 0');
   perform pg_temp.check((select stock from public.products where id = 'a0000000-0000-4000-8000-000000000003') = 5, 'product stock follows its sizes (0 + 5)');
+exception when others then
+  raise exception '[section 2] %', sqlerrm;
 end $$;
 
 -- ---------- 3. bad orders are refused and change nothing ----------
-create temp table cases (label text, items jsonb, gov text, phone text, name text, expect text);
-insert into cases values
-  ('quantity 0', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000001','quantity',0)), 'بغداد', '07701234567', 'علي حسين', 'ERR:INVALID_INPUT'),
-  ('quantity -1', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000001','quantity',-1)), 'بغداد', '07701234567', 'علي حسين', 'ERR:INVALID_INPUT'),
-  ('quantity 100', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000001','quantity',100)), 'بغداد', '07701234567', 'علي حسين', 'ERR:INVALID_INPUT'),
-  ('quantity 1.5', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000001','quantity',1.5)), 'بغداد', '07701234567', 'علي حسين', 'ERR:INVALID_INPUT'),
-  ('quantity text', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000001','quantity','abc')), 'بغداد', '07701234567', 'علي حسين', 'ERR:INVALID_INPUT'),
-  ('hidden product', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000002','quantity',1)), 'بغداد', '07701234567', 'علي حسين', 'ERR:PRODUCT_UNAVAILABLE'),
-  ('unknown product', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-0000000000ff','quantity',1)), 'بغداد', '07701234567', 'علي حسين', 'ERR:PRODUCT_UNAVAILABLE'),
-  ('not a uuid', jsonb_build_array(jsonb_build_object('product_id','xyz','quantity',1)), 'بغداد', '07701234567', 'علي حسين', 'ERR:INVALID_INPUT'),
-  ('size of another product', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000004','variant_id','c1000000-0000-4000-8000-000000000002','quantity',1,'colour_note','12')), 'بغداد', '07701234567', 'علي حسين', 'ERR:INVALID_INPUT'),
-  ('size given for a product without sizes', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000001','variant_id','c1000000-0000-4000-8000-000000000002','quantity',1)), 'بغداد', '07701234567', 'علي حسين', 'ERR:INVALID_INPUT'),
-  ('size missing', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000003','quantity',1)), 'بغداد', '07701234567', 'علي حسين', 'ERR:SIZE_REQUIRED'),
-  ('tinted without colour', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000004','variant_id','d1000000-0000-4000-8000-000000000001','quantity',1)), 'بغداد', '07701234567', 'علي حسين', 'ERR:COLOUR_REQUIRED'),
-  ('unknown governorate', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000001','quantity',1)), 'غير موجودة', '07701234567', 'علي حسين', 'ERR:ZONE_INVALID'),
-  ('switched-off governorate', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000001','quantity',1)), 'أربيل', '07701234567', 'علي حسين', 'ERR:ZONE_INVALID'),
-  ('below the minimum order', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000001','quantity',1)), 'البصرة', '07701234567', 'علي حسين', 'ERR:MIN_ORDER'),
-  ('empty list', '[]'::jsonb, 'بغداد', '07701234567', 'علي حسين', 'ERR:EMPTY_CART'),
-  ('not a list', '{}'::jsonb, 'بغداد', '07701234567', 'علي حسين', 'ERR:EMPTY_CART'),
-  ('51 lines', (select jsonb_agg(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000001','quantity',1)) from generate_series(1, 51)), 'بغداد', '07701234567', 'علي حسين', 'ERR:INVALID_INPUT'),
-  ('bad phone', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000001','quantity',1)), 'بغداد', '12345', 'علي حسين', 'ERR:INVALID_INPUT'),
-  ('name too short', jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000001','quantity',1)), 'بغداد', '07701234567', 'ع', 'ERR:INVALID_INPUT'),
-  ('second line sold out undoes the first',
-    jsonb_build_array(jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000001','quantity',1),
-                      jsonb_build_object('product_id','a0000000-0000-4000-8000-000000000003','variant_id','c1000000-0000-4000-8000-000000000001','quantity',1)),
-    'بغداد', '07701234567', 'علي حسين', 'ERR:OUT_OF_STOCK');
-
 do $$
-declare c record; v text; v_orders int; v_stock int;
+declare
+  v_orders int; v_stock int;
+  p_simple constant text := 'a0000000-0000-4000-8000-000000000001';
+  p_hidden constant text := 'a0000000-0000-4000-8000-000000000002';
+  p_sized  constant text := 'a0000000-0000-4000-8000-000000000003';
+  p_tinted constant text := 'a0000000-0000-4000-8000-000000000004';
+  v_size1  constant text := 'c1000000-0000-4000-8000-000000000001'; -- size of p_sized, stock 0 by now
+  v_size2  constant text := 'c1000000-0000-4000-8000-000000000002';
+  v_tint   constant text := 'd1000000-0000-4000-8000-000000000001';
 begin
   select count(*) into v_orders from public.orders;
-  select stock into v_stock from public.products where id = 'a0000000-0000-4000-8000-000000000001';
-  for c in select * from cases loop
-    v := pg_temp.order_as('anon', c.items, c.gov, c.phone, c.name);
-    perform pg_temp.check(v like c.expect || '%', c.label || ': expected ' || c.expect || ' but got ' || v);
-  end loop;
+  select stock into v_stock from public.products where id = p_simple::uuid;
+
+  perform pg_temp.expect_refused('quantity 0', 'ERR:INVALID_INPUT', jsonb_build_array(jsonb_build_object('product_id', p_simple, 'quantity', 0)));
+  perform pg_temp.expect_refused('quantity -1', 'ERR:INVALID_INPUT', jsonb_build_array(jsonb_build_object('product_id', p_simple, 'quantity', -1)));
+  perform pg_temp.expect_refused('quantity 100', 'ERR:INVALID_INPUT', jsonb_build_array(jsonb_build_object('product_id', p_simple, 'quantity', 100)));
+  perform pg_temp.expect_refused('quantity 1.5', 'ERR:INVALID_INPUT', jsonb_build_array(jsonb_build_object('product_id', p_simple, 'quantity', 1.5)));
+  perform pg_temp.expect_refused('quantity text', 'ERR:INVALID_INPUT', jsonb_build_array(jsonb_build_object('product_id', p_simple, 'quantity', 'abc')));
+  perform pg_temp.expect_refused('hidden product', 'ERR:PRODUCT_UNAVAILABLE', jsonb_build_array(jsonb_build_object('product_id', p_hidden, 'quantity', 1)));
+  perform pg_temp.expect_refused('unknown product', 'ERR:PRODUCT_UNAVAILABLE', jsonb_build_array(jsonb_build_object('product_id', 'a0000000-0000-4000-8000-0000000000ff', 'quantity', 1)));
+  perform pg_temp.expect_refused('not a uuid', 'ERR:INVALID_INPUT', jsonb_build_array(jsonb_build_object('product_id', 'xyz', 'quantity', 1)));
+  perform pg_temp.expect_refused('size of another product', 'ERR:INVALID_INPUT', jsonb_build_array(jsonb_build_object('product_id', p_tinted, 'variant_id', v_size2, 'quantity', 1, 'colour_note', '12')));
+  perform pg_temp.expect_refused('size given for a product without sizes', 'ERR:INVALID_INPUT', jsonb_build_array(jsonb_build_object('product_id', p_simple, 'variant_id', v_size2, 'quantity', 1)));
+  perform pg_temp.expect_refused('size missing', 'ERR:SIZE_REQUIRED', jsonb_build_array(jsonb_build_object('product_id', p_sized, 'quantity', 1)));
+  perform pg_temp.expect_refused('tinted without colour', 'ERR:COLOUR_REQUIRED', jsonb_build_array(jsonb_build_object('product_id', p_tinted, 'variant_id', v_tint, 'quantity', 1)));
+  perform pg_temp.expect_refused('unknown governorate', 'ERR:ZONE_INVALID', jsonb_build_array(jsonb_build_object('product_id', p_simple, 'quantity', 1)), 'غير موجودة');
+  perform pg_temp.expect_refused('switched-off governorate', 'ERR:ZONE_INVALID', jsonb_build_array(jsonb_build_object('product_id', p_simple, 'quantity', 1)), 'أربيل');
+  perform pg_temp.expect_refused('below the minimum order', 'ERR:MIN_ORDER', jsonb_build_array(jsonb_build_object('product_id', p_simple, 'quantity', 1)), 'البصرة');
+  perform pg_temp.expect_refused('empty list', 'ERR:EMPTY_CART', '[]'::jsonb);
+  perform pg_temp.expect_refused('not a list', 'ERR:EMPTY_CART', '{}'::jsonb);
+  perform pg_temp.expect_refused('51 lines', 'ERR:INVALID_INPUT', (select jsonb_agg(jsonb_build_object('product_id', p_simple, 'quantity', 1)) from generate_series(1, 51)));
+  perform pg_temp.expect_refused('bad phone', 'ERR:INVALID_INPUT', jsonb_build_array(jsonb_build_object('product_id', p_simple, 'quantity', 1)), 'بغداد', '12345');
+  perform pg_temp.expect_refused('name too short', 'ERR:INVALID_INPUT', jsonb_build_array(jsonb_build_object('product_id', p_simple, 'quantity', 1)), 'بغداد', '07701234567', 'ع');
+  perform pg_temp.expect_refused('second line sold out undoes the first', 'ERR:OUT_OF_STOCK', jsonb_build_array(
+    jsonb_build_object('product_id', p_simple, 'quantity', 1),
+    jsonb_build_object('product_id', p_sized, 'variant_id', v_size1, 'quantity', 1)));
+
   perform pg_temp.check((select count(*) from public.orders) = v_orders, 'a refused order must not create an order row');
-  perform pg_temp.check((select stock from public.products where id = 'a0000000-0000-4000-8000-000000000001') = v_stock, 'a refused order must not change stock');
+  perform pg_temp.check((select stock from public.products where id = p_simple::uuid) = v_stock, 'a refused order must not change stock');
+exception when others then
+  raise exception '[section 3] %', sqlerrm;
 end $$;
 
 -- ---------- 4. the order keeps a snapshot of what was bought ----------
@@ -167,6 +187,8 @@ begin
   perform pg_temp.check(v_code !~ '^ERR', 'tinted order with a typed colour works: ' || v_code);
   select oi.* into v_i from public.order_items oi join public.orders o on o.id = oi.order_id where o.code = v_code;
   perform pg_temp.check(v_i.colour_note = '٤٢٠', 'the typed colour is trimmed and saved');
+exception when others then
+  raise exception '[section 4] %', sqlerrm;
 end $$;
 
 -- ---------- 5. status changes and giving stock back ----------
@@ -212,6 +234,8 @@ begin
   -- not an admin
   perform pg_temp.expect_err(format('select public.set_order_status(%L, %L)', v_id, 'new'), 'FORBIDDEN', 'authenticated', '{"email":"someone@else.com"}');
   perform pg_temp.expect_err(format('select public.set_order_status(%L, %L)', v_id, 'new'), 'permission denied', 'anon');
+exception when others then
+  raise exception '[section 5] %', sqlerrm;
 end $$;
 
 -- ---------- 6. manual stock changes (the shop sells from the same stock) ----------
@@ -233,6 +257,8 @@ begin
   perform pg_temp.check((select stock from public.product_variants where id = v_ev) = 7, 'a size adjusts');
   perform pg_temp.check((select stock from public.products where id = v_e) = 7, 'and its product follows');
   perform pg_temp.expect_err(format('select public.adjust_stock(%L, null, 1, %L, null)', v_a, 'manual'), 'FORBIDDEN', 'authenticated', '{"email":"someone@else.com"}');
+exception when others then
+  raise exception '[section 6] %', sqlerrm;
 end $$;
 
 -- ---------- 7. customers can follow an order without seeing other people's data ----------
@@ -258,6 +284,8 @@ begin
   -- a visitor can call both
   perform pg_temp.expect_ok(format('select public.track_order(%L, %L)', v_code, '07701234567'), 'anon');
   perform pg_temp.expect_ok(format('select public.order_summary(%L)', v_code), 'anon');
+exception when others then
+  raise exception '[section 7] %', sqlerrm;
 end $$;
 
 -- ---------- 8. a product's stock follows its sizes ----------
@@ -270,6 +298,8 @@ begin
   perform pg_temp.check((select stock from public.products where id = v_c) = 10, 'adding a size updates the product');
   delete from public.product_variants where product_id = v_c and size_label = '18 لتر';
   perform pg_temp.check((select stock from public.products where id = v_c) = 7, 'deleting a size updates the product');
+exception when others then
+  raise exception '[section 8] %', sqlerrm;
 end $$;
 
 -- ---------- 9. the dashboard numbers ----------
@@ -287,6 +317,8 @@ begin
   perform pg_temp.check((r->>'out_of_stock')::int >= 1, 'out of stock items are counted');
   perform pg_temp.check(jsonb_typeof(r->'best_sellers') = 'array', 'best sellers is a list');
   perform pg_temp.expect_err('select public.dashboard_stats()', 'FORBIDDEN', 'authenticated', '{"email":"someone@else.com"}');
+exception when others then
+  raise exception '[section 9] %', sqlerrm;
 end $$;
 
 -- ---------- 10. visitors can't read private tables ----------
@@ -295,6 +327,8 @@ begin
   perform pg_temp.expect_err('select * from public.orders', 'permission denied', 'anon');
   perform pg_temp.expect_err('select * from public.order_items', 'permission denied', 'anon');
   perform pg_temp.expect_err('select * from public.stock_movements', 'permission denied', 'anon');
+exception when others then
+  raise exception '[section 10] %', sqlerrm;
 end $$;
 
 rollback;
