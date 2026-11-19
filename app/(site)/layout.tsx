@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
+import { CartToast } from "@/components/shop/CartToast";
 import { CartProvider } from "@/lib/cart/CartProvider";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
@@ -13,6 +14,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       </div>
       <Footer />
       <WhatsAppButton />
+      <CartToast />
     </CartProvider>
   );
 }

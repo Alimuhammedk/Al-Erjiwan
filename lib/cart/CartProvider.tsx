@@ -12,6 +12,9 @@ type CartApi = {
   remove: (key: string) => void;
   count: number;
   total: number;
+  // The latest product added, so a pop-up can confirm it. `id` changes on every add.
+  lastAdded: { id: number; name: string } | null;
+  dismissAdded: () => void;
 };
 
 const CartContext = createContext<CartApi | null>(null);
@@ -19,6 +22,7 @@ const CartContext = createContext<CartApi | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [lastAdded, setLastAdded] = useState<CartApi["lastAdded"]>(null);
 
   // Read after mount so server and browser first render the same thing.
   useEffect(() => {
@@ -40,13 +44,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items, loaded]);
 
-  const add = useCallback((item: Omit<CartItem, "key">) => setItems((c) => addItem(c, item)), []);
+  const add = useCallback((item: Omit<CartItem, "key">) => {
+    setItems((c) => addItem(c, item));
+    setLastAdded({ id: Date.now(), name: item.name });
+  }, []);
+  const dismissAdded = useCallback(() => setLastAdded(null), []);
   const setQty = useCallback((key: string, q: number) => setItems((c) => setQuantity(c, key, q)), []);
   const remove = useCallback((key: string) => setItems((c) => removeItem(c, key)), []);
 
   const value = useMemo(
-    () => ({ items, add, setQty, remove, count: cartCount(items), total: cartTotal(items) }),
-    [items, add, setQty, remove],
+    () => ({ items, add, setQty, remove, count: cartCount(items), total: cartTotal(items), lastAdded, dismissAdded }),
+    [items, add, setQty, remove, lastAdded, dismissAdded],
   );
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

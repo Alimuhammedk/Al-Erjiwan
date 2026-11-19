@@ -35,3 +35,10 @@ export function estimateLitres(r: Room): number | null {
   if (walls <= 0) return null;
   return Math.ceil((walls * r.coats) / COVERAGE_M2_PER_LITRE);
 }
+
+// Whole percent saved, or null when there is no real discount (never a "0%" badge).
+export function discountPercent(base: number, sale: number | null): number | null {
+  if (sale === null || base <= 0 || sale >= base) return null;
+  const pct = Math.round(((base - sale) / base) * 100);
+  return pct >= 1 ? pct : null;
+}

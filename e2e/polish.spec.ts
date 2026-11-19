@@ -126,3 +126,53 @@ test("homepage product sections have a view-all link to the shop", async ({ page
     await expect(section.getByRole("link", { name: "عرض الكل" })).toHaveAttribute("href", "/shop");
   }
 });
+
+const P = (n: number) => `00000000-0000-4002-8000-${String(n).padStart(12, "0")}`;
+
+test("a sale shows a discount badge on the card and on the product page", async ({ page }) => {
+  await page.goto("/shop");
+  await expect(page.locator('main a[href^="/shop/0000"]', { hasText: "ورق جدران ملكي" })).toContainText("خصم 16%");
+  await expect(page.locator('main a[href^="/shop/0000"]', { hasText: "فرشاة طلاء" })).not.toContainText("خصم");
+  await page.goto(`/shop/${P(6)}`);
+  await expect(page.getByText("خصم 16%")).toBeVisible();
+});
+
+test("the product page reassures with delivery, cash on delivery and support", async ({ page }) => {
+  await page.goto(`/shop/${P(7)}`);
+  for (const text of ["توصيل إلى جميع محافظات العراق", "الدفع عند الاستلام", "دعم عبر واتساب"]) {
+    await expect(page.getByText(text).first()).toBeVisible();
+  }
+});
+
+test("a pop-up confirms an add to cart and links to the cart, and the badge bumps", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(`/shop/${P(7)}`);
+  await page.getByRole("button", { name: "أضف إلى السلة" }).click();
+  const toast = page.getByRole("status").filter({ hasText: "تمت الإضافة إلى السلة" });
+  await expect(toast).toBeVisible();
+  await expect(toast).toContainText("فرشاة طلاء احترافية");
+  await expect(page.getByTestId("cart-badge")).toHaveClass(/bump/);
+  await toast.getByRole("link", { name: "عرض السلة" }).click();
+  await expect(page).toHaveURL(/\/cart$/);
+});
+
+test("on a phone a sticky bar keeps price and add button in reach, and not on desktop", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 700 });
+  await page.goto(`/shop/${P(7)}`);
+  const bar = page.getByTestId("sticky-buy");
+  await expect(bar).toBeVisible();
+  await expect(bar).toContainText("8,000 د.ع");
+  const box = await bar.boundingBox();
+  expect(box!.y + box!.height).toBeGreaterThanOrEqual(695);
+  await bar.getByRole("button", { name: "أضف إلى السلة" }).click();
+  await expect(page.getByRole("link", { name: "السلة (1)" })).toBeVisible();
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(bar).toBeHidden();
+});
+
+test("the sticky bar button is disabled for a sold-out product", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 700 });
+  await page.goto(`/shop/${P(8)}`);
+  await expect(page.getByTestId("sticky-buy").getByRole("button")).toBeDisabled();
+});

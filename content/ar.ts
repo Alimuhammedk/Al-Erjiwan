@@ -79,6 +79,12 @@ export const ar = {
     notSure: "لست متأكدًا من الكمية؟ احسب كمية الدهان",
   },
 
+  trust: {
+    delivery: "توصيل إلى جميع محافظات العراق",
+    cod: "الدفع عند الاستلام",
+    support: "دعم عبر واتساب",
+  },
+
   hero: {
     prev: "الشريحة السابقة",
     next: "الشريحة التالية",
@@ -200,6 +206,9 @@ export const ar = {
     closeMenu: "إغلاق القائمة",
     cart: "السلة",
     slide: "الشريحة",
+    discount: "خصم {n}%",
+    viewCart: "عرض السلة",
+    close: "إغلاق",
     skip: "تخطي إلى المحتوى",
     breadcrumb: "مسار التنقل",
     contactUs: "تواصل معنا",

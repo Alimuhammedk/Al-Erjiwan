@@ -1,13 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/format";
-import { displayPrice } from "@/lib/shop/product";
+import { ar } from "@/content/ar";
+import { discountPercent, displayPrice } from "@/lib/shop/product";
 import type { ProductWithImage } from "@/types/db";
 
 // No "sold out" badge here: a sized product's stock lives on its sizes, which the card doesn't load.
 // The product page shows the real stock.
 export function ProductCard({ product }: { product: ProductWithImage }) {
   const { price, oldPrice } = displayPrice(product);
+  const percent = oldPrice !== null ? discountPercent(oldPrice, price) : null;
   return (
     <Link
       href={`/shop/${product.id}`}
@@ -22,6 +24,11 @@ export function ProductCard({ product }: { product: ProductWithImage }) {
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
+        )}
+        {percent !== null && (
+          <span className="absolute start-2 top-2 rounded-full bg-coral-500 px-3 py-1 text-xs font-bold text-white shadow">
+            {ar.common.discount.replace("{n}", String(percent))}
+          </span>
         )}
       </div>
       <div className="space-y-1 p-3">

@@ -63,3 +63,21 @@ describe("estimateLitres", () => {
     expect(estimateLitres({ ...room, doors: 50 })).toBeNull();
   });
 });
+
+import { discountPercent } from "../shop/product";
+
+describe("discountPercent", () => {
+  it("gives the whole percent saved", () => {
+    expect(discountPercent(25000, 20000)).toBe(20);
+    expect(discountPercent(45000, 38000)).toBe(16);
+  });
+  it("is null when there is no real discount", () => {
+    expect(discountPercent(25000, null)).toBeNull();
+    expect(discountPercent(25000, 25000)).toBeNull();
+    expect(discountPercent(25000, 30000)).toBeNull();
+    expect(discountPercent(0, 0)).toBeNull();
+  });
+  it("never shows a 0% badge", () => {
+    expect(discountPercent(100000, 99999)).toBeNull();
+  });
+});

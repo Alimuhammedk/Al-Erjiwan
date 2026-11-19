@@ -5,7 +5,8 @@ import { ar } from "@/content/ar";
 import { useCart } from "@/lib/cart/CartProvider";
 import type { ProductDetail } from "@/lib/data/shop";
 import { formatPrice } from "@/lib/format";
-import { displayPrice, isSoldOut, stockFor } from "@/lib/shop/product";
+import { discountPercent, displayPrice, isSoldOut, stockFor } from "@/lib/shop/product";
+import { TrustStrip } from "./TrustStrip";
 
 type Variant = ProductDetail["variants"][number];
 
@@ -28,6 +29,7 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
 
   const variant: Variant | null = sizeOptions.find((v) => v.id === variantId) ?? null;
   const { price, oldPrice } = displayPrice(product, variant);
+  const percent = oldPrice !== null ? discountPercent(oldPrice, price) : null;
   const stock = stockFor(product, variant);
   const soldOut = isSoldOut(product, sizeOptions, variant);
 
@@ -55,7 +57,7 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
       image_url: images[0] ?? null,
       quantity,
     });
-    setMessage({ text: t.added, ok: true });
+    setMessage(null); // success is confirmed by the pop-up (CartToast)
   }
 
   const swatchColours = variantColours ? colours.filter((c) => variants.some((v) => v.colour_id === c.id)) : colours;
@@ -66,6 +68,11 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
       <p className="flex flex-wrap items-baseline gap-3">
         <span className="text-3xl font-extrabold text-brand-700">{formatPrice(price)}</span>
         {oldPrice !== null && <span className="text-lg text-ink/70 line-through">{formatPrice(oldPrice)}</span>}
+        {percent !== null && (
+          <span className="rounded-full bg-coral-500 px-3 py-1 text-sm font-bold text-white">
+            {ar.common.discount.replace("{n}", String(percent))}
+          </span>
+        )}
       </p>
 
       {swatchColours.length > 0 && (
@@ -153,10 +160,31 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
         </button>
       </div>
       {message && (
-        <p role="status" className={`font-semibold ${message.ok ? "text-brand-700" : "text-coral-500"}`}>
+        <p role="alert" className="font-semibold text-coral-500">
           {message.text}
         </p>
       )}
+
+      <TrustStrip className="sm:grid-cols-1" />
+
+      {/* Phone only: price and add button stay in reach while scrolling. The end padding leaves room for the WhatsApp button. */}
+      <div
+        data-testid="sticky-buy"
+        className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-brand-100 bg-paper/95 py-3 ps-4 pe-[5.5rem] backdrop-blur md:hidden"
+      >
+        <div className="min-w-0 flex-1">
+          <p className="font-extrabold text-brand-700">{formatPrice(price)}</p>
+          {oldPrice !== null && <p className="text-xs text-ink/70 line-through">{formatPrice(oldPrice)}</p>}
+        </div>
+        <button
+          type="button"
+          onClick={addToCart}
+          disabled={soldOut}
+          className="min-h-11 rounded-full bg-brand-700 px-6 font-bold text-white hover:bg-brand-900 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {soldOut ? t.soldOut : t.addToCart}
+        </button>
+      </div>
     </div>
   );
 }

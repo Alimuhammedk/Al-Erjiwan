@@ -112,7 +112,7 @@ test("add a simple product, then change quantity in the cart", async ({ page }) 
 
 test("the homepage shows banners, categories, best sellers and offers, and cards open products", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("button", { name: /الشريحة/ })).toHaveCount(2);
+  await expect(page.getByRole("button", { name: /^الشريحة \d/ })).toHaveCount(2);
   await expect(page.getByRole("heading", { name: "تسوّق حسب الفئة" })).toBeVisible();
   const offers = page.locator("section", { has: page.getByRole("heading", { name: "العروض" }) });
   await expect(offers.locator('a[href^="/shop/0000"]')).toHaveCount(2);

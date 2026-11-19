@@ -15,7 +15,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const { product, images } = detail;
 
   return (
-    <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-6">
+    <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-6 pb-28 md:pb-6">
       <Breadcrumbs
         items={[
           { label: ar.nav[0].label, href: "/" },

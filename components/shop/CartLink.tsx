@@ -17,7 +17,8 @@ export function CartLink() {
         <path d="M9 7a3 3 0 0 1 6 0" />
       </svg>
       {count > 0 && (
-        <span className="absolute -end-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-coral-500 px-1 text-xs font-bold text-white">
+        // key={count}: the badge is replaced on every change, so the bump animation plays again
+        <span key={count} data-testid="cart-badge" className="bump absolute -end-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-coral-500 px-1 text-xs font-bold text-white">
           {count}
         </span>
       )}
