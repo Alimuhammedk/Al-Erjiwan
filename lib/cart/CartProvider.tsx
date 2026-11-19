@@ -16,7 +16,7 @@ type CartApi = {
   // false until the saved cart has been read from this browser
   ready: boolean;
   // The latest product added, so a pop-up can confirm it. `id` changes on every add.
-  lastAdded: { id: number; name: string } | null;
+  lastAdded: { id: number; name: string; name_en?: string | null } | null;
   dismissAdded: () => void;
 };
 
@@ -49,7 +49,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const add = useCallback((item: Omit<CartItem, "key">) => {
     setItems((c) => addItem(c, item));
-    setLastAdded({ id: Date.now(), name: item.name });
+    setLastAdded({ id: Date.now(), name: item.name, name_en: item.name_en });
   }, []);
   const dismissAdded = useCallback(() => setLastAdded(null), []);
   const clear = useCallback(() => setItems([]), []);

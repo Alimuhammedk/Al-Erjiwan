@@ -12,6 +12,10 @@ const make = (n: number, title: string, body: string, excerpt: string | null, co
   body,
   cover_url: cover,
   images: n === 1 ? ["/seed/p2.png", "/seed/p3.png"] : [],
+  // only the first two have English text, so the others show the Arabic when the site is in English
+  title_en: n === 1 ? "How to choose your living room colour with confidence" : n === 2 ? "Matt or gloss paint?" : null,
+  excerpt_en: n === 1 ? "Three simple steps that save you the doubt." : null,
+  body_en: n === 1 ? "Light colours make a room feel bigger.\n\nTry the sample on the wall before you buy the full amount." : n === 2 ? "Matt hides wall flaws, gloss is easier to clean." : null,
   is_published: true,
   published_at: `2026-11-${String(20 - n).padStart(2, "0")}T10:00:00Z`,
   updated_at: "2026-11-20T10:00:00Z",

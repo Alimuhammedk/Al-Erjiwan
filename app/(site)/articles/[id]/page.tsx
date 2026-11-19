@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArticleView } from "@/components/home/ArticleView";
 import { getMessages } from "@/lib/i18n/messages";
 import { getArticle } from "@/lib/data/articles";
-import { cardExcerpt } from "@/lib/articles";
+import { articleIn, cardExcerpt } from "@/lib/articles";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const m = await getMessages();
   const article = await getArticle((await params).id);
   return article
-    ? { title: `${article.title} | ${m.siteName}`, description: cardExcerpt(article, 160) }
+    ? { title: `${articleIn(article, m.lang).title} | ${m.siteName}`, description: cardExcerpt(articleIn(article, m.lang), 160) }
     : { title: `${m.articles.notFound} | ${m.siteName}`, robots: { index: false } };
 }
 

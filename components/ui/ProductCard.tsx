@@ -1,3 +1,4 @@
+import { localised } from "@/lib/i18n/lang";
 import Image from "next/image";
 import Link from "next/link";
 import { getMessages } from "@/lib/i18n/messages";
@@ -11,6 +12,7 @@ const sizes = "(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw";
 // The product page shows the real stock.
 export async function ProductCard({ product }: { product: ProductWithImage }) {
   const m = await getMessages();
+  const name = localised(m.lang, product.name_ar, product.name_en);
   const { price, oldPrice } = displayPrice(product);
   const percent = oldPrice !== null ? discountPercent(oldPrice, price) : null;
   return (
@@ -22,7 +24,7 @@ export async function ProductCard({ product }: { product: ProductWithImage }) {
         {product.image_url && (
           <Image
             src={product.image_url}
-            alt={product.name_ar}
+            alt={name}
             fill
             sizes={sizes}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -45,7 +47,7 @@ export async function ProductCard({ product }: { product: ProductWithImage }) {
         )}
       </div>
       <div className="space-y-1 p-3">
-        <h3 className="line-clamp-2 break-words font-bold text-brand-900">{product.name_ar}</h3>
+        <h3 className="line-clamp-2 break-words font-bold text-brand-900">{name}</h3>
         <p className="flex flex-wrap items-baseline gap-2">
           <span className="font-extrabold text-brand-700">{formatPrice(price, m.common.currency)}</span>
           {oldPrice !== null && <span className="text-sm text-ink/70 line-through">{formatPrice(oldPrice, m.common.currency)}</span>}

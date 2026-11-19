@@ -137,3 +137,26 @@ describe("validateBanner", () => {
     expect(r.ok === false && r.errors.image_url).toBe(e.required);
   });
 });
+
+describe("English boxes of a banner and a product", () => {
+  const banner = { image_url: "https://x.supabase.co/storage/v1/object/public/images/banners/a.webp", title: "عروض", sort_order: "0" };
+  it("a banner keeps its English title trimmed, and empty means nothing", () => {
+    const r = validateBanner({ ...banner, title_en: " Winter offers " });
+    expect(r.ok && r.value.title_en).toBe("Winter offers");
+    const none = validateBanner({ ...banner, title_en: "  " });
+    expect(none.ok && none.value.title_en).toBeNull();
+  });
+  it("a banner refuses an over-long English title", () => {
+    expect(validateBanner({ ...banner, title_en: "a".repeat(201) })).toMatchObject({ ok: false, errors: { title_en: expect.any(String) } });
+  });
+  const product = { name_ar: "دهان", base_price: "1000", stock: "1" };
+  it("a product keeps its English description, and empty means nothing", () => {
+    const r = validateProduct({ ...product, description_en: " Great paint " });
+    expect(r.ok && r.value.description_en).toBe("Great paint");
+    const none = validateProduct(product);
+    expect(none.ok && none.value.description_en).toBeNull();
+  });
+  it("a product refuses an over-long English description", () => {
+    expect(validateProduct({ ...product, description_en: "a".repeat(5001) })).toMatchObject({ ok: false, errors: { description_en: expect.any(String) } });
+  });
+});

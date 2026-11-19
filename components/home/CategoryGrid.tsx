@@ -1,3 +1,4 @@
+import { localised } from "@/lib/i18n/lang";
 import Image from "next/image";
 import Link from "next/link";
 import { getMessages } from "@/lib/i18n/messages";
@@ -33,7 +34,7 @@ export async function CategoryGrid({ categories }: { categories: Category[] }) {
                   />
                 )}
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-900/85 to-transparent p-3 pt-8">
-                  <h3 className="break-words font-bold text-white">{c.name_ar}</h3>
+                  <h3 className="break-words font-bold text-white">{localised(m.lang, c.name_ar, c.name_en)}</h3>
                 </div>
               </Link>
             ))}

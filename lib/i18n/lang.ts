@@ -9,7 +9,7 @@ export const dirOf = (lang: Lang): "rtl" | "ltr" => (lang === "en" ? "ltr" : "rt
 export const otherLang = (lang: Lang): Lang => (lang === "en" ? "ar" : "en");
 
 // Text for a language: the English when it is written (not blank), otherwise the Arabic.
-export function localised(lang: Lang, arabic: string | null | undefined, english: string | null | undefined): string {
+export function localised(lang: string, arabic: string | null | undefined, english: string | null | undefined): string {
   if (lang === "en" && english && english.trim()) return english;
   return arabic ?? "";
 }

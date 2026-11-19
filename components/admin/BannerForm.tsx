@@ -29,6 +29,9 @@ export function BannerForm({ action, initial }: Props) {
       <FormField label={t.titleField} error={err.title}>
         <input name="title" defaultValue={initial?.title ?? ""} maxLength={200} className={inputClass} />
       </FormField>
+      <FormField label={t.titleEn} error={err.title_en}>
+        <input name="title_en" dir="ltr" defaultValue={initial?.title_en ?? ""} maxLength={200} className={`${inputClass} text-start`} />
+      </FormField>
       <FormField label={t.link} error={err.link}>
         <input name="link" dir="ltr" defaultValue={initial?.link ?? ""} placeholder="/shop" className={`${inputClass} text-start`} />
       </FormField>

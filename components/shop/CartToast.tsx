@@ -1,5 +1,7 @@
 "use client";
 
+import { localised } from "@/lib/i18n/lang";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -30,7 +32,7 @@ export function CartToast() {
       </svg>
       <div className="min-w-0 flex-1">
         <p className="font-bold">{m.product.added}</p>
-        <p className="truncate text-sm text-white/80">{lastAdded.name}</p>
+        <p className="truncate text-sm text-white/80">{localised(m.lang, lastAdded.name, lastAdded.name_en)}</p>
       </div>
       <Link href="/cart" onClick={dismissAdded} className="shrink-0 rounded-full bg-sun-300 px-4 py-2 font-extrabold text-brand-900">
         {m.common.viewCart}

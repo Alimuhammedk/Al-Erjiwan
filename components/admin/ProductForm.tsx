@@ -78,6 +78,10 @@ export function ProductForm({ action, categories, colours, initial }: Props) {
         <FormField label={t.description} error={err.description}>
           <textarea name="description" rows={4} defaultValue={p?.description ?? ""} maxLength={5000} className={inputClass} />
         </FormField>
+        <FormField label={t.descriptionEn} error={err.description_en}>
+          <textarea name="description_en" dir="ltr" rows={3} defaultValue={p?.description_en ?? ""} maxLength={5000} className={`${inputClass} text-start`} />
+          <span className="mt-1 block text-sm text-ink/60">{t.descriptionEnHint}</span>
+        </FormField>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label={t.category} error={err.category_id}>
             <select name="category_id" defaultValue={p?.category_id ?? ""} className={inputClass}>

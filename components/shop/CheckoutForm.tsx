@@ -1,5 +1,7 @@
 "use client";
 
+import { localised } from "@/lib/i18n/lang";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -78,8 +80,8 @@ export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
           {items.map((i) => (
             <li key={i.key} className="flex items-start justify-between gap-3 py-3 text-sm">
               <div className="min-w-0">
-                <p className="break-words font-bold text-brand-900">{i.name}</p>
-                <p className="text-ink/70">{[...[i.size_label, i.colour_name, i.colour_note].filter(Boolean), `× ${i.quantity}`].join(" · ")}</p>
+                <p className="break-words font-bold text-brand-900">{localised(m.lang, i.name, i.name_en)}</p>
+                <p className="text-ink/70">{[...[i.size_label, localised(m.lang, i.colour_name, i.colour_name_en), i.colour_note].filter(Boolean), `× ${i.quantity}`].join(" · ")}</p>
               </div>
               <span className="shrink-0 font-bold text-brand-700">{formatPrice(i.unit_price * i.quantity, m.common.currency)}</span>
             </li>

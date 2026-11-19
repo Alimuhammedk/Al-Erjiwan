@@ -147,3 +147,66 @@ test("in English the rows start at the left and slide the other way", async ({ p
   await row.evaluate((el) => el.scrollBy({ left: 200 }));
   expect(await row.evaluate((el) => el.scrollLeft)).toBeGreaterThan(100); // forward is to the right
 });
+
+test("English articles: the English text where it was written, the Arabic for the rest", async ({ page }) => {
+  await useEnglish(page);
+  await page.goto("/styleguide/articles");
+  await page.waitForLoadState("networkidle");
+  const cards = page.getByTestId("article-card");
+  await expect(cards.nth(0)).toContainText("How to choose your living room colour with confidence");
+  await expect(cards.nth(0)).toContainText("Three simple steps that save you the doubt.");
+  await expect(cards.nth(0)).toContainText("Read the article");
+  await expect(cards.nth(1)).toContainText("Matt or gloss paint?");
+  await expect(cards.nth(1)).toContainText("Matt hides wall flaws"); // no English summary: the start of the English text
+  await expect(cards.nth(2)).toContainText("كم لترًا تحتاج لغرفة"); // nothing in English: Arabic
+  await expect(cards.nth(0).locator("time")).toContainText("November");
+});
+
+test("the English article page shows the English paragraphs and the Arabic one the Arabic", async ({ page }) => {
+  await useEnglish(page);
+  await page.goto("/styleguide/articles?view=article");
+  const view = page.getByTestId("article-view");
+  await expect(view.getByRole("heading", { level: 1 })).toHaveText("How to choose your living room colour with confidence");
+  await expect(view.locator("p").filter({ hasText: "Light colours make a room feel bigger." })).toBeVisible();
+  await expect(view.getByRole("link", { name: "Shop now" })).toBeVisible();
+  await page.context().clearCookies();
+  await page.goto("/styleguide/articles?view=article");
+  await expect(page.getByTestId("article-view").getByRole("heading", { level: 1 })).toHaveText("كيف تختار لون غرفة المعيشة بثقة");
+});
+
+test("cart lines show the English product and colour names when they have them", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => {
+    const item = { key: "k1", product_id: "123e4567-e89b-12d3-a456-426614174000", variant_id: null, colour_id: null, colour_name: "أزرق سماوي", colour_name_en: "Sky blue", colour_note: null, name: "بنتلايت", name_en: "Pentalite", size_label: null, unit_price: 25000, image_url: null, quantity: 1 };
+    localStorage.setItem("al-erjiwan-cart", JSON.stringify([item]));
+  });
+  await page.goto("/cart");
+  await expect(page.getByText("بنتلايت").first()).toBeVisible();
+  await expect(page.getByText("أزرق سماوي")).toBeVisible();
+  await useEnglish(page);
+  await page.goto("/cart");
+  await expect(page.getByText("Pentalite").first()).toBeVisible();
+  await expect(page.getByText("Colour: Sky blue")).toBeVisible();
+  await expect(page.getByText("بنتلايت")).toHaveCount(0);
+});
+
+test("the colour panel shows English colour names in English", async ({ page }) => {
+  const P1 = "/shop/00000000-0000-4002-8000-000000000001";
+  const probe = await page.request.get(P1);
+  test.skip(probe.status() !== 200, "dummy data is not loaded");
+  await useEnglish(page);
+  await page.route("**/api/colours*", (route) =>
+    route.fulfill({ json: { colours: [
+      { id: "00000000-0000-4001-8000-0000000000a1", name_ar: "أخضر تجريبي", name_en: "Test green", code: "T-1", hex: "#228b22", family: "الأخضر", system: "T" },
+      { id: "00000000-0000-4001-8000-0000000000a2", name_ar: "أزرق تجريبي", name_en: null, code: "T-2", hex: "#1e5aa8", family: "الأزرق", system: "T" },
+    ], families: [] } }),
+  );
+  await page.goto(P1);
+  await page.getByTestId("colour-row").click();
+  const dialog = page.getByRole("dialog", { name: "Choose a colour" });
+  await expect(dialog.getByRole("button", { name: "Test green" })).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "أزرق تجريبي" })).toBeVisible(); // no English name: the Arabic one
+  await dialog.getByRole("button", { name: "Test green" }).click();
+  await expect(page.getByTestId("colour-row")).toContainText("Test green");
+  await expect(page.getByRole("button", { name: "Add to cart" }).first()).toBeVisible();
+});

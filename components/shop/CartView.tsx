@@ -1,5 +1,7 @@
 "use client";
 
+import { localised } from "@/lib/i18n/lang";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useMessages } from "@/lib/i18n/provider";
@@ -34,7 +36,7 @@ export function CartView() {
             </Link>
             <div className="min-w-0 flex-1 space-y-1">
               <Link href={`/shop/${i.product_id}`} className="block break-words font-bold text-brand-900">
-                {i.name}
+                {localised(m.lang, i.name, i.name_en)}
               </Link>
               {i.size_label && (
                 <p className="text-sm text-ink/70">
@@ -43,7 +45,7 @@ export function CartView() {
               )}
               {(i.colour_name || i.colour_note) && (
                 <p className="text-sm text-ink/70">
-                  {t.colour}: {[i.colour_name, i.colour_note].filter(Boolean).join(" · ")}
+                  {t.colour}: {[localised(m.lang, i.colour_name, i.colour_name_en), i.colour_note].filter(Boolean).join(" · ")}
                 </p>
               )}
               <p className="font-extrabold text-brand-700">{formatPrice(i.unit_price * i.quantity, m.common.currency)}</p>

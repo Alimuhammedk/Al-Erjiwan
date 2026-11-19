@@ -1,5 +1,7 @@
 "use client";
 
+import { localised } from "@/lib/i18n/lang";
+
 import { useEffect, useRef, useState } from "react";
 import { useMessages } from "@/lib/i18n/provider";
 import { readableTextOn } from "@/lib/colours/hex";
@@ -99,7 +101,7 @@ export function ColourPanel({ productId, value, onChange, endpoint = "/api/colou
             aria-hidden="true"
           />
           <span className="min-w-0 flex-1">
-            <span className="block break-words font-bold text-brand-900">{value ? value.name_ar : t.choose}</span>
+            <span className="block break-words font-bold text-brand-900">{value ? localised(m.lang, value.name_ar, value.name_en) : t.choose}</span>
             {value?.code && (
               <span dir="ltr" className="block text-start text-xs text-ink/60">
                 {[value.system, value.code].filter(Boolean).join(" ")}
@@ -168,7 +170,7 @@ export function ColourPanel({ productId, value, onChange, endpoint = "/api/colou
                       <button
                         type="button"
                         onClick={() => pick(c)}
-                        aria-label={c.name_ar}
+                        aria-label={localised(m.lang, c.name_ar, c.name_en)}
                         aria-pressed={value?.id === c.id}
                         className="group block w-full text-center"
                       >
@@ -178,7 +180,7 @@ export function ColourPanel({ productId, value, onChange, endpoint = "/api/colou
                         >
                           {value?.id === c.id ? "✓" : ""}
                         </span>
-                        <span className="mt-1 block break-words text-xs font-semibold text-brand-900">{c.name_ar}</span>
+                        <span className="mt-1 block break-words text-xs font-semibold text-brand-900">{localised(m.lang, c.name_ar, c.name_en)}</span>
                         {c.code && (
                           <span dir="ltr" className="block text-[11px] text-ink/60">
                             {c.code}

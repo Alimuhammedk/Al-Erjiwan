@@ -1,5 +1,7 @@
 "use client";
 
+import { localised } from "@/lib/i18n/lang";
+
 import { useState } from "react";
 import { useMessages } from "@/lib/i18n/provider";
 import type { PickableColour } from "@/lib/colours/search";
@@ -54,8 +56,10 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
       variant_id: variant?.id ?? null,
       colour_id: product.is_tintable ? (chosen?.id ?? null) : (variant?.colour_id ?? null),
       colour_name: product.is_tintable ? (chosen?.name_ar ?? null) : (colours.find((c) => c.id === variant?.colour_id)?.name_ar ?? null),
+      colour_name_en: product.is_tintable ? (chosen?.name_en ?? null) : (colours.find((c) => c.id === variant?.colour_id)?.name_en ?? null),
       colour_note: null,
       name: product.name_ar,
+      name_en: product.name_en,
       size_label: variant?.size_label ?? null,
       unit_price: price,
       image_url: images[0] ?? null,
@@ -83,7 +87,7 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
         <div>
           <p className="mb-2 font-semibold text-brand-900">
             {t.colours}
-            {chosenColour && <span className="ms-2 font-normal text-ink/70">{chosenColour.name_ar}</span>}
+            {chosenColour && <span className="ms-2 font-normal text-ink/70">{localised(m.lang, chosenColour.name_ar, chosenColour.name_en)}</span>}
           </p>
           <ul className="flex flex-wrap gap-2">
             {swatchColours.map((c) => (
@@ -91,7 +95,7 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
                 <button
                   type="button"
                   onClick={() => pickColour(c.id)}
-                  aria-label={c.name_ar}
+                  aria-label={localised(m.lang, c.name_ar, c.name_en)}
                   aria-pressed={c.id === colourId}
                   style={{ backgroundColor: c.hex }}
                   className={`size-10 rounded-full border-2 ${c.id === colourId ? "border-brand-900 ring-2 ring-brand-500" : "border-brand-100"}`}

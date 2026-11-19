@@ -2,7 +2,7 @@ import type { Article } from "@/lib/articles";
 import { createAuthClient } from "@/lib/supabase/auth-server";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const COLUMNS = "id, title, excerpt, body, cover_url, images, is_published, published_at, updated_at";
+const COLUMNS = "id, title, excerpt, body, title_en, excerpt_en, body_en, cover_url, images, is_published, published_at, updated_at";
 
 // Every article (published or not), newest first, for the admin list. Empty if anything goes wrong.
 export async function listAdminArticles(): Promise<Article[]> {

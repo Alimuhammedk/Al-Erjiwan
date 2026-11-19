@@ -1,3 +1,4 @@
+import { localised } from "@/lib/i18n/lang";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/shop/Breadcrumbs";
@@ -14,6 +15,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const detail = await getProductDetail(id);
   if (!detail) notFound();
   const { product, images } = detail;
+  const name = localised(m.lang, product.name_ar, product.name_en);
+  const description = localised(m.lang, product.description, product.description_en);
 
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-6 pb-28 md:pb-6">
@@ -21,13 +24,13 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         items={[
           { label: m.nav[0].label, href: "/" },
           { label: m.shop.title, href: "/shop" },
-          { label: product.name_ar },
+          { label: name },
         ]}
       />
       <div className="grid gap-8 md:grid-cols-2">
-        <Gallery images={images} alt={product.name_ar} />
+        <Gallery images={images} alt={name} />
         <div className="space-y-5">
-          <h1 className="break-words text-3xl font-extrabold text-brand-900">{product.name_ar}</h1>
+          <h1 className="break-words text-3xl font-extrabold text-brand-900">{name}</h1>
           {product.brand && (
             <p className="text-ink/70">
               {m.product.brand}: <span className="font-semibold">{product.brand}</span>
@@ -40,10 +43,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           </Link>
         </div>
       </div>
-      {product.description && (
+      {description && (
         <section className="max-w-3xl space-y-2">
           <h2 className="text-xl font-extrabold text-brand-900">{m.product.description}</h2>
-          <p className="whitespace-pre-line leading-8">{product.description}</p>
+          <p className="whitespace-pre-line leading-8">{description}</p>
         </section>
       )}
     </main>

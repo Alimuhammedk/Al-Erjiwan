@@ -1,5 +1,7 @@
 "use client";
 
+import { localised } from "@/lib/i18n/lang";
+
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -60,11 +62,11 @@ export function HeroSlider({ banners }: { banners: Banner[] }) {
   const banner = banners[active];
   const slide = (
     <>
-      <Image src={banner.image_url} alt={banner.title ?? m.siteName} fill priority={active === 0} sizes="100vw" className="object-cover" />
+      <Image src={banner.image_url} alt={localised(m.lang, banner.title, banner.title_en) || m.siteName} fill priority={active === 0} sizes="100vw" className="object-cover" />
       {/* Wide side padding keeps the text clear of the arrows; bottom padding keeps it clear of the dots. */}
       <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-2 bg-gradient-to-t from-brand-900/85 to-transparent px-12 pb-12 pt-10 md:flex-row md:items-end md:justify-between md:gap-4 md:px-16 md:pb-14">
-        {banner.title && (
-          <h2 className="line-clamp-2 text-lg font-extrabold leading-snug text-white md:text-4xl">{banner.title}</h2>
+        {localised(m.lang, banner.title, banner.title_en) && (
+          <h2 className="line-clamp-2 text-lg font-extrabold leading-snug text-white md:text-4xl">{localised(m.lang, banner.title, banner.title_en)}</h2>
         )}
         {banner.link && (
           <span className="shrink-0 rounded-full bg-sun-300 px-4 py-1.5 text-sm font-extrabold text-brand-900 md:px-6 md:py-2.5 md:text-base">

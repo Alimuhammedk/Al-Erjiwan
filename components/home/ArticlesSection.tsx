@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMessages } from "@/lib/i18n/provider";
-import { cardExcerpt, type Article } from "@/lib/articles";
+import { articleIn, cardExcerpt, type Article } from "@/lib/articles";
 import { formatDate } from "@/lib/format";
 
 
@@ -104,8 +104,8 @@ export function ArticlesSection({ articles }: { articles: Article[] }) {
                 </time>
               </span>
               <span className="flex flex-1 flex-col gap-2 p-5">
-                <span className="line-clamp-2 text-xl font-extrabold leading-9 text-brand-900">{a.title}</span>
-                <span className="line-clamp-3 leading-8 text-ink/75">{cardExcerpt(a)}</span>
+                <span className="line-clamp-2 text-xl font-extrabold leading-9 text-brand-900">{articleIn(a, m.lang).title}</span>
+                <span className="line-clamp-3 leading-8 text-ink/75">{cardExcerpt(articleIn(a, m.lang))}</span>
                 <span className="mt-auto inline-flex items-center gap-2 pt-2 font-bold text-brand-700">
                   {t.read}
                   <span aria-hidden="true" className="inline-block motion-safe:transition-transform ltr:rotate-180 motion-safe:group-hover:-translate-x-1 motion-safe:ltr:group-hover:translate-x-1">
