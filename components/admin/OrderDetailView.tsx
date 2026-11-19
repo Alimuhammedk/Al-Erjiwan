@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { ar } from "@/content/ar";
 import type { ActionState } from "@/lib/admin/types";
-import { customerWhatsAppUrl, deliveryMessage, deliveryWhatsAppUrl, type AdminOrder } from "@/lib/admin/orders";
+import type { CompanyOption } from "@/lib/admin/delivery";
+import { customerWhatsAppUrl, type AdminOrder } from "@/lib/admin/orders";
 import { formatDateTime, formatPrice } from "@/lib/format";
-import { CopyButton } from "./CopyButton";
+import { DeleteOrderButton } from "./DeleteOrderButton";
+import { DeliveryCompanyPicker } from "./DeliveryCompanyPicker";
 import { NotesForm } from "./NotesForm";
 import { OrderActions } from "./OrderActions";
 import { StatusBadge } from "./StatusBadge";
@@ -17,6 +19,8 @@ type Props = {
   setStatus: (status: string) => Promise<ActionState>;
   saveNotes: (prev: ActionState, formData: FormData) => Promise<ActionState>;
   deleteOrder: () => Promise<ActionState>;
+  assignCompany: (companyId: string | null) => Promise<ActionState>;
+  companies: CompanyOption[];
 };
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
@@ -38,7 +42,7 @@ const Row = ({ label, children }: { label: string; children: React.ReactNode }) 
 const button = "inline-flex min-h-11 items-center justify-center rounded-full px-5 font-bold";
 
 // The whole order page. The pieces that change data come in as actions, so the same page can be shown with sample data.
-export function OrderDetailView({ order, problemCount, printHref, setStatus, saveNotes, deleteOrder }: Props) {
+export function OrderDetailView({ order, problemCount, printHref, setStatus, saveNotes, deleteOrder, assignCompany, companies }: Props) {
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 space-y-5 px-4 py-6">
       <Link href="/admin/orders" className="inline-flex min-h-11 items-center font-bold text-brand-700 print:hidden">
@@ -119,7 +123,7 @@ export function OrderDetailView({ order, problemCount, printHref, setStatus, sav
           </section>
 
           <Card title={t.changeStatus}>
-            <OrderActions status={order.status} setStatus={setStatus} deleteOrder={deleteOrder} />
+            <OrderActions status={order.status} setStatus={setStatus} />
           </Card>
 
           <Card title={t.messages}>
@@ -130,22 +134,21 @@ export function OrderDetailView({ order, problemCount, printHref, setStatus, sav
               <a href={customerWhatsAppUrl(order, "update")} target="_blank" rel="noopener noreferrer" className={`${button} border-2 border-[#25D366] text-ink hover:bg-[#25D366]/10`}>
                 {t.updateWhatsApp}
               </a>
-              <a href={deliveryWhatsAppUrl(order)} target="_blank" rel="noopener noreferrer" className={`${button} bg-brand-700 text-white hover:bg-brand-900`}>
-                {t.deliveryWhatsApp}
-              </a>
-              <CopyButton text={deliveryMessage(order)} label={t.copyDelivery} />
               <Link href={printHref} className={`${button} border-2 border-brand-100 text-brand-900 hover:bg-brand-50`}>
                 {t.print}
               </Link>
             </div>
           </Card>
 
-          <Card title={t.deliveryInfo}>
-            <NotesForm
-              initial={{ delivery_company: order.delivery_company, tracking_note: order.tracking_note, internal_note: order.internal_note }}
-              action={saveNotes}
-            />
+          <Card title={t.company}>
+            <DeliveryCompanyPicker order={order} companies={companies} assign={assignCompany} />
           </Card>
+
+          <Card title={t.deliveryNotesCard}>
+            <NotesForm initial={{ delivery_notes: order.delivery_notes }} action={saveNotes} />
+          </Card>
+
+          <DeleteOrderButton code={order.code} status={order.status} deleteOrder={deleteOrder} after="list" />
         </div>
       </div>
     </main>

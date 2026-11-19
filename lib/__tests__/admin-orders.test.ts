@@ -4,7 +4,8 @@ import {
   deliveryMessage,
   deliveryWhatsAppUrl,
   internationalPhone,
-  nextStatuses,
+  otherStatuses,
+  costDifference,
   type AdminOrder,
 } from "../admin/orders";
 
@@ -23,8 +24,9 @@ const order: AdminOrder = {
   total: 123000,
   status: "new",
   delivery_company: null,
-  tracking_note: null,
-  internal_note: null,
+  delivery_company_id: null,
+  delivery_cost: null,
+  delivery_notes: null,
   created_at: "2026-11-20T10:00:00Z",
   updated_at: "2026-11-20T10:00:00Z",
   items: [
@@ -35,17 +37,25 @@ const order: AdminOrder = {
 };
 const decode = (url: string) => decodeURIComponent(url.slice(url.indexOf("text=") + 5));
 
-describe("nextStatuses", () => {
-  it("follows the same rules as the database", () => {
-    expect(nextStatuses("new")).toEqual(["confirmed", "shipped", "delivered", "cancelled"]);
-    expect(nextStatuses("confirmed")).toEqual(["shipped", "delivered", "cancelled"]);
-    expect(nextStatuses("shipped")).toEqual(["delivered", "returned"]);
-    expect(nextStatuses("delivered")).toEqual(["returned"]);
+describe("otherStatuses", () => {
+  it.each(["new", "confirmed", "shipped", "delivered", "cancelled", "returned"])("offers every status except %s", (s) => {
+    const others = otherStatuses(s);
+    expect(others).toHaveLength(5);
+    expect(others).not.toContain(s);
   });
-  it("cancelled, returned and unknown statuses are final", () => {
-    expect(nextStatuses("cancelled")).toEqual([]);
-    expect(nextStatuses("returned")).toEqual([]);
-    expect(nextStatuses("weird")).toEqual([]);
+  it("keeps the usual order", () => {
+    expect(otherStatuses("shipped")).toEqual(["new", "confirmed", "delivered", "cancelled", "returned"]);
+  });
+});
+
+describe("costDifference", () => {
+  it("is what the customer paid for delivery minus what the company charges", () => {
+    expect(costDifference(5000, 4000)).toBe(1000);
+    expect(costDifference(5000, 6000)).toBe(-1000);
+    expect(costDifference(0, 0)).toBe(0);
+  });
+  it("is null when the company has no price", () => {
+    expect(costDifference(5000, null)).toBeNull();
   });
 });
 
@@ -65,12 +75,12 @@ describe("customerWhatsAppUrl", () => {
       expect(text, part).toContain(part);
     }
   });
-  it("the update message gives the status the customer sees, and delivery details when there are some", () => {
-    const text = decode(customerWhatsAppUrl({ ...order, status: "shipped", delivery_company: "شركة النور", tracking_note: "رقم 556" }, "update"));
+  it("the update message gives the status the customer sees, and the company when there is one", () => {
+    const text = decode(customerWhatsAppUrl({ ...order, status: "shipped", delivery_company: "شركة النور" }, "update"));
     expect(text).toContain("ABCD1234");
     expect(text).toContain("مع شركة التوصيل");
     expect(text).toContain("شركة النور");
-    expect(text).toContain("556");
+    expect(decode(customerWhatsAppUrl(order, "update"))).not.toContain("شركة التوصيل:");
   });
 });
 
@@ -90,6 +100,9 @@ describe("deliveryMessage", () => {
     expect(text).toContain("المبلغ المطلوب تحصيله من الزبون: 123,000 د.ع");
     expect(text).toContain("يشمل التوصيل 5,000 د.ع");
   });
+  it("includes the owner's delivery notes", () => {
+    expect(deliveryMessage({ ...order, delivery_notes: "الدفع للسائق فقط" })).toContain("ملاحظات للتوصيل: الدفع للسائق فقط");
+  });
   it("leaves out lines that have no value", () => {
     const bare = deliveryMessage({ ...order, landmark: null, notes: null, city: null });
     expect(bare).not.toContain("أقرب نقطة دالة");
@@ -99,13 +112,14 @@ describe("deliveryMessage", () => {
 });
 
 describe("deliveryWhatsAppUrl", () => {
-  it("opens WhatsApp's chat picker so any delivery company can be chosen", () => {
-    const url = deliveryWhatsAppUrl(order);
-    expect(url.startsWith("https://wa.me/?text=")).toBe(true);
+  const company = { whatsapp: "07801234567" };
+  it("opens a chat with the chosen delivery company", () => {
+    const url = deliveryWhatsAppUrl(order, company);
+    expect(url.startsWith("https://wa.me/9647801234567?text=")).toBe(true);
     expect(decode(url)).toBe(deliveryMessage(order));
   });
   it("encodes special characters so the message is not cut off", () => {
-    const url = deliveryWhatsAppUrl({ ...order, notes: "الطابق 2 & الباب الأزرق #5 ؟" });
+    const url = deliveryWhatsAppUrl({ ...order, notes: "الطابق 2 & الباب الأزرق #5 ؟" }, company);
     expect(url).not.toMatch(/[&#](?!.*text=)/);
     expect(decode(url)).toContain("الطابق 2 & الباب الأزرق #5 ؟");
   });

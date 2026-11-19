@@ -1,8 +1,8 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { ar } from "@/content/ar";
 import type { ActionState } from "@/lib/admin/types";
+import { priceForGovernorate, type PriceRow } from "@/lib/admin/delivery";
 import { STATUS_ORDER } from "@/lib/admin/orders";
 import { requireAdmin } from "@/lib/auth";
 import { createAuthClient } from "@/lib/supabase/auth-server";
@@ -11,47 +11,67 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const t = ar.admin.orders;
 const failed: ActionState = { error: ar.admin.errors.saveFailed };
 
-// Changes an order's status. The database checks the move is allowed and gives stock back once on cancel or return.
+// Changes an order's status to any other. The database moves stock to match (and refuses a reopen if an item sold out).
 export async function setOrderStatusAction(id: string, status: string): Promise<ActionState> {
   await requireAdmin();
   if (!UUID.test(id) || !(STATUS_ORDER as readonly string[]).includes(status)) return { error: t.statusError };
   const db = await createAuthClient();
   const { error } = await db.rpc("set_order_status", { p_order: id, p_status: status });
-  if (error) return error.message.includes("INVALID_TRANSITION") ? { error: t.statusError } : failed;
-  return {};
+  if (!error) return {};
+  const sold = /OUT_OF_STOCK:(.+)/.exec(error.message);
+  if (sold) return { error: t.reopenSoldOut.replace("{name}", sold[1].trim()) };
+  return error.message.includes("INVALID_TRANSITION") ? { error: t.statusError } : failed;
 }
 
+// The one notes box on the order page; these notes go into the message to the delivery company.
 export async function saveOrderNotesAction(id: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin();
   if (!UUID.test(id)) return failed;
-
-  const errors: Record<string, string> = {};
-  const field = (key: string, max: number) => {
-    const v = String(formData.get(key) ?? "").trim();
-    if (v.length > max) errors[key] = ar.admin.errors.tooLong;
-    return v || null;
-  };
-  const values = {
-    delivery_company: field("delivery_company", 100),
-    tracking_note: field("tracking_note", 200),
-    internal_note: field("internal_note", 1000),
-  };
-  if (Object.keys(errors).length) return { errors };
-
+  const v = String(formData.get("delivery_notes") ?? "").trim();
+  if (v.length > 1000) return { errors: { delivery_notes: ar.admin.errors.tooLong } };
   const db = await createAuthClient();
-  const { error } = await db.from("orders").update(values).eq("id", id);
+  const { error } = await db.from("orders").update({ delivery_notes: v || null }).eq("id", id);
   return error ? failed : {};
 }
 
-// Only a cancelled order can be deleted (for example a test order). Real history is kept.
+// Deletes any order. The database gives stock back when the order was still active and never when it was delivered.
 export async function deleteOrderAction(id: string): Promise<ActionState> {
   await requireAdmin();
   if (!UUID.test(id)) return { error: t.notFound };
   const db = await createAuthClient();
-  const { data } = await db.from("orders").select("status").eq("id", id).maybeSingle();
-  if (!data) return { error: t.notFound };
-  if (data.status !== "cancelled") return { error: t.statusError };
-  const { error } = await db.from("orders").delete().eq("id", id);
-  if (error) return failed;
-  redirect("/admin/orders");
+  const { error } = await db.rpc("delete_order", { p_order: id });
+  if (!error) return {};
+  return error.message.includes("NOT_FOUND") ? { error: t.notFound } : failed;
+}
+
+// Picks the delivery company for an order (or clears it). The order keeps the company's name and its price for
+// this order's governorate, so later edits or deletes of the company don't change old orders.
+export async function assignDeliveryCompanyAction(orderId: string, companyId: string | null): Promise<ActionState> {
+  await requireAdmin();
+  if (!UUID.test(orderId) || (companyId !== null && !UUID.test(companyId))) return failed;
+  const db = await createAuthClient();
+
+  let values: { delivery_company_id: string | null; delivery_company: string | null; delivery_cost: number | null } = {
+    delivery_company_id: null,
+    delivery_company: null,
+    delivery_cost: null,
+  };
+  if (companyId) {
+    const { data: order } = await db.from("orders").select("governorate").eq("id", orderId).maybeSingle();
+    if (!order) return { error: t.notFound };
+    const { data: company } = await db
+      .from("delivery_companies")
+      .select("name, delivery_company_prices(price, delivery_zones(governorate_ar))")
+      .eq("id", companyId)
+      .maybeSingle();
+    if (!company) return failed;
+    const c = company as unknown as { name: string; delivery_company_prices: PriceRow[] | null };
+    values = {
+      delivery_company_id: companyId,
+      delivery_company: c.name,
+      delivery_cost: priceForGovernorate(c.delivery_company_prices, order.governorate),
+    };
+  }
+  const { error } = await db.from("orders").update(values).eq("id", orderId);
+  return error ? failed : {};
 }

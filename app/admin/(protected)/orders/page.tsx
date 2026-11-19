@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { DeleteOrderButton } from "@/components/admin/DeleteOrderButton";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ar } from "@/content/ar";
 import { ORDERS_PER_PAGE, STATUS_ORDER, parseOrderListQuery, type OrderListQuery } from "@/lib/admin/orders";
 import { listOrders } from "@/lib/admin/orders-data";
+import { deleteOrderAction } from "./actions";
 import { formatDateTime, formatPrice } from "@/lib/format";
 
 const t = ar.admin.orders;
@@ -61,10 +63,10 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       ) : (
         <ul className="space-y-3">
           {orders.map((o) => (
-            <li key={o.id}>
+            <li key={o.id} className="flex items-center gap-2">
               <Link
                 href={`/admin/orders/${o.id}`}
-                className={`flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-paper p-4 shadow-sm transition-shadow hover:shadow-md ${o.status === "new" ? "border-s-4 border-coral-500" : ""}`}
+                className={`flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-paper p-4 shadow-sm transition-shadow hover:shadow-md ${o.status === "new" ? "border-s-4 border-coral-500" : ""}`}
               >
                 <span dir="ltr" className="font-extrabold tracking-widest text-brand-900">
                   {o.code}
@@ -76,6 +78,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                 <span className="font-extrabold text-brand-700">{formatPrice(o.total)}</span>
                 <span className="w-full text-sm text-ink/70 sm:w-auto">{formatDateTime(o.created_at)}</span>
               </Link>
+              <DeleteOrderButton code={o.code} status={o.status} deleteOrder={deleteOrderAction.bind(null, o.id)} after="refresh" className="shrink-0" />
             </li>
           ))}
         </ul>

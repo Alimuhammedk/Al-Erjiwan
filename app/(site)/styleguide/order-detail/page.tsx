@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { OrderDetailView } from "@/components/admin/OrderDetailView";
 import { STATUS_ORDER, type AdminOrder } from "@/lib/admin/orders";
-import { echoDelete, echoSaveNotes, echoSetStatus } from "./echo-actions";
+import { echoAssign, echoDelete, echoSaveNotes, echoSetStatus } from "./echo-actions";
 
 // Dev-only copy of the admin order page with sample data, so it can be tried (and tested) without logging in.
 // Remove before launch.
@@ -23,8 +23,9 @@ export default async function OrderDetailHarness({ searchParams }: { searchParam
     total: 123000,
     status: (STATUS_ORDER as readonly string[]).includes(status) ? status : "new",
     delivery_company: null,
-    tracking_note: null,
-    internal_note: "زبون جديد",
+    delivery_company_id: null,
+    delivery_cost: null,
+    delivery_notes: "زبون جديد",
     created_at: "2026-11-20T10:00:00Z",
     updated_at: "2026-11-20T10:00:00Z",
     items: [
@@ -40,6 +41,12 @@ export default async function OrderDetailHarness({ searchParams }: { searchParam
       setStatus={echoSetStatus}
       saveNotes={echoSaveNotes}
       deleteOrder={echoDelete}
+      assignCompany={echoAssign}
+      companies={[
+        { id: "c1", name: "شركة السرعة", whatsapp: "07801234567", price: 4000 },
+        { id: "c2", name: "شركة النور", whatsapp: "07901234567", price: 6500 },
+        { id: "c3", name: "شركة بلا سعر", whatsapp: "07711234567", price: null },
+      ]}
     />
   );
 }

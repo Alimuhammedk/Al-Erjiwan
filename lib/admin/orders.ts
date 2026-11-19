@@ -29,8 +29,9 @@ export type AdminOrder = {
   total: number;
   status: string;
   delivery_company: string | null;
-  tracking_note: string | null;
-  internal_note: string | null;
+  delivery_company_id: string | null;
+  delivery_cost: number | null;
+  delivery_notes: string | null;
   created_at: string;
   updated_at: string;
   items: AdminOrderItem[];
@@ -38,21 +39,11 @@ export type AdminOrder = {
 
 export const STATUS_ORDER = ["new", "confirmed", "shipped", "delivered", "cancelled", "returned"] as const;
 
-// The same rules as set_order_status in the database. Cancelled and returned are final.
-export function nextStatuses(status: string): string[] {
-  switch (status) {
-    case "new":
-      return ["confirmed", "shipped", "delivered", "cancelled"];
-    case "confirmed":
-      return ["shipped", "delivered", "cancelled"];
-    case "shipped":
-      return ["delivered", "returned"];
-    case "delivered":
-      return ["returned"];
-    default:
-      return [];
-  }
-}
+// Any status can move to any other (the database applies the stock rules), so every other status is offered.
+export const otherStatuses = (status: string): string[] => STATUS_ORDER.filter((s) => s !== status);
+
+// What the customer paid for delivery minus what the company charges; null when the company has no price.
+export const costDifference = (fee: number, cost: number | null): number | null => (cost === null ? null : fee - cost);
 
 // 07701234567 -> 9647701234567 (the form wa.me wants)
 export const internationalPhone = (phone: string) => "964" + phone.replace(/^0/, "");
@@ -86,7 +77,6 @@ export function customerWhatsAppUrl(order: AdminOrder, kind: "confirm" | "update
       : [
           base,
           ...(order.delivery_company ? [`${m.company}: ${order.delivery_company}`] : []),
-          ...(order.tracking_note ? [`${m.tracking}: ${order.tracking_note}`] : []),
         ];
   return `https://wa.me/${internationalPhone(order.phone)}?text=${encodeURIComponent(lines.join("\n"))}`;
 }
@@ -104,11 +94,13 @@ export function deliveryMessage(order: AdminOrder): string {
     ...order.items.map(itemLine),
     `${m.collect}: ${formatPrice(order.total)} ${fill(m.includesDelivery, { fee: formatPrice(order.delivery_fee) })}`,
     ...(order.notes ? [`${m.notes}: ${order.notes}`] : []),
+    ...(order.delivery_notes ? [`${m.deliveryNotes}: ${order.delivery_notes}`] : []),
   ].join("\n");
 }
 
-// wa.me without a number opens WhatsApp's chat picker, so Ali can send it to any delivery company.
-export const deliveryWhatsAppUrl = (order: AdminOrder) => `https://wa.me/?text=${encodeURIComponent(deliveryMessage(order))}`;
+// Opens a WhatsApp chat with the chosen delivery company, with the delivery message ready to send.
+export const deliveryWhatsAppUrl = (order: AdminOrder, company: { whatsapp: string }) =>
+  `https://wa.me/${internationalPhone(company.whatsapp)}?text=${encodeURIComponent(deliveryMessage(order))}`;
 
 export const ORDERS_PER_PAGE = 20;
 

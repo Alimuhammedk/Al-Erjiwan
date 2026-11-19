@@ -98,6 +98,7 @@ test.describe("with the order functions in the database", () => {
   test("the province list shows only the province names, never a price or the word free", async ({ page }) => {
     await withCart(page);
     await page.goto("/checkout");
+    await expect(page.getByLabel("المحافظة")).toBeVisible();
     const names = await page.getByLabel("المحافظة").locator("option").allTextContents();
     expect(names.length).toBeGreaterThan(1);
     for (const name of names.slice(1)) {
@@ -125,7 +126,8 @@ test.describe("with the order functions in the database", () => {
     await page.getByLabel("الاسم الكامل").fill("علي حسين");
     await page.getByLabel("رقم الهاتف").fill("0770 123 4567");
     await page.getByLabel("المحافظة").selectOption({ index: 1 });
-    await page.getByLabel("العنوان بالتفصيل").fill("حي الجامعة، شارع 5");
+    await page.getByLabel("المدينة أو القضاء").fill("الكفل");
+    await page.getByLabel("أقرب نقطة دالة").fill("قرب الجامع");
     await page.getByRole("button", { name: "تأكيد الطلب" }).click();
 
     await expect(page.getByRole("alert").filter({ hasText: "أحد المنتجات لم يعد متوفرًا" })).toBeVisible();

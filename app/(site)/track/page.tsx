@@ -81,12 +81,6 @@ export default async function TrackPage({ searchParams }: { searchParams: Promis
                 <dd className="font-semibold">{order.delivery_company}</dd>
               </div>
             )}
-            {order.tracking_note && (
-              <div className="flex justify-between gap-3">
-                <dt className="text-ink/70">{t.trackingNote}</dt>
-                <dd className="break-words font-semibold">{order.tracking_note}</dd>
-              </div>
-            )}
           </dl>
 
           <ul className="divide-y divide-brand-100 border-t border-brand-100">

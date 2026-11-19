@@ -3,7 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 export type DeliveryZone = { id: string; governorate_ar: string; fee: number; min_order: number };
 export type OrderLine = { name: string; size: string | null; quantity: number };
 export type OrderSummary = { status: string; created_at: string; total: number; items: OrderLine[] };
-export type TrackedOrder = OrderSummary & { updated_at: string; delivery_company: string | null; tracking_note: string | null };
+export type TrackedOrder = OrderSummary & { updated_at: string; delivery_company: string | null };
 
 // Active governorates with their delivery fee and minimum order, for the checkout.
 export async function getDeliveryZones(): Promise<DeliveryZone[]> {

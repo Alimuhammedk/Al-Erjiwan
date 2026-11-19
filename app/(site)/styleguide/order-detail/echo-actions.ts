@@ -16,11 +16,16 @@ export async function echoSetStatus(status: string): Promise<ActionState> {
 
 export async function echoSaveNotes(_prev: ActionState, formData: FormData): Promise<ActionState> {
   dev();
-  if (String(formData.get("internal_note") ?? "").includes("FAIL")) return { errors: { internal_note: "خطأ تجريبي" } };
+  if (String(formData.get("delivery_notes") ?? "").includes("FAIL")) return { errors: { delivery_notes: "خطأ تجريبي" } };
   return {};
 }
 
 export async function echoDelete(): Promise<ActionState> {
   dev();
   return { error: "ECHO:delete" };
+}
+
+export async function echoAssign(companyId: string | null): Promise<ActionState> {
+  dev();
+  return companyId === "c3" ? { error: "ECHO:assign:c3" } : {};
 }

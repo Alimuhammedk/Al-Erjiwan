@@ -10,11 +10,11 @@ import { useFormAction } from "./useFormAction";
 const t = ar.admin.orders;
 
 type Props = {
-  initial: { delivery_company: string | null; tracking_note: string | null; internal_note: string | null };
+  initial: { delivery_notes: string | null };
   action: (prev: ActionState, formData: FormData) => Promise<ActionState>;
 };
 
-// Delivery company, tracking note and a private note. Saving keeps what was typed and says it was saved.
+// The one notes box: what the delivery company should know. Saving keeps what was typed and says it was saved.
 export function NotesForm({ initial, action }: Props) {
   const { state, onSubmit, pending } = useFormAction(action, {} as ActionState);
   const [submitted, setSubmitted] = useState(false);
@@ -28,14 +28,8 @@ export function NotesForm({ initial, action }: Props) {
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <FormField label={t.deliveryCompany} error={err.delivery_company}>
-        <input name="delivery_company" defaultValue={initial.delivery_company ?? ""} maxLength={100} className={inputClass} />
-      </FormField>
-      <FormField label={t.trackingNote} error={err.tracking_note}>
-        <input name="tracking_note" defaultValue={initial.tracking_note ?? ""} maxLength={200} className={inputClass} />
-      </FormField>
-      <FormField label={t.internalNote} error={err.internal_note}>
-        <textarea name="internal_note" rows={3} defaultValue={initial.internal_note ?? ""} maxLength={1000} className={inputClass} />
+      <FormField label={t.deliveryNotes} error={err.delivery_notes}>
+        <textarea name="delivery_notes" rows={3} defaultValue={initial.delivery_notes ?? ""} maxLength={1000} className={inputClass} />
       </FormField>
       {state.error && (
         <p role="alert" className="font-semibold text-coral-500">

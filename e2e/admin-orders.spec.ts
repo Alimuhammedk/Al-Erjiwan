@@ -21,25 +21,38 @@ test("the phone number is a call link", async ({ page }) => {
   await expect(page.getByRole("link", { name: "اتصال" })).toHaveAttribute("href", "tel:07701234567");
 });
 
-for (const [from, expected] of [
-  ["new", ["مؤكد", "مع شركة التوصيل", "تم التسليم", "ملغي"]],
-  ["confirmed", ["مع شركة التوصيل", "تم التسليم", "ملغي"]],
-  ["shipped", ["تم التسليم", "مرتجع"]],
-  ["delivered", ["مرتجع"]],
+const ALL = ["جديد", "مؤكد", "مع شركة التوصيل", "تم التسليم", "ملغي", "مرتجع"];
+const statusCard = (page: Page) => page.locator("section", { has: page.getByRole("heading", { name: "حالة الطلب" }) });
+
+for (const [from, label] of [
+  ["new", "جديد"],
+  ["confirmed", "مؤكد"],
+  ["shipped", "مع شركة التوصيل"],
+  ["delivered", "تم التسليم"],
+  ["cancelled", "ملغي"],
+  ["returned", "مرتجع"],
 ] as const) {
-  test(`a ${from} order offers only the allowed next steps`, async ({ page }) => {
+  test(`a ${from} order still shows all six statuses, with the current one marked`, async ({ page }) => {
     await page.goto(`${URL}?status=${from}`);
-    const card = page.locator("section", { has: page.getByRole("heading", { name: "تغيير الحالة" }) });
-    await expect(card.getByRole("button")).toHaveText([...expected]);
+    const buttons = statusCard(page).getByRole("button");
+    await expect(buttons).toHaveText(ALL);
+    for (const name of ALL) {
+      await expect(status(page, name)).toHaveAttribute("aria-pressed", String(name === label));
+    }
   });
 }
 
-for (const final of ["cancelled", "returned"]) {
-  test(`a ${final} order is final`, async ({ page }) => {
-    await page.goto(`${URL}?status=${final}`);
-    await expect(page.getByText("هذه الحالة نهائية")).toBeVisible();
+test("a cancelled order can be reopened after a confirmation about stock", async ({ page }) => {
+  await page.goto(`${URL}?status=cancelled`);
+  let message = "";
+  page.once("dialog", (d) => {
+    message = d.message();
+    void d.accept();
   });
-}
+  await status(page, "جديد").click();
+  expect(message).toContain("سيُسحب المخزون من جديد");
+  await expect(page.getByRole("alert").filter({ hasText: "ECHO:status:new" })).toBeVisible();
+});
 
 test("a normal step goes straight through", async ({ page }) => {
   await page.goto(URL);
@@ -74,42 +87,67 @@ test("returning explains that mixed paint does not go back to stock", async ({ p
   expect(message).toContain("الدهان المخلوط فلا يعود");
 });
 
-test("delete exists only for a cancelled order, asks first, and is what the action receives", async ({ page }) => {
-  await page.goto(URL);
-  await expect(page.getByRole("button", { name: "حذف الطلب" })).toHaveCount(0);
-  await page.goto(`${URL}?status=cancelled`);
-  page.once("dialog", (d) => void d.dismiss());
-  await page.getByRole("button", { name: "حذف الطلب" }).click();
-  await expect(page.getByRole("alert").filter({ hasText: "ECHO:delete" })).toHaveCount(0);
-  page.once("dialog", (d) => void d.accept());
-  await page.getByRole("button", { name: "حذف الطلب" }).click();
-  await expect(page.getByRole("alert").filter({ hasText: "ECHO:delete" })).toBeVisible();
-});
+for (const [from, text] of [
+  ["new", "ستعود كمياته إلى المخزون"],
+  ["delivered", "فلن تعود كمياته إلى المخزون"],
+  ["cancelled", "لن تتغير الكميات في المخزون"],
+] as const) {
+  test(`a ${from} order can be deleted after a confirmation that explains stock`, async ({ page }) => {
+    await page.goto(`${URL}?status=${from}`);
+    let message = "";
+    page.once("dialog", (d) => {
+      message = d.message();
+      void d.dismiss();
+    });
+    await page.getByRole("button", { name: "حذف الطلب" }).click();
+    expect(message).toContain("ABCD1234");
+    expect(message).toContain(text);
+    await expect(page.getByRole("alert").filter({ hasText: "ECHO:delete" })).toHaveCount(0);
+    page.once("dialog", (d) => void d.accept());
+    await page.getByRole("button", { name: "حذف الطلب" }).click();
+    await expect(page.getByRole("alert").filter({ hasText: "ECHO:delete" })).toBeVisible();
+  });
+}
 
-test("the WhatsApp buttons open ready messages", async ({ page }) => {
+test("the customer WhatsApp buttons open ready messages", async ({ page }) => {
   await page.goto(URL);
   const confirm = await page.getByRole("link", { name: "تأكيد الطلب عبر واتساب" }).getAttribute("href");
   expect(confirm).toMatch(/^https:\/\/wa\.me\/9647701234567\?text=/);
   const confirmText = decode(confirm!);
   for (const part of ["علي حسين", "ABCD1234", "بنتلايت داخلي ممتاز (4 لتر) كريمي JW-102 × 2", "123,000 د.ع", "يرجى التأكيد"]) expect(confirmText, part).toContain(part);
-
-  const delivery = await page.getByRole("link", { name: "إرسال إلى شركة التوصيل" }).getAttribute("href");
-  expect(delivery!.startsWith("https://wa.me/?text=")).toBe(true);
-  expect(decode(delivery!)).toContain("المبلغ المطلوب تحصيله من الزبون: 123,000 د.ع");
-
   await expect(page.getByRole("link", { name: "تأكيد الطلب عبر واتساب" })).toHaveAttribute("target", "_blank");
   await expect(page.getByRole("link", { name: "تأكيد الطلب عبر واتساب" })).toHaveAttribute("rel", /noopener/);
 });
 
-test("copying the delivery message puts the full text on the clipboard", async ({ page, context }) => {
-  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+test("there is no copy-message button and no old delivery card", async ({ page }) => {
   await page.goto(URL);
-  await page.getByRole("button", { name: "نسخ رسالة التوصيل" }).click();
-  await expect(page.getByRole("button", { name: "تم النسخ" })).toBeVisible();
-  const copied = await page.evaluate(() => navigator.clipboard.readText());
-  expect(copied).toContain("طلب توصيل رقم ABCD1234");
-  expect(copied).toContain("حي الجامعة، شارع 5، دار رقم 12");
-  expect(copied).toContain("المبلغ المطلوب تحصيله من الزبون: 123,000 د.ع");
+  await expect(page.getByRole("button", { name: "نسخ رسالة التوصيل" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "التوصيل والملاحظات" })).toHaveCount(0);
+  await expect(page.getByLabel("رقم الشحنة أو ملاحظة التتبع")).toHaveCount(0);
+});
+
+test("sending to the delivery company needs a chosen company, then opens WhatsApp to its number", async ({ page }) => {
+  await page.goto(URL);
+  await expect(page.getByRole("link", { name: "إرسال إلى شركة التوصيل" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "إرسال إلى شركة التوصيل" })).toBeDisabled();
+
+  await page.getByRole("combobox").selectOption({ label: "شركة السرعة" });
+  const link = page.getByRole("link", { name: "إرسال إلى شركة التوصيل" });
+  const href = await link.getAttribute("href");
+  expect(href!.startsWith("https://wa.me/9647801234567?text=")).toBe(true);
+  const text = decode(href!);
+  expect(text).toContain("المبلغ المطلوب تحصيله من الزبون: 123,000 د.ع");
+  expect(text).toContain("ملاحظات للتوصيل: زبون جديد");
+  await expect(page.getByTestId("company-price")).toHaveText("4,000 د.ع");
+  await expect(page.getByTestId("company-difference")).toHaveText("1,000 د.ع");
+
+  await page.getByRole("combobox").selectOption({ label: "شركة النور" });
+  await expect(page.getByTestId("company-difference")).toHaveText("-1,500 د.ع");
+  await expect(link).toHaveAttribute("href", /wa\.me\/9647901234567/);
+
+  await page.getByRole("combobox").selectOption({ label: "شركة بلا سعر" });
+  await expect(page.getByTestId("company-price")).toHaveText("لا يوجد سعر لهذه المحافظة");
+  await expect(page.getByTestId("company-difference")).toHaveCount(0);
 });
 
 test("the print slip link is there", async ({ page }) => {
@@ -124,19 +162,18 @@ test("a customer with earlier cancelled or returned orders gets a warning", asyn
   await expect(page.getByText("طلب سابق ملغي أو مرتجع")).toHaveCount(0);
 });
 
-test("the notes form keeps what was typed, says saved, and shows errors on the field", async ({ page }) => {
+test("there is one notes box; it keeps what was typed, says saved, and shows errors on the field", async ({ page }) => {
   await page.goto(URL);
-  await page.getByLabel("شركة التوصيل").fill("شركة النور");
-  await page.getByLabel("رقم الشحنة أو ملاحظة التتبع").fill("556");
+  await expect(page.getByLabel(/ملاحظات لشركة التوصيل/)).toHaveValue("زبون جديد");
+  await page.getByLabel(/ملاحظات لشركة التوصيل/).fill("اتصل قبل الوصول بنصف ساعة");
   await page.getByRole("button", { name: "حفظ", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "تم الحفظ" })).toBeVisible();
-  await expect(page.getByLabel("شركة التوصيل")).toHaveValue("شركة النور");
-  await expect(page.getByLabel("رقم الشحنة أو ملاحظة التتبع")).toHaveValue("556");
+  await expect(page.getByLabel(/ملاحظات لشركة التوصيل/)).toHaveValue("اتصل قبل الوصول بنصف ساعة");
 
-  await page.getByLabel(/ملاحظة داخلية/).fill("FAIL");
+  await page.getByLabel(/ملاحظات لشركة التوصيل/).fill("FAIL");
   await page.getByRole("button", { name: "حفظ", exact: true }).click();
   await expect(page.getByText("خطأ تجريبي")).toBeVisible();
-  await expect(page.getByLabel(/ملاحظة داخلية/)).toHaveValue("FAIL");
+  await expect(page.getByLabel(/ملاحظات لشركة التوصيل/)).toHaveValue("FAIL");
   await expect(page.getByRole("status").filter({ hasText: "تم الحفظ" })).toHaveCount(0);
 });
 
