@@ -3,7 +3,7 @@ import { ADMIN_TABS, activeTab } from "../admin/nav";
 
 describe("ADMIN_TABS", () => {
   it("are in the order the owner asked for", () => {
-    expect(ADMIN_TABS.map((t) => t.label)).toEqual(["الرئيسية", "الطلبات", "البانرات", "الفئات", "المقالات", "المنتجات", "المخزون", "الألوان", "التوصيل"]);
+    expect(ADMIN_TABS.map((t) => t.label)).toEqual(["الرئيسية", "الطلبات", "البانرات", "الفئات", "المقالات", "الصفحات", "المنتجات", "المخزون", "الألوان", "التوصيل"]);
   });
   it("has the banners tab before the categories tab", () => {
     const hrefs = ADMIN_TABS.map((t) => t.href as string);
@@ -24,6 +24,8 @@ describe("activeTab", () => {
     ["/admin/categories/abc", "/admin/categories"],
     ["/admin/articles", "/admin/articles"],
     ["/admin/articles/new", "/admin/articles"],
+    ["/admin/pages", "/admin/pages"],
+    ["/admin/pages/about", "/admin/pages"],
     ["/admin/products/new", "/admin/products"],
     ["/admin/stock", "/admin/stock"],
     ["/admin/colours/import", "/admin/colours"],

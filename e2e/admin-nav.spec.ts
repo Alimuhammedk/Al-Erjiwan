@@ -6,9 +6,9 @@ const URL = "/styleguide/admin-nav";
 test("the tabs are in the asked order (banners before categories), each with a small icon", async ({ page }) => {
   await page.goto(URL);
   const tabs = page.getByRole("navigation", { name: "قائمة الإدارة" }).getByRole("link");
-  await expect(tabs).toHaveText(["الرئيسية", "الطلبات3", "البانرات", "الفئات", "المقالات", "المنتجات", "المخزون", "الألوان", "التوصيل"]);
-  await expect(tabs.locator("svg")).toHaveCount(9);
-  for (const icon of ["stats", "orders", "banners", "categories", "articles", "products", "stock", "colours", "delivery"]) {
+  await expect(tabs).toHaveText(["الرئيسية", "الطلبات3", "البانرات", "الفئات", "المقالات", "الصفحات", "المنتجات", "المخزون", "الألوان", "التوصيل"]);
+  await expect(tabs.locator("svg")).toHaveCount(10);
+  for (const icon of ["stats", "orders", "banners", "categories", "articles", "pages", "products", "stock", "colours", "delivery"]) {
     await expect(page.locator(`svg[data-icon="${icon}"]`)).toHaveCount(1);
   }
 });

@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { getMessages } from "@/lib/i18n/messages";
+import { PAGE_SLUGS } from "@/lib/pages";
 import { storeInfo } from "@/lib/store-info";
 
 export async function Footer() {
@@ -24,6 +26,17 @@ export async function Footer() {
             <span className="font-semibold">{t.common.storeAddress}</span>
           </li>
         </ul>
+        <nav aria-label={t.pages.footerTitle} className="md:col-span-2">
+          <ul className="flex flex-wrap gap-x-6 gap-y-1 border-t border-white/10 pt-5">
+            {PAGE_SLUGS.map((slug) => (
+              <li key={slug}>
+                <Link href={`/${slug}`} className="inline-flex min-h-11 items-center font-semibold text-white/90 hover:text-sun-300">
+                  {t.pages[slug]}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
       <p className="border-t border-white/10 py-4 text-center text-sm text-white/70">
         © {t.siteName} · {t.common.rights}
