@@ -122,3 +122,27 @@ These are business choices only Ali can make. They do not block phases 0–3, bu
 - One Supabase project for development and live at first, with migrations kept in the repo.
 - Order tracking uses an order code plus phone number, with no customer login.
 - Orders are saved first. WhatsApp is a button the customer taps, not an automatic message.
+
+## 15. Phase 5 decisions (orders, stock, admin) and colour direction
+**From the owner**
+- The physical shop sells from the same stock as the website, so stock changes from walk-in sales are recorded on the stock page ("بيع من المحل") and every change is logged.
+- Ali contacts customers on WhatsApp. There is no fixed delivery company, so each order has a ready delivery message (with the amount to collect) that can be copied or shared on WhatsApp, and free-text delivery company and tracking note fields.
+- Telegram does not work in Iraq at the moment, so new-order alerts are an email plus a live new-orders counter in the admin. WhatsApp Business API and phone push notifications are later options.
+
+**Calls made without the owner (change any of these)**
+- Stock is deducted when the order is placed and given back when it is cancelled; a returned order gives stock back only for ready-made products, because mixed (tinted) paint cannot be resold.
+- Order statuses become: new, confirmed, shipped, delivered, cancelled, returned. Cancelled and returned are final.
+- A warning shows on an order when the same phone number has a returned or cancelled order before.
+- Prices, delivery fee and stock are always read from the database when the order is placed; nothing the browser sends can change them.
+
+**Colour system direction (to be planned in phase 6)**
+- A searchable catalogue of shades is the source of truth: system (brand or standard), code, Arabic name, approximate screen colour, family. Ali uploads it from a spreadsheet and can add single colours by hand. Orders record the system, code and name.
+- A colour wheel or photo picker is only a finder on top: it shows the closest catalogue shades with their codes. Ali will supply the catalogue later.
+- The picker must search the database as the customer types, because the catalogue can have thousands of shades.
+
+## 16. Round 2 decisions (after the first trial)
+- Checkout asks for governorate, city or district and nearest landmark (both required); there is no full address box.
+- Order statuses can be changed freely in any direction, including reopening cancelled and returned orders; stock follows automatically and a reopen is refused if an item has sold out.
+- Any order can be deleted from the Orders tab after a confirmation; stock returns unless the order was delivered.
+- Delivery fees for customers are set by the owner in the admin at any time. Delivery companies live in their own admin tab (name, WhatsApp number, notes and a price list per governorate); an order picks one company and the "send to delivery company" button opens WhatsApp to that company with the delivery message.
+- The order page has one notes box, which is included in the delivery message. The home tab of the admin is a dashboard with order statuses, sales and stock levels.
