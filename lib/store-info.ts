@@ -6,7 +6,7 @@ export const storeInfo = {
   telHref: "tel:+9647838232417",
   instagramUrl: "https://instagram.com/alerjiwan_iq9",
   instagram: "@alerjiwan_iq9",
-  address: "الكفيل، بابل",
+  address: "الكفل، بابل",
 };
 
 // wa.me wants digits only, with no leading 00 or +.

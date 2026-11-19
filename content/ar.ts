@@ -33,7 +33,7 @@ export const ar = {
     cart: "السلة",
     slide: "الشريحة",
     contactUs: "تواصل معنا",
-    address: "العنوان",
+    address: "العنوان", 
     phone: "الهاتف",
     instagram: "إنستغرام",
     rights: "جميع الحقوق محفوظة",

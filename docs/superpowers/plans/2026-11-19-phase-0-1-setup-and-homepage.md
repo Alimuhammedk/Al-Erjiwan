@@ -95,7 +95,7 @@
 
 - [ ] **Step 1: Get the logo file** from the owner (original resolution) and save to `public/logo.png`; optimise it for `next/image`.
 - [ ] **Step 2: Write failing test:** `whatsappLink("مرحبا")` equals `https://wa.me/9647838232417?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7` (number normalised from `009647838232417`, no leading zeros or plus).
-- [ ] **Step 3: Implement** `lib/store-info.ts`. `// shortcut: contact details are constants, move to the settings table in phase 5 when admin settings exist.` Values: WhatsApp and phone `009647838232417`, Instagram `@alerjiwan_iq9`, address `الكفيل، بابل`.
+- [ ] **Step 3: Implement** `lib/store-info.ts`. `// shortcut: contact details are constants, move to the settings table in phase 5 when admin settings exist.` Values: WhatsApp and phone `009647838232417`, Instagram `@alerjiwan_iq9`, address `الكفل، بابل`.
 - [ ] **Step 4: Build `Header`** (logo, enabled nav links, cart icon placeholder) and `MobileMenu` (button toggles a panel; closes on link click and Escape; button has `aria-expanded` and an Arabic `aria-label`). Layout uses logical classes only.
 - [ ] **Step 5: Build `Footer`** (brand name, tagline, contact lines, Instagram link, address) and `WhatsAppButton` (fixed to the inline-end bottom corner, opens `whatsappLink()`).
 - [ ] **Step 6: Wire into `app/layout.tsx`.** Verify on localhost at 375px and 1280px that header and menu work and nothing scrolls sideways.
