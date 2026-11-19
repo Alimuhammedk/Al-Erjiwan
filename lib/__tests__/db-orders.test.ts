@@ -90,3 +90,17 @@ describe("0008_articles.sql", () => {
     }
   }, 90_000);
 });
+
+describe("0009_languages_and_pages.sql", () => {
+  it("passes every check in supabase/tests/0009_languages_and_pages_test.sql", async () => {
+    const db9 = await createDb([
+      ...BASE_MIGRATIONS, "0004_orders.sql", "0005_order_changes.sql", "0006_colours.sql", "0007_product_colours.sql", "0008_articles.sql", "0009_languages_and_pages.sql",
+    ]);
+    try {
+      const results = await db9.exec(readSql("supabase/tests/0009_languages_and_pages_test.sql"));
+      expect((results.at(-1)?.rows[0] as { result: string }).result).toBe("ALL PASSED");
+    } finally {
+      await db9.close();
+    }
+  }, 90_000);
+});
