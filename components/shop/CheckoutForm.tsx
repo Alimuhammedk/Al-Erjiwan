@@ -63,9 +63,6 @@ export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
             <input name="city" autoComplete="address-level2" maxLength={100} className={inputClass} />
           </FormField>
         </div>
-        <FormField label={t.address} error={err.address}>
-          <textarea name="address" rows={3} autoComplete="street-address" maxLength={300} className={inputClass} />
-        </FormField>
         <FormField label={t.landmark} error={err.landmark}>
           <input name="landmark" maxLength={150} className={inputClass} />
         </FormField>

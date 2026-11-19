@@ -7,9 +7,9 @@ export type CheckoutInput = {
   customer_name: string;
   phone: string;
   governorate: string;
-  city: string | null;
-  address: string;
-  landmark: string | null;
+  city: string;
+  address: string; // made from city and landmark
+  landmark: string;
   notes: string | null;
 };
 
@@ -43,19 +43,19 @@ export function validateCheckout(raw: Raw): Result<CheckoutInput> {
   if (!governorate) errors.governorate = e.governorate;
   else if (governorate.length > 50) errors.governorate = e.tooLong;
 
-  const address = str(raw.address);
-  if (address.length < 5) errors.address = e.address;
-  else if (address.length > 300) errors.address = e.tooLong;
-
-  const optional = (key: "city" | "landmark" | "notes", max: number) => {
+  const required = (key: "city" | "landmark", max: number, message: string) => {
     const v = str(raw[key]);
-    if (v.length > max) errors[key] = e.tooLong;
-    return v || null;
+    if (v.length < 2) errors[key] = message;
+    else if (v.length > max) errors[key] = e.tooLong;
+    return v;
   };
-  const city = optional("city", 100);
-  const landmark = optional("landmark", 150);
-  const notes = optional("notes", 500);
+  const city = required("city", 100, e.city);
+  const landmark = required("landmark", 150, e.landmark);
+  const address = `${city} - ${landmark}`;
+
+  const notes = str(raw.notes);
+  if (notes.length > 500) errors.notes = e.tooLong;
 
   if (Object.keys(errors).length || !phone) return { ok: false, errors };
-  return { ok: true, value: { customer_name, phone, governorate, city, address, landmark, notes } };
+  return { ok: true, value: { customer_name, phone, governorate, city, address, landmark, notes: notes || null } };
 }

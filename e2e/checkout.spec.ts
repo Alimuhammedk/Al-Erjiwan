@@ -59,14 +59,14 @@ test("wrong details show an Arabic error on each field and keep what was typed",
   await page.goto("/checkout");
   await page.getByLabel("الاسم الكامل").fill("ع");
   await page.getByLabel("رقم الهاتف").fill("123");
-  await page.getByLabel("العنوان بالتفصيل").fill("شارع الجامعة، قرب المدرسة");
   await page.getByLabel("أقرب نقطة دالة").fill("قرب الجامع");
   await page.getByRole("button", { name: "تأكيد الطلب" }).click();
 
   await expect(page.getByText("أدخل اسمك الكامل")).toBeVisible();
   await expect(page.getByText("أدخل رقم هاتف عراقي صحيحًا، مثل 07701234567")).toBeVisible();
   await expect(page.getByText("اختر المحافظة", { exact: true }).last()).toBeVisible();
-  await expect(page.getByLabel("العنوان بالتفصيل")).toHaveValue("شارع الجامعة، قرب المدرسة");
+  await expect(page.getByText("أدخل المدينة أو القضاء")).toBeVisible();
+  await expect(page.getByLabel("العنوان بالتفصيل")).toHaveCount(0);
   await expect(page.getByLabel("أقرب نقطة دالة")).toHaveValue("قرب الجامع");
   await expect(page).toHaveURL(/\/checkout$/);
 });
@@ -79,6 +79,7 @@ test("there is no example text under the phone box, and the city box is named co
   await expect(page.getByText("وسنتواصل معك عبر واتساب")).toHaveCount(0);
   await expect(page.getByLabel("المدينة أو القضاء")).toBeVisible();
   await expect(page.getByText("المدينة أو المنطقة")).toHaveCount(0);
+  await expect(page.getByLabel("العنوان بالتفصيل")).toHaveCount(0);
 });
 
 test("the checkout fits a phone screen", async ({ page }) => {

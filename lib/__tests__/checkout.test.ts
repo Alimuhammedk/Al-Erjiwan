@@ -20,7 +20,7 @@ describe("normalisePhone", () => {
 });
 
 describe("validateCheckout", () => {
-  const ok = { customer_name: "علي حسين", phone: "0770 123 4567", governorate: "بغداد", address: "حي الجامعة، شارع 5" };
+  const ok = { customer_name: "علي حسين", phone: "0770 123 4567", governorate: "بغداد", city: "الكفل", landmark: "قرب الجامع" };
 
   it("accepts a normal order and normalises the phone", () => {
     const r = validateCheckout(ok);
@@ -28,23 +28,23 @@ describe("validateCheckout", () => {
       customer_name: "علي حسين",
       phone: "07701234567",
       governorate: "بغداد",
-      city: null,
-      address: "حي الجامعة، شارع 5",
-      landmark: null,
+      city: "الكفل",
+      address: "الكفل - قرب الجامع",
+      landmark: "قرب الجامع",
       notes: null,
     });
   });
-  it("trims and keeps the optional fields", () => {
+  it("trims city, landmark and notes, and makes the address from the first two", () => {
     const r = validateCheckout({ ...ok, city: " الكفل ", landmark: " قرب الجامع ", notes: " اتصل أولًا " });
-    expect(r.ok && r.value).toMatchObject({ city: "الكفل", landmark: "قرب الجامع", notes: "اتصل أولًا" });
+    expect(r.ok && r.value).toMatchObject({ city: "الكفل", landmark: "قرب الجامع", address: "الكفل - قرب الجامع", notes: "اتصل أولًا" });
   });
   it("reports each problem on its own field", () => {
-    const r = validateCheckout({ customer_name: "ع", phone: "123", governorate: "", address: "abc" });
-    expect(r).toEqual({ ok: false, errors: { customer_name: e.name, phone: e.phone, governorate: e.governorate, address: e.address } });
+    const r = validateCheckout({ customer_name: "ع", phone: "123", governorate: "", city: "", landmark: "ق" });
+    expect(r).toEqual({ ok: false, errors: { customer_name: e.name, phone: e.phone, governorate: e.governorate, city: e.city, landmark: e.landmark } });
   });
   it("rejects over-long text", () => {
-    const r = validateCheckout({ ...ok, customer_name: "ا".repeat(101), address: "ا".repeat(301), landmark: "ا".repeat(151), notes: "ا".repeat(501), city: "ا".repeat(101) });
-    expect(r.ok === false && Object.keys(r.errors).sort()).toEqual(["address", "city", "customer_name", "landmark", "notes"]);
+    const r = validateCheckout({ ...ok, customer_name: "ا".repeat(101), landmark: "ا".repeat(151), notes: "ا".repeat(501), city: "ا".repeat(101) });
+    expect(r.ok === false && Object.keys(r.errors).sort()).toEqual(["city", "customer_name", "landmark", "notes"]);
   });
   it("treats missing values as empty, not as a crash", () => {
     expect(validateCheckout({}).ok).toBe(false);
