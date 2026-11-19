@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ar } from "@/content/ar";
+import { en } from "@/content/en";
 import { customerStatusLabel, timeline } from "../shop/status";
 
 const s = ar.order.statuses;
@@ -35,5 +36,13 @@ describe("timeline", () => {
   });
   it("an unknown status falls back to the start", () => {
     expect(states("weird")).toEqual(["current", "todo", "todo", "todo"]);
+  });
+});
+
+describe("status words in English", () => {
+  it("labels and timeline use the words passed in", () => {
+    expect(customerStatusLabel("shipped", en.order.statuses)).toBe("With the delivery company");
+    expect(customerStatusLabel("weird", en.order.statuses)).toBe("Under review");
+    expect(timeline("confirmed", en.order.statuses).steps.map((x) => x.label)).toEqual(["Under review", "Order confirmed", "With the delivery company", "Delivered"]);
   });
 });

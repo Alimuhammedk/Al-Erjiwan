@@ -1,5 +1,6 @@
 // All Arabic site text lives here so it can be proofread and edited in one place.
 export const ar = {
+  lang: "ar",
   siteName: "أصباغ الأرجوان",
   tagline: "أصباغ ومواد طلاء",
 
@@ -647,7 +648,8 @@ export const ar = {
     skip: "تخطي إلى المحتوى",
     breadcrumb: "مسار التنقل",
     contactUs: "تواصل معنا",
-    address: "العنوان", 
+    address: "العنوان",
+    storeAddress: "الكفل، بابل",
     phone: "الهاتف",
     instagram: "إنستغرام",
     rights: "جميع الحقوق محفوظة",

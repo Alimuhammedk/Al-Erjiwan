@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ar } from "@/content/ar";
+import { useMessages } from "@/lib/i18n/provider";
 import { isCurrent } from "@/lib/nav";
 
 type NavLink = { key: string; label: string; href: string };
 
 export function NavLinks({ links }: { links: NavLink[] }) {
   const pathname = usePathname();
+  const t = useMessages();
   return (
-    <nav className="hidden items-center gap-1 md:flex" aria-label={ar.common.menu}>
+    <nav className="hidden items-center gap-1 md:flex" aria-label={t.common.menu}>
       {links.map((l) => {
         const current = isCurrent(pathname, l.href);
         return (

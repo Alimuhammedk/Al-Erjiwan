@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ar } from "@/content/ar";
+import { useMessages } from "@/lib/i18n/provider";
 import type { Banner } from "@/types/db";
 
 // The button is a 44px tap area; only the small circle inside it is drawn (32px on phones).
@@ -17,7 +17,7 @@ function Arrow({ dir, label, onClick, side }: { dir: "left" | "right"; label: st
       className={`group absolute top-1/2 grid size-11 -translate-y-1/2 place-items-center ${side}`}
     >
       <span className="grid size-8 place-items-center rounded-full bg-white/80 text-brand-900 shadow transition-colors group-hover:bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-white md:size-10">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="ltr:-scale-x-100">
           <path d={dir === "right" ? "M9 6l6 6-6 6" : "M15 6l-6 6 6 6"} />
         </svg>
       </span>
@@ -26,6 +26,7 @@ function Arrow({ dir, label, onClick, side }: { dir: "left" | "right"; label: st
 }
 
 export function HeroSlider({ banners }: { banners: Banner[] }) {
+  const m = useMessages();
   const reduceMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
   const [hovering, setHovering] = useState(false);
@@ -46,10 +47,10 @@ export function HeroSlider({ banners }: { banners: Banner[] }) {
     return (
       <section className="grid min-h-64 place-items-center bg-gradient-to-br from-brand-900 via-brand-700 to-magenta-500 px-4 py-16 text-center text-white md:min-h-96">
         <div className="space-y-5">
-          <h1 className="text-4xl font-extrabold md:text-6xl">{ar.siteName}</h1>
-          <p className="text-lg text-white/90 md:text-2xl">{ar.tagline}</p>
+          <h1 className="text-4xl font-extrabold md:text-6xl">{m.siteName}</h1>
+          <p className="text-lg text-white/90 md:text-2xl">{m.tagline}</p>
           <Link href="/shop" className="inline-block rounded-full bg-sun-300 px-8 py-3 text-lg font-extrabold text-brand-900 transition-transform hover:scale-105">
-            {ar.hero.shopNow}
+            {m.hero.shopNow}
           </Link>
         </div>
       </section>
@@ -59,7 +60,7 @@ export function HeroSlider({ banners }: { banners: Banner[] }) {
   const banner = banners[active];
   const slide = (
     <>
-      <Image src={banner.image_url} alt={banner.title ?? ar.siteName} fill priority={active === 0} sizes="100vw" className="object-cover" />
+      <Image src={banner.image_url} alt={banner.title ?? m.siteName} fill priority={active === 0} sizes="100vw" className="object-cover" />
       {/* Wide side padding keeps the text clear of the arrows; bottom padding keeps it clear of the dots. */}
       <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-2 bg-gradient-to-t from-brand-900/85 to-transparent px-12 pb-12 pt-10 md:flex-row md:items-end md:justify-between md:gap-4 md:px-16 md:pb-14">
         {banner.title && (
@@ -67,7 +68,7 @@ export function HeroSlider({ banners }: { banners: Banner[] }) {
         )}
         {banner.link && (
           <span className="shrink-0 rounded-full bg-sun-300 px-4 py-1.5 text-sm font-extrabold text-brand-900 md:px-6 md:py-2.5 md:text-base">
-            {ar.hero.shopNow}
+            {m.hero.shopNow}
           </span>
         )}
       </div>
@@ -102,14 +103,14 @@ export function HeroSlider({ banners }: { banners: Banner[] }) {
 
       {count > 1 && (
         <>
-          <Arrow dir="right" label={ar.hero.prev} side="start-1 md:start-3" onClick={() => setIndex((i) => (i - 1 + count) % count)} />
-          <Arrow dir="left" label={ar.hero.next} side="end-1 md:end-3" onClick={() => setIndex((i) => (i + 1) % count)} />
+          <Arrow dir="right" label={m.hero.prev} side="start-1 md:start-3" onClick={() => setIndex((i) => (i - 1 + count) % count)} />
+          <Arrow dir="left" label={m.hero.next} side="end-1 md:end-3" onClick={() => setIndex((i) => (i + 1) % count)} />
           <div className="absolute inset-x-0 bottom-1 flex items-center justify-center">
             {banners.map((b, i) => (
               <button
                 key={b.id}
                 type="button"
-                aria-label={`${ar.common.slide} ${i + 1}`}
+                aria-label={`${m.common.slide} ${i + 1}`}
                 aria-current={i === active}
                 onClick={() => setIndex(i)}
                 className="grid size-11 place-items-center"
@@ -122,7 +123,7 @@ export function HeroSlider({ banners }: { banners: Banner[] }) {
           <button
             type="button"
             onClick={() => setPlaying((p) => !p)}
-            aria-label={playing ? ar.hero.pause : ar.hero.play}
+            aria-label={playing ? m.hero.pause : m.hero.play}
             aria-pressed={!playing}
             className="sr-only focus:not-sr-only focus:absolute focus:bottom-14 focus:end-3 focus:z-10 focus:grid focus:size-11 focus:place-items-center focus:rounded-full focus:bg-white focus:text-brand-900 focus:shadow"
           >

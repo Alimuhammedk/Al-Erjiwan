@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { ar } from "@/content/ar";
+import { useMessages } from "@/lib/i18n/provider";
 import { copyText } from "@/lib/clipboard";
 
 // One tap copies the order number, so the customer can paste it into the tracking page or a message.
 export function CopyCode({ code }: { code: string }) {
+  const m = useMessages();
   const [done, setDone] = useState(false);
   return (
     <button
@@ -16,7 +17,7 @@ export function CopyCode({ code }: { code: string }) {
       }}
       className="min-h-11 rounded-full border-2 border-brand-700 bg-paper px-6 font-bold text-brand-700 hover:bg-brand-50"
     >
-      {done ? ar.order.copied : ar.order.copyNumber}
+      {done ? m.order.copied : m.order.copyNumber}
     </button>
   );
 }

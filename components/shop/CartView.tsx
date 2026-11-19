@@ -2,15 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ar } from "@/content/ar";
+import { useMessages } from "@/lib/i18n/provider";
 import { useCart } from "@/lib/cart/CartProvider";
 import { formatPrice } from "@/lib/format";
 
 const step = "grid size-11 place-items-center rounded-full border-2 border-brand-100 font-bold text-brand-900 hover:bg-brand-50";
 
 export function CartView() {
+  const m = useMessages();
   const { items, setQty, remove, total } = useCart();
-  const t = ar.cart;
+  const t = m.cart;
 
   if (items.length === 0) {
     return (
@@ -45,7 +46,7 @@ export function CartView() {
                   {t.colour}: {[i.colour_name, i.colour_note].filter(Boolean).join(" · ")}
                 </p>
               )}
-              <p className="font-extrabold text-brand-700">{formatPrice(i.unit_price * i.quantity)}</p>
+              <p className="font-extrabold text-brand-700">{formatPrice(i.unit_price * i.quantity, m.common.currency)}</p>
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <button type="button" aria-label={t.decrease} onClick={() => setQty(i.key, i.quantity - 1)} disabled={i.quantity <= 1} className={`${step} disabled:opacity-30`}>
                   −
@@ -67,7 +68,7 @@ export function CartView() {
       <aside className="h-fit space-y-4 rounded-2xl border border-brand-100 bg-paper p-5">
         <p className="flex items-baseline justify-between text-lg">
           <span className="font-semibold text-brand-900">{t.total}</span>
-          <span className="text-2xl font-extrabold text-brand-700">{formatPrice(total)}</span>
+          <span className="text-2xl font-extrabold text-brand-700">{formatPrice(total, m.common.currency)}</span>
         </p>
         <p className="text-sm text-ink/70">{t.deliveryNote}</p>
         <Link href="/checkout" className="block w-full rounded-full bg-brand-700 px-6 py-3 text-center font-bold text-white hover:bg-brand-900">

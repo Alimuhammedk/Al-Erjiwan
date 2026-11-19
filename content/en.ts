@@ -2,6 +2,7 @@ import type { Messages } from "@/lib/i18n/types";
 
 // All English site text. It has the same keys as the customer part of ar.ts (a test checks this).
 export const en: Messages = {
+  lang: "en",
   siteName: "Al-Erjiwan Paints",
   tagline: "Paints & coatings",
 
@@ -261,6 +262,7 @@ export const en: Messages = {
     breadcrumb: "Breadcrumb",
     contactUs: "Contact us",
     address: "Address",
+    storeAddress: "Al-Kifl, Babil",
     phone: "Phone",
     instagram: "Instagram",
     rights: "All rights reserved",

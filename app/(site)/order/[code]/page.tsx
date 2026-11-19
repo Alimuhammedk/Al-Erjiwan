@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ClearCart } from "@/components/shop/ClearCart";
 import { OrderConfirmationView } from "@/components/shop/OrderConfirmationView";
-import { ar } from "@/content/ar";
+import { getMessages } from "@/lib/i18n/messages";
 import { getOrderSummary } from "@/lib/data/orders";
 
-export const metadata: Metadata = { title: `${ar.order.receivedTitle} | ${ar.siteName}`, robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  const m = await getMessages();
+  return { title: `${m.order.receivedTitle} | ${m.siteName}`, robots: { index: false } };
+}
 export const dynamic = "force-dynamic";
 
 export default async function OrderConfirmationPage({ params }: { params: Promise<{ code: string }> }) {

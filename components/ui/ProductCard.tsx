@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ar } from "@/content/ar";
+import { getMessages } from "@/lib/i18n/messages";
 import { formatPrice } from "@/lib/format";
 import { discountPercent, displayPrice } from "@/lib/shop/product";
 import type { ProductWithImage } from "@/types/db";
@@ -9,7 +9,8 @@ const sizes = "(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw";
 
 // No "sold out" badge here: a sized product's stock lives on its sizes, which the card doesn't load.
 // The product page shows the real stock.
-export function ProductCard({ product }: { product: ProductWithImage }) {
+export async function ProductCard({ product }: { product: ProductWithImage }) {
+  const m = await getMessages();
   const { price, oldPrice } = displayPrice(product);
   const percent = oldPrice !== null ? discountPercent(oldPrice, price) : null;
   return (
@@ -39,15 +40,15 @@ export function ProductCard({ product }: { product: ProductWithImage }) {
         )}
         {percent !== null && (
           <span className="absolute start-2 top-2 z-10 rounded-full bg-coral-500 px-3 py-1 text-xs font-bold text-white shadow">
-            {ar.common.discount.replace("{n}", String(percent))}
+            {m.common.discount.replace("{n}", String(percent))}
           </span>
         )}
       </div>
       <div className="space-y-1 p-3">
         <h3 className="line-clamp-2 break-words font-bold text-brand-900">{product.name_ar}</h3>
         <p className="flex flex-wrap items-baseline gap-2">
-          <span className="font-extrabold text-brand-700">{formatPrice(price)}</span>
-          {oldPrice !== null && <span className="text-sm text-ink/70 line-through">{formatPrice(oldPrice)}</span>}
+          <span className="font-extrabold text-brand-700">{formatPrice(price, m.common.currency)}</span>
+          {oldPrice !== null && <span className="text-sm text-ink/70 line-through">{formatPrice(oldPrice, m.common.currency)}</span>}
         </p>
       </div>
     </Link>

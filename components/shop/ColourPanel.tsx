@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ar } from "@/content/ar";
+import { useMessages } from "@/lib/i18n/provider";
 import { readableTextOn } from "@/lib/colours/hex";
 import type { PickableColour } from "@/lib/colours/search";
 
-const t = ar.product.panel;
 
 type Props = {
   productId: string;
@@ -19,6 +18,8 @@ type Answer = { key: string; colours: PickableColour[]; families: string[]; fail
 // The colour choice for a mixed paint, kept out of the way: one slim row (a swatch and the chosen name). Tapping it
 // opens a panel with search, family tabs and only the colours this product offers; picking one closes the panel.
 export function ColourPanel({ productId, value, onChange, endpoint = "/api/colours" }: Props) {
+  const m = useMessages();
+  const t = m.product.panel;
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [family, setFamily] = useState<string | null>(null);

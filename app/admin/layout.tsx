@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-// The admin is always Arabic and right-to-left, whichever language the visitor chose for the shop.
-export default function AdminRoot({ children }: { children: ReactNode }) {
+export const metadata: Metadata = { robots: { index: false, follow: false } };
+
+// Admin pages are never cached: they always reflect the signed-in session.
+export const dynamic = "force-dynamic";
+
+// The admin is always Arabic and right to left, whichever language the visitor chose for the shop.
+export default function AdminRootLayout({ children }: { children: ReactNode }) {
   return (
-    <div dir="rtl" lang="ar" className="flex flex-1 flex-col">
+    <div id="main-content" tabIndex={-1} dir="rtl" lang="ar" className="flex flex-1 flex-col bg-brand-50 outline-none">
       {children}
     </div>
   );

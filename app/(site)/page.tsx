@@ -4,7 +4,7 @@ import { ProductRow } from "@/components/home/ProductRow";
 import { ArticlesSection } from "@/components/home/ArticlesSection";
 import { CalculatorBanner } from "@/components/home/CalculatorBanner";
 import { TrustStrip } from "@/components/shop/TrustStrip";
-import { ar } from "@/content/ar";
+import { getMessages } from "@/lib/i18n/messages";
 import { getBanners } from "@/lib/data/banners";
 import { getHomeArticles } from "@/lib/data/articles";
 import { getCategories } from "@/lib/data/categories";
@@ -14,6 +14,7 @@ import { getFeaturedProducts, getSaleProducts } from "@/lib/data/products";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  const m = await getMessages();
   const [banners, categories, featured, offers, articles] = await Promise.all([
     getBanners(),
     getCategories(),
@@ -26,8 +27,8 @@ export default async function Home() {
     <main className="flex-1">
       <HeroSlider banners={banners} />
       <CategoryGrid categories={categories} />
-      <ProductRow title={ar.home.bestSellersTitle} products={featured} emptyMessage={ar.home.emptyBestSellers} />
-      <ProductRow title={ar.home.offersTitle} products={offers} emptyMessage={ar.home.emptyOffers} />
+      <ProductRow title={m.home.bestSellersTitle} products={featured} emptyMessage={m.home.emptyBestSellers} />
+      <ProductRow title={m.home.offersTitle} products={offers} emptyMessage={m.home.emptyOffers} />
       <ArticlesSection articles={articles} />
       <CalculatorBanner />
       {/* Last thing before the footer */}

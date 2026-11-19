@@ -1,17 +1,18 @@
 "use client";
 
 import { Children, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { ar } from "@/content/ar";
+import { useMessages } from "@/lib/i18n/provider";
 
 // A row of items that slides sideways (swipe, trackpad, or the arrow buttons) instead of wrapping onto more lines.
 // Items stay in one line and snap into place; the arrows only show when there is more to see in that direction.
 // `itemClassName` sets each item's width, so the row decides how many fit.
 export function SideScroller({ children, label, itemClassName }: { children: ReactNode; label: string; itemClassName: string }) {
+  const m = useMessages();
   const track = useRef<HTMLUListElement>(null);
   const [can, setCan] = useState({ back: false, forward: false });
   const items = Children.toArray(children);
 
-  // Which way is "forward" (left on a right-to-left page), and how far one item moves.
+  // Which way is "forward" (left on a right to left page), and how far one item moves.
   const geometry = useCallback(() => {
     const el = track.current;
     const first = el?.firstElementChild as HTMLElement | null;
@@ -50,7 +51,7 @@ export function SideScroller({ children, label, itemClassName }: { children: Rea
   const arrow =
     "absolute top-1/2 z-10 hidden size-11 -translate-y-1/2 place-items-center rounded-full border-2 border-brand-100 bg-paper/95 text-brand-700 shadow-md backdrop-blur transition-colors hover:border-brand-500 hover:bg-brand-50 sm:grid";
   const icon = (d: string) => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="ltr:-scale-x-100">
       <path d={d} />
     </svg>
   );
@@ -69,12 +70,12 @@ export function SideScroller({ children, label, itemClassName }: { children: Rea
         ))}
       </ul>
       {can.back && (
-        <button type="button" onClick={() => move(-1)} aria-label={ar.common.slideBack} className={`${arrow} start-1`}>
+        <button type="button" onClick={() => move(-1)} aria-label={m.common.slideBack} className={`${arrow} start-1`}>
           {icon("M9 6l6 6-6 6")}
         </button>
       )}
       {can.forward && (
-        <button type="button" onClick={() => move(1)} aria-label={ar.common.slideForward} className={`${arrow} end-1`}>
+        <button type="button" onClick={() => move(1)} aria-label={m.common.slideForward} className={`${arrow} end-1`}>
           {icon("M15 6l-6 6 6 6")}
         </button>
       )}

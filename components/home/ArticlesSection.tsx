@@ -3,15 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ar } from "@/content/ar";
+import { useMessages } from "@/lib/i18n/provider";
 import { cardExcerpt, type Article } from "@/lib/articles";
 import { formatDate } from "@/lib/format";
 
-const t = ar.articles;
 
 function Chevron({ dir }: { dir: "left" | "right" }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="ltr:-scale-x-100">
       <path d={dir === "left" ? "M15 6l-6 6 6 6" : "M9 6l6 6-6 6"} />
     </svg>
   );
@@ -20,10 +19,12 @@ function Chevron({ dir }: { dir: "left" | "right" }) {
 // "مقالات": one article card at a time, swiped or stepped sideways (the next card peeks in). Hides itself when
 // there are no published articles.
 export function ArticlesSection({ articles }: { articles: Article[] }) {
+  const m = useMessages();
+  const t = m.articles;
   const track = useRef<HTMLUListElement>(null);
   const [active, setActive] = useState(0);
 
-  // How far one card moves, and which way is "forward" (left in a right-to-left page).
+  // How far one card moves, and which way is "forward" (left in a right to left page).
   const geometry = useCallback(() => {
     const el = track.current;
     const first = el?.firstElementChild as HTMLElement | null;
@@ -99,7 +100,7 @@ export function ArticlesSection({ articles }: { articles: Article[] }) {
                 />
                 <span className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-brand-900/40 to-transparent" aria-hidden="true" />
                 <time dateTime={a.published_at} className="absolute start-3 top-3 rounded-full bg-sun-300 px-3 py-1 text-xs font-extrabold text-brand-900">
-                  {formatDate(a.published_at)}
+                  {formatDate(a.published_at, m.lang)}
                 </time>
               </span>
               <span className="flex flex-1 flex-col gap-2 p-5">
@@ -107,7 +108,7 @@ export function ArticlesSection({ articles }: { articles: Article[] }) {
                 <span className="line-clamp-3 leading-8 text-ink/75">{cardExcerpt(a)}</span>
                 <span className="mt-auto inline-flex items-center gap-2 pt-2 font-bold text-brand-700">
                   {t.read}
-                  <span aria-hidden="true" className="motion-safe:transition-transform motion-safe:group-hover:-translate-x-1">
+                  <span aria-hidden="true" className="inline-block motion-safe:transition-transform ltr:rotate-180 motion-safe:group-hover:-translate-x-1 motion-safe:ltr:group-hover:translate-x-1">
                     ←
                   </span>
                 </span>

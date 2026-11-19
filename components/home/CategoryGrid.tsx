@@ -1,21 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ar } from "@/content/ar";
+import { getMessages } from "@/lib/i18n/messages";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { SideScroller } from "@/components/ui/SideScroller";
 import type { Category } from "@/types/db";
 
-export function CategoryGrid({ categories }: { categories: Category[] }) {
+export async function CategoryGrid({ categories }: { categories: Category[] }) {
+  const m = await getMessages();
   return (
     <section className="mx-auto w-full max-w-6xl px-4 pt-12">
-      <h2 className="mb-5 text-2xl font-extrabold text-brand-900">{ar.home.categoriesTitle}</h2>
+      <h2 className="mb-5 text-2xl font-extrabold text-brand-900">{m.home.categoriesTitle}</h2>
       {categories.length === 0 ? (
-        <EmptyState message={ar.home.emptyCategories} />
+        <EmptyState message={m.home.emptyCategories} />
       ) : (
         // One line that slides sideways; the cards never wrap or sit on top of each other.
         <FadeIn>
-          <SideScroller label={ar.home.categoriesTitle} itemClassName="w-[44%] sm:w-[30%] lg:w-[23.2%]">
+          <SideScroller label={m.home.categoriesTitle} itemClassName="w-[44%] sm:w-[30%] lg:w-[23.2%]">
             {categories.map((c) => (
               <Link
                 key={c.id}

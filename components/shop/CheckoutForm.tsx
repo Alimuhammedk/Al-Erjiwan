@@ -7,16 +7,17 @@ import { placeOrderAction } from "@/app/(site)/checkout/actions";
 import { FormField, inputClass } from "@/components/admin/FormField";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import { useFormAction } from "@/components/admin/useFormAction";
-import { ar } from "@/content/ar";
+import { useMessages } from "@/lib/i18n/provider";
 import type { ActionState } from "@/lib/admin/types";
 import { useCart } from "@/lib/cart/CartProvider";
 import type { DeliveryZone } from "@/lib/data/orders";
 import { formatPrice } from "@/lib/format";
 import { cartToOrderItems } from "@/lib/shop/orders";
 
-const t = ar.checkout;
 
 export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
+  const m = useMessages();
+  const t = m.checkout;
   const { items, total, ready } = useCart();
   const router = useRouter();
   const { state, onSubmit, pending } = useFormAction(placeOrderAction, {} as ActionState);
@@ -31,7 +32,7 @@ export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
 
   if (!ready || items.length === 0) return null;
 
-  const feeText = zone ? (zone.fee === 0 ? t.free : formatPrice(zone.fee)) : t.deliveryPending;
+  const feeText = zone ? (zone.fee === 0 ? t.free : formatPrice(zone.fee, m.common.currency)) : t.deliveryPending;
   const belowMinimum = zone !== undefined && zone.min_order > total;
 
   return (
@@ -80,14 +81,14 @@ export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
                 <p className="break-words font-bold text-brand-900">{i.name}</p>
                 <p className="text-ink/70">{[...[i.size_label, i.colour_name, i.colour_note].filter(Boolean), `× ${i.quantity}`].join(" · ")}</p>
               </div>
-              <span className="shrink-0 font-bold text-brand-700">{formatPrice(i.unit_price * i.quantity)}</span>
+              <span className="shrink-0 font-bold text-brand-700">{formatPrice(i.unit_price * i.quantity, m.common.currency)}</span>
             </li>
           ))}
         </ul>
         <dl className="space-y-2">
           <div className="flex justify-between">
             <dt className="text-ink/80">{t.subtotal}</dt>
-            <dd className="font-semibold">{formatPrice(total)}</dd>
+            <dd className="font-semibold">{formatPrice(total, m.common.currency)}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-ink/80">{t.delivery}</dt>
@@ -96,13 +97,13 @@ export function CheckoutForm({ zones }: { zones: DeliveryZone[] }) {
           <div className="flex justify-between border-t border-brand-100 pt-3 text-lg">
             <dt className="font-bold text-brand-900">{t.total}</dt>
             <dd data-testid="checkout-total" className="font-extrabold text-brand-700">
-              {formatPrice(total + (zone?.fee ?? 0))}
+              {formatPrice(total + (zone?.fee ?? 0), m.common.currency)}
             </dd>
           </div>
         </dl>
         {belowMinimum && (
           <p role="status" className="rounded-xl bg-coral-500/10 px-3 py-2 text-sm font-semibold text-coral-500">
-            {t.minOrderHint.replace("{amount}", formatPrice(zone.min_order))}
+            {t.minOrderHint.replace("{amount}", formatPrice(zone.min_order, m.common.currency))}
           </p>
         )}
         <p className="text-sm text-ink/70">{t.payOnDelivery}. {t.previewNote}</p>

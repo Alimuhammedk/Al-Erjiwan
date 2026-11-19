@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { ar } from "@/content/ar";
+import { getMessages } from "@/lib/i18n/messages";
 
-const t = ar.home.calculatorBanner;
 
 // A banner that sends customers to the paint calculator.
-export function CalculatorBanner() {
+export async function CalculatorBanner() {
+  const m = await getMessages();
+  const t = m.home.calculatorBanner;
   return (
     <section className="mx-auto w-full max-w-6xl px-4 pt-12">
       <div className="flex flex-col items-start gap-4 rounded-3xl bg-brand-900 p-6 text-white sm:flex-row sm:items-center sm:justify-between sm:p-8" data-testid="calculator-banner">

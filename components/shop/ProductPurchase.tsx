@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ar } from "@/content/ar";
+import { useMessages } from "@/lib/i18n/provider";
 import type { PickableColour } from "@/lib/colours/search";
 import { useCart } from "@/lib/cart/CartProvider";
 import type { ProductDetail } from "@/lib/data/shop";
@@ -12,8 +12,9 @@ import { ColourPanel } from "./ColourPanel";
 type Variant = ProductDetail["variants"][number];
 
 export function ProductPurchase({ detail }: { detail: ProductDetail }) {
+  const m = useMessages();
   const { product, images, variants, colours } = detail;
-  const t = ar.product;
+  const t = m.product;
   const { add } = useCart();
 
   const variantColours = !product.is_tintable && variants.some((v) => v.colour_id);
@@ -69,11 +70,11 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
   return (
     <div className="space-y-5">
       <p className="flex flex-wrap items-baseline gap-3">
-        <span className="text-3xl font-extrabold text-brand-700">{formatPrice(price)}</span>
-        {oldPrice !== null && <span className="text-lg text-ink/70 line-through">{formatPrice(oldPrice)}</span>}
+        <span className="text-3xl font-extrabold text-brand-700">{formatPrice(price, m.common.currency)}</span>
+        {oldPrice !== null && <span className="text-lg text-ink/70 line-through">{formatPrice(oldPrice, m.common.currency)}</span>}
         {percent !== null && (
           <span className="rounded-full bg-coral-500 px-3 py-1 text-sm font-bold text-white">
-            {ar.common.discount.replace("{n}", String(percent))}
+            {m.common.discount.replace("{n}", String(percent))}
           </span>
         )}
       </p>
@@ -170,8 +171,8 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
         className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-brand-100 bg-paper/95 py-3 ps-4 pe-[5.5rem] backdrop-blur md:hidden"
       >
         <div className="min-w-0 flex-1">
-          <p className="font-extrabold text-brand-700">{formatPrice(price)}</p>
-          {oldPrice !== null && <p className="text-xs text-ink/70 line-through">{formatPrice(oldPrice)}</p>}
+          <p className="font-extrabold text-brand-700">{formatPrice(price, m.common.currency)}</p>
+          {oldPrice !== null && <p className="text-xs text-ink/70 line-through">{formatPrice(oldPrice, m.common.currency)}</p>}
         </div>
         <button
           type="button"
