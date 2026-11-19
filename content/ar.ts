@@ -18,11 +18,24 @@ export const ar = {
     categoriesTitle: "تسوّق حسب الفئة",
     bestSellersTitle: "الأكثر مبيعًا",
     offersTitle: "العروض",
-    projectsTitle: "من أعمالنا",
     emptyCategories: "ستظهر الفئات هنا قريبًا",
     emptyBestSellers: "ستظهر المنتجات الأكثر مبيعًا هنا قريبًا",
     emptyOffers: "لا توجد عروض حاليًا",
-    emptyProjects: "ستظهر صور أعمالنا هنا قريبًا",
+    calculatorBanner: {
+      title: "كم لتر دهان تحتاج؟",
+      text: "احسب الكمية المناسبة لغرفتك في ثوانٍ، وتجنّب الشراء الزائد أو الناقص.",
+      button: "افتح حاسبة الدهان",
+    },
+    shopInfo: {
+      title: "معلومات المتجر",
+      guaranteeTitle: "ضمان طلبك",
+      // A suggestion only: the owner edits it in the admin (معلومات المتجر).
+      defaultGuarantee: "إذا وصلك المنتج تالفًا أو بلون مختلف عمّا طلبت، تواصل معنا فورًا وسنعالج الأمر معك.",
+      address: "العنوان",
+      hours: "أوقات العمل",
+      whatsapp: "راسلنا على واتساب",
+      call: "اتصل بنا",
+    },
   },
 
   shop: {
@@ -223,6 +236,16 @@ export const ar = {
       storefront: "الفئات والبانرات",
       delivery: "التوصيل",
       colours: "الألوان",
+      store: "معلومات المتجر",
+    },
+    store: {
+      title: "معلومات المتجر",
+      help: "تظهر في الصفحة الرئيسية. اترك الخانة فارغة لاستخدام النص الأصلي (أو إخفاء أوقات العمل).",
+      guarantee: "نص الضمان",
+      hours: "أوقات العمل (مثال: يوميًا من 9 صباحًا حتى 9 مساءً)",
+      address: "العنوان",
+      save: "حفظ",
+      saved: "تم الحفظ",
     },
     colours: {
       title: "الألوان",

@@ -5,6 +5,7 @@ const protectedPaths = [
   "/admin/products/new",
   "/admin/products/123e4567-e89b-12d3-a456-426614174000",
   "/admin/storefront",
+  "/admin/store",
   "/admin/categories",
   "/admin/categories/new",
   "/admin/banners",

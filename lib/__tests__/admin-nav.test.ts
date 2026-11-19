@@ -3,7 +3,7 @@ import { ADMIN_TABS, activeTab } from "../admin/nav";
 
 describe("ADMIN_TABS", () => {
   it("are in the order the owner asked for", () => {
-    expect(ADMIN_TABS.map((t) => t.label)).toEqual(["الرئيسية", "الطلبات", "الفئات والبانرات", "المنتجات", "المخزون", "الألوان", "التوصيل"]);
+    expect(ADMIN_TABS.map((t) => t.label)).toEqual(["الرئيسية", "الطلبات", "الفئات والبانرات", "المنتجات", "المخزون", "الألوان", "التوصيل", "معلومات المتجر"]);
   });
   it("has no separate categories or banners tab", () => {
     expect(ADMIN_TABS.some((t) => /categories|banners/.test(t.href))).toBe(false);
@@ -24,6 +24,7 @@ describe("activeTab", () => {
     ["/admin/colours/import", "/admin/colours"],
     ["/admin/delivery", "/admin/delivery"],
     ["/admin/delivery-companies/new", "/admin/delivery"],
+    ["/admin/store", "/admin/store"],
   ])("%s lights %s", (path, tab) => expect(activeTab(path)).toBe(tab));
 
   it("lights nothing on the login page or an unknown page, and the home tab is not lit on every page", () => {

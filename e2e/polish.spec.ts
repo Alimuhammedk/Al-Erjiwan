@@ -72,7 +72,7 @@ test("categories are links and the last row is centred", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/");
   const cards = page.locator('main a[href^="/shop?category="]');
-  await expect(cards).toHaveCount(5);
+  await expect(cards.first()).toBeVisible(); // however many categories you have added
 
   const boxes = await Promise.all((await cards.all()).map((c) => c.boundingBox()));
   const bottom = Math.max(...boxes.map((b) => b!.y));
@@ -329,7 +329,7 @@ test("the reassurance lines sit at the very bottom of the homepage", async ({ pa
   const y = async (loc: ReturnType<Page["locator"]>) => (await loc.first().boundingBox())!.y;
   const strip = page.getByText("توصيل إلى جميع محافظات العراق").first();
   const stripY = await y(strip);
-  expect(stripY).toBeGreaterThan(await y(page.getByRole("heading", { name: "من أعمالنا" })));
+  expect(stripY).toBeGreaterThan(await y(page.getByRole("heading", { name: "معلومات المتجر" })));
   expect(stripY).toBeLessThan(await y(page.locator("footer")));
   expect(stripY).toBeGreaterThan(await y(page.getByRole("heading", { name: "تسوّق حسب الفئة" })));
 });

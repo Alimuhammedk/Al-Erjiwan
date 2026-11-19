@@ -12,6 +12,7 @@ export const ADMIN_TABS = [
   { href: "/admin/stock", label: n.stock, icon: "stock", match: ["/admin/stock"] },
   { href: "/admin/colours", label: n.colours, icon: "colours", match: ["/admin/colours"] },
   { href: "/admin/delivery", label: n.delivery, icon: "delivery", match: ["/admin/delivery"] },
+  { href: "/admin/store", label: n.store, icon: "store", match: ["/admin/store"] },
 ] as const;
 
 // The tab that should look selected for an address (or null, for example on the login page).

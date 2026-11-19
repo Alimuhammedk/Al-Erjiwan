@@ -48,6 +48,13 @@ const icons: Record<string, ReactNode> = {
       <circle cx="16.5" cy="10" r="1" />
     </>
   ),
+  store: (
+    <>
+      <path d="M3 9l1-5h16l1 5" />
+      <path d="M4 9v11h16V9" />
+      <path d="M9 20v-6h6v6" />
+    </>
+  ),
   delivery: (
     <>
       <path d="M1 3h15v13H1z" />
