@@ -8,7 +8,8 @@ export function useFormAction<S extends object>(action: (prev: S, formData: Form
   const [state, run, pending] = useActionState(action as (prev: Awaited<S>, formData: FormData) => Promise<S>, initial as Awaited<S>);
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const data = new FormData(e.currentTarget);
+    // The pressed button is included, so a form can have several buttons that mean different things.
+    const data = new FormData(e.currentTarget, (e.nativeEvent as SubmitEvent).submitter);
     startTransition(() => run(data));
   };
   return { state: state as S, onSubmit, pending };

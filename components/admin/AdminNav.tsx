@@ -7,6 +7,7 @@ import { ar } from "@/content/ar";
 const links = [
   { href: "/admin", label: ar.admin.nav.dashboard },
   { href: "/admin/orders", label: ar.admin.nav.orders },
+  { href: "/admin/stock", label: ar.admin.nav.stock },
   { href: "/admin/products", label: ar.admin.nav.products },
   { href: "/admin/categories", label: ar.admin.nav.categories },
   { href: "/admin/banners", label: ar.admin.nav.banners },

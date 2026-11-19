@@ -1,10 +1,11 @@
-import { ar } from "@/content/ar";
+import { DashboardView } from "@/components/admin/DashboardView";
+import { getDashboardStats } from "@/lib/admin/dashboard-data";
+import { listOrders } from "@/lib/admin/orders-data";
 
-export default function AdminDashboard() {
-  return (
-    <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
-      <h1 className="text-3xl font-extrabold text-brand-900">{ar.admin.dashboardTitle}</h1>
-      <p className="mt-3 text-lg text-brand-700">{ar.admin.welcome}</p>
-    </main>
-  );
+export const dynamic = "force-dynamic";
+
+// The layout already refreshes every admin page every 30 seconds, so these numbers stay current.
+export default async function AdminDashboard() {
+  const [stats, latest] = await Promise.all([getDashboardStats(), listOrders({ status: null, q: "", page: 1 })]);
+  return <DashboardView stats={stats} latest={latest.orders.slice(0, 5)} />;
 }
