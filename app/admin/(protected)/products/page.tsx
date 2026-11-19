@@ -38,7 +38,7 @@ export default async function ProductsPage() {
                     <span className="ms-2 rounded-full bg-ink px-2 py-0.5 text-xs text-white">{t.hidden}</span>
                   )}
                 </p>
-                <p className="text-sm text-ink/60">
+                <p className="text-sm text-ink/70">
                   {p.categories?.name_ar ?? t.noCategory} · {formatPrice(p.sale_price ?? p.base_price)} · {t.stock}: {p.stock}
                 </p>
               </div>

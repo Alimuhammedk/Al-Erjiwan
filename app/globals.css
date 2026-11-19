@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #1f1530;
 }
@@ -11,7 +12,7 @@
   --font-sans: var(--font-cairo);
 }
 
-/* Brand colours sampled from the logo (public/logo.jpg). Pending owner approval. */
+/* Brand colours sampled from the logo (public/logo-icon.png). Pending owner approval. */
 @theme {
   --color-brand-50: #f6f0fa;
   --color-brand-100: #ebddf3;
@@ -30,4 +31,38 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-cairo), system-ui, sans-serif;
+}
+
+/* Scroll reveal that needs no JavaScript: content is always in the page (never hidden by script),
+   and browsers that support scroll-driven animation fade it up as it enters the screen. */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: reveal-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+}
+@keyframes bump {
+  40% {
+    transform: scale(1.35);
+  }
+}
+.bump {
+  animation: bump 0.4s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .bump {
+    animation: none !important;
+  }
 }

@@ -25,6 +25,7 @@ test("a wrong login shows the Arabic error", async ({ page }) => {
   await page.getByLabel("كلمة المرور").fill("not-a-real-password");
   await page.getByRole("button", { name: "دخول" }).click();
   await expect(page.locator("form [role=alert]")).toHaveText("البريد الإلكتروني أو كلمة المرور غير صحيحة");
+  await expect(page.getByLabel("البريد الإلكتروني")).toHaveValue("nobody@example.invalid"); // not wiped by the error
   await expect(page).toHaveURL(/\/admin\/login$/);
 });
 

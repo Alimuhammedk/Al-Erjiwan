@@ -29,7 +29,7 @@ export default async function CategoriesPage() {
                 {c.image_url && <Image src={c.image_url} alt="" fill sizes="56px" className="object-cover" />}
               </div>
               <span className="flex-1 font-bold text-brand-900">{c.name_ar}</span>
-              <span className="text-sm text-ink/60">#{c.sort_order}</span>
+              <span className="text-sm text-ink/70">#{c.sort_order}</span>
               <Link href={`/admin/categories/${c.id}`} className="rounded-full border-2 border-brand-700 px-4 py-1.5 text-sm font-bold text-brand-700">
                 {ar.admin.edit}
               </Link>

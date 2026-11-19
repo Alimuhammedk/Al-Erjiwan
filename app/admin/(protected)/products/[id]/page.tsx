@@ -1,10 +1,9 @@
 import { notFound } from "next/navigation";
 import { ProductForm } from "@/components/admin/ProductForm";
-import { ProductPhotos } from "@/components/admin/ProductPhotos";
-import { VariantsEditor, type VariantRow } from "@/components/admin/VariantsEditor";
+import type { VariantRow } from "@/components/admin/VariantsEditor";
 import { ar } from "@/content/ar";
 import { createAuthClient } from "@/lib/supabase/auth-server";
-import type { Product, ProductImage } from "@/types/db";
+import type { Product } from "@/types/db";
 import { saveProductAction } from "../actions";
 
 type VariantDb = { id: string; size_label: string; price: number; stock: number; colour_id: string | null };
@@ -18,7 +17,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       db.from("categories").select("id, name_ar").order("sort_order"),
       db.from("product_images").select("url, sort_order").eq("product_id", id).order("sort_order"),
       db.from("product_variants").select("*").eq("product_id", id).order("price"),
-      db.from("colours").select("id, name_ar").order("name_ar"),
+      db.from("colours").select("id, name_ar, name_en, code, hex, family").order("name_ar").limit(1000),
     ]);
   if (!product) notFound();
 
@@ -35,9 +34,16 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       <h1 className="text-2xl font-extrabold text-brand-900">
         {ar.admin.edit} · {ar.admin.products.title}
       </h1>
-      <ProductForm action={saveProductAction.bind(null, id)} categories={categories ?? []} initial={product as Product} />
-      <ProductPhotos productId={id} initial={((images as Pick<ProductImage, "url">[] | null) ?? []).map((i) => i.url)} />
-      <VariantsEditor productId={id} initial={rows} colours={colours ?? []} />
+      <ProductForm
+        action={saveProductAction}
+        categories={categories ?? []}
+        colours={colours ?? []}
+        initial={{
+          product: product as Product,
+          images: ((images as { url: string }[] | null) ?? []).map((i) => i.url),
+          variants: rows,
+        }}
+      />
     </main>
   );
 }

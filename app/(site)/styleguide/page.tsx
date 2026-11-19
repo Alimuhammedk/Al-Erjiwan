@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import { ar } from "@/content/ar";
 import { formatPrice } from "@/lib/format";
 
@@ -17,9 +18,10 @@ const swatches = [
 ];
 
 export default function StyleGuide() {
+  if (process.env.NODE_ENV === "production") notFound();
   return (
     <main className="mx-auto w-full max-w-5xl space-y-10 px-4 py-10">
-      <Image src="/logo.jpg" alt={ar.siteName} width={160} height={160} priority />
+      <Image src="/logo-icon.png" alt={ar.siteName} width={160} height={145} priority />
       <section>
         <h1 className="text-3xl font-extrabold text-brand-900">{ar.siteName}</h1>
         <p className="mt-2 text-lg text-brand-700">{ar.tagline}</p>

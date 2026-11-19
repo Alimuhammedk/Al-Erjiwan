@@ -1,12 +1,13 @@
 import { ar } from "@/content/ar";
 import type { BannerInput, CategoryInput, ProductInput, Result, VariantInput } from "./types";
 
-type Raw = Record<string, FormDataEntryValue | null | undefined>;
+type Raw = Record<string, FormDataEntryValue | string[] | null | undefined>;
 const e = ar.admin.errors;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const str = (v: Raw[string]) => (typeof v === "string" ? v.trim() : "");
 const flag = (v: Raw[string]) => v === "on" || v === "true";
+const list = (v: Raw[string]) => (Array.isArray(v) ? v.map((x) => x.trim()).filter(Boolean) : []);
 
 // Whole dinar only. Accepts Arabic-Indic digits and thousands separators (٬ and ,).
 export function parsePrice(input: string): number | null {
@@ -68,6 +69,11 @@ export function validateProduct(raw: Raw): Result<ProductInput> {
 
   const stock = whole(raw, "stock", errors, e.invalidStock);
 
+  const finish = str(raw.finish) || null;
+  if (finish && !(ar.options.finishes as readonly string[]).includes(finish)) errors.finish = e.required;
+  const rooms = list(raw.rooms);
+  if (rooms.some((r) => !(ar.options.rooms as readonly string[]).includes(r))) errors.rooms = e.required;
+
   return done(errors, {
     name_ar,
     name_en,
@@ -80,6 +86,8 @@ export function validateProduct(raw: Raw): Result<ProductInput> {
     is_active: flag(raw.is_active),
     is_featured: flag(raw.is_featured),
     is_tintable: flag(raw.is_tintable),
+    finish,
+    rooms,
   });
 }
 
@@ -93,13 +101,18 @@ export function validateVariant(raw: Raw): Result<VariantInput> {
   return done(errors, { size_label, price: price ?? 0, stock, colour_id });
 }
 
+// An https address, or a path on this site (not //other-site).
+export function isImageUrl(v: string): boolean {
+  return /^https:\/\/\S+$/.test(v) || /^\/(?!\/)\S+$/.test(v);
+}
+
 function imageUrl(raw: Raw, key: string, errors: Errors, required: boolean): string | null {
   const v = str(raw[key]);
   if (!v) {
     if (required) errors[key] = e.required;
     return null;
   }
-  if (!/^https:\/\//.test(v)) errors[key] = e.invalidImage;
+  if (!isImageUrl(v)) errors[key] = e.invalidImage;
   return v;
 }
 

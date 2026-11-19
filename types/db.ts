@@ -29,6 +29,8 @@ export type Product = {
   is_active: boolean;
   is_featured: boolean;
   is_tintable: boolean;
+  finish: string | null;
+  rooms: string[];
   created_at: string;
 };
 
@@ -48,4 +50,5 @@ export type ProductImage = {
   sort_order: number;
 };
 
-export type ProductWithImage = Product & { image_url: string | null };
+// hover_image_url is the second photo, shown when the card is hovered.
+export type ProductWithImage = Product & { image_url: string | null; hover_image_url: string | null };

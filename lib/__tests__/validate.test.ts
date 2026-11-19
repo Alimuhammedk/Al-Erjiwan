@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ar } from "@/content/ar";
 import {
+  isImageUrl,
   parsePrice,
   validateBanner,
   validateCategory,
@@ -76,6 +77,28 @@ describe("validateProduct", () => {
   });
 });
 
+describe("validateProduct room and finish", () => {
+  const base = { name_ar: "دهان", base_price: "1000", stock: "1" };
+  it("defaults to no finish and no rooms", () => {
+    const r = validateProduct(base);
+    expect(r.ok && r.value.finish).toBeNull();
+    expect(r.ok && r.value.rooms).toEqual([]);
+  });
+  it("accepts allowed values", () => {
+    const r = validateProduct({ ...base, finish: "مطفي", rooms: ["المطبخ", "الحمام"] });
+    expect(r.ok && r.value.finish).toBe("مطفي");
+    expect(r.ok && r.value.rooms).toEqual(["المطبخ", "الحمام"]);
+  });
+  it("rejects a finish that is not in the list", () => {
+    const r = validateProduct({ ...base, finish: "غير موجود" });
+    expect(r.ok === false && r.errors.finish).toBeTruthy();
+  });
+  it("rejects a room that is not in the list", () => {
+    const r = validateProduct({ ...base, rooms: ["المطبخ", "قبو"] });
+    expect(r.ok === false && r.errors.rooms).toBeTruthy();
+  });
+});
+
 describe("validateVariant", () => {
   it("requires a size label and a valid price", () => {
     expect(validateVariant({ size_label: "", price: "5000", stock: "1" }).ok).toBe(false);
@@ -95,6 +118,22 @@ describe("validateCategory", () => {
   it("accepts a valid category with a sort order", () => {
     const r = validateCategory({ name_ar: "دهانات داخلية", sort_order: "2" });
     expect(r.ok && r.value.sort_order).toBe(2);
+  });
+});
+
+describe("isImageUrl", () => {
+  it.each(["https://x.supabase.co/a.webp", "/seed/p1.png"])("accepts %s", (u) => {
+    expect(isImageUrl(u)).toBe(true);
+  });
+  it.each(["//evil.com/a.png", "http://x.com/a.png", "javascript:alert(1)", "data:image/png;base64,AA", "", "seed/p1.png"])(
+    "rejects %j",
+    (u) => {
+      expect(isImageUrl(u)).toBe(false);
+    },
+  );
+  it("lets a category keep a site image path", () => {
+    const r = validateCategory({ name_ar: "فئة", image_url: "/seed/c1.png" });
+    expect(r.ok && r.value.image_url).toBe("/seed/c1.png");
   });
 });
 

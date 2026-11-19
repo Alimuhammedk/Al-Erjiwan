@@ -3,6 +3,9 @@ export type Result<T> = { ok: true; value: T } | { ok: false; errors: Record<str
 // Returned by form actions to the form on screen; success redirects instead.
 export type ActionState = { errors?: Record<string, string>; error?: string };
 
+// The product save also reports which product was already created if a later step (photos, sizes) failed.
+export type ProductSaveState = ActionState & { savedId?: string };
+
 export type ProductInput = {
   name_ar: string;
   name_en: string | null;
@@ -15,6 +18,8 @@ export type ProductInput = {
   is_active: boolean;
   is_featured: boolean;
   is_tintable: boolean;
+  finish: string | null;
+  rooms: string[];
 };
 
 export type VariantInput = {

@@ -2,14 +2,19 @@ import type { ReactNode } from "react";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
+import { CartToast } from "@/components/shop/CartToast";
+import { CartProvider } from "@/lib/cart/CartProvider";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
-    <>
+    <CartProvider>
       <Header />
-      <div className="flex flex-1 flex-col">{children}</div>
+      <div id="main-content" tabIndex={-1} className="flex flex-1 flex-col outline-none">
+        {children}
+      </div>
       <Footer />
       <WhatsAppButton />
-    </>
+      <CartToast />
+    </CartProvider>
   );
 }

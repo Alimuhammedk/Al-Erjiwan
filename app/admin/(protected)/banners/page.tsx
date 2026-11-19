@@ -31,7 +31,7 @@ export default async function BannersPage() {
               </div>
               <span className="min-w-0 flex-1 break-words font-bold text-brand-900">{b.title ?? "—"}</span>
               {!b.is_active && <span className="rounded-full bg-ink px-2 py-0.5 text-xs text-white">{ar.admin.products.hidden}</span>}
-              <span className="text-sm text-ink/60">#{b.sort_order}</span>
+              <span className="text-sm text-ink/70">#{b.sort_order}</span>
               <Link href={`/admin/banners/${b.id}`} className="rounded-full border-2 border-brand-700 px-4 py-1.5 text-sm font-bold text-brand-700">
                 {ar.admin.edit}
               </Link>
