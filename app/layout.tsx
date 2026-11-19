@@ -5,6 +5,7 @@ import { SelectOnFocus } from "@/components/SelectOnFocus";
 import { dirOf } from "@/lib/i18n/lang";
 import { getLang, messagesFor } from "@/lib/i18n/messages";
 import { LangProvider } from "@/lib/i18n/provider";
+import { siteUrl } from "@/lib/seo";
 import "./globals.css";
 
 const cairo = Cairo({
@@ -18,7 +19,14 @@ export const viewport: Viewport = { colorScheme: "light" };
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = messagesFor(await getLang());
-  return { title: `${t.siteName} | ${t.tagline}`, description: t.tagline };
+  const title = `${t.siteName} | ${t.tagline}`;
+  return {
+    metadataBase: new URL(siteUrl()),
+    title,
+    description: t.tagline,
+    openGraph: { type: "website", siteName: t.siteName, title, description: t.tagline, locale: t.lang === "en" ? "en_US" : "ar_IQ", images: [{ url: "/logo-icon.png" }] },
+    twitter: { card: "summary", title, description: t.tagline },
+  };
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {

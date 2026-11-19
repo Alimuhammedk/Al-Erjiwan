@@ -9,7 +9,7 @@ import { parseShopQuery } from "@/lib/shop/query";
 
 export async function generateMetadata(): Promise<Metadata> {
   const m = await getMessages();
-  return { title: `${m.shop.title} | ${m.siteName}` };
+  return { title: `${m.shop.title} | ${m.siteName}`, description: m.tagline, alternates: { canonical: "/shop" } };
 }
 export const dynamic = "force-dynamic";
 

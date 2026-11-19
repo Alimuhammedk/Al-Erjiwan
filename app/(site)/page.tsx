@@ -4,7 +4,10 @@ import { ProductRow } from "@/components/home/ProductRow";
 import { ArticlesSection } from "@/components/home/ArticlesSection";
 import { CalculatorBanner } from "@/components/home/CalculatorBanner";
 import { TrustStrip } from "@/components/shop/TrustStrip";
+import type { Metadata } from "next";
 import { getMessages } from "@/lib/i18n/messages";
+import { jsonLdScript, organizationJsonLd } from "@/lib/seo";
+import { storeInfo } from "@/lib/store-info";
 import { getBanners } from "@/lib/data/banners";
 import { getHomeArticles } from "@/lib/data/articles";
 import { getCategories } from "@/lib/data/categories";
@@ -12,6 +15,7 @@ import { getFeaturedProducts, getSaleProducts } from "@/lib/data/products";
 
 // Render on every request so admin changes show instantly.
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home() {
   const m = await getMessages();
@@ -25,6 +29,7 @@ export default async function Home() {
 
   return (
     <main className="flex-1">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(organizationJsonLd(m.siteName, m.common.storeAddress, storeInfo.phoneDisplay)) }} />
       <HeroSlider banners={banners} />
       <CategoryGrid categories={categories} />
       <ProductRow title={m.home.bestSellersTitle} products={featured} emptyMessage={m.home.emptyBestSellers} />

@@ -17,5 +17,5 @@ export async function pageMetadata(slug: PageSlug): Promise<Metadata> {
   const [t, page] = await Promise.all([getMessages(), getPage(slug)]);
   if (!page) return { title: `${t.pages.notFound} | ${t.siteName}`, robots: { index: false } };
   const { title, body } = pageIn(page, t.lang);
-  return { title: `${title} | ${t.siteName}`, description: cardExcerpt({ excerpt: null, body }, 160) };
+  return { title: `${title} | ${t.siteName}`, description: cardExcerpt({ excerpt: null, body }, 160), alternates: { canonical: `/${slug}` } };
 }

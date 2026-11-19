@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const m = await getMessages();
   const article = await getArticle((await params).id);
   return article
-    ? { title: `${articleIn(article, m.lang).title} | ${m.siteName}`, description: cardExcerpt(articleIn(article, m.lang), 160) }
+    ? { title: `${articleIn(article, m.lang).title} | ${m.siteName}`, description: cardExcerpt(articleIn(article, m.lang), 160), alternates: { canonical: `/articles/${article.id}` }, openGraph: { type: "article", title: articleIn(article, m.lang).title, images: [{ url: article.cover_url }] } }
     : { title: `${m.articles.notFound} | ${m.siteName}`, robots: { index: false } };
 }
 
