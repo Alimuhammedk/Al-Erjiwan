@@ -55,3 +55,18 @@ export function validatePage(slug: PageSlug, raw: Raw): Result<PageInput> {
 export function pageIn(page: Pick<SitePage, "title_ar" | "title_en" | "body_ar" | "body_en">, lang: string): { title: string; body: string } {
   return { title: localised(lang, page.title_ar, page.title_en), body: localised(lang, page.body_ar, page.body_en) };
 }
+
+// FAQ text as question and answer pairs. A paragraph with a line break is one pair (first line = question, the rest =
+// answer); plain paragraphs are taken two at a time (question, then answer).
+export function faqItems(parts: string[]): { q: string; a: string }[] {
+  const items: { q: string; a: string }[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    const [first, ...rest] = parts[i].split("\n");
+    if (rest.length) items.push({ q: first.trim(), a: rest.join("\n").trim() });
+    else {
+      items.push({ q: first.trim(), a: parts[i + 1] && !parts[i + 1].includes("\n") ? parts[i + 1] : "" });
+      if (parts[i + 1] && !parts[i + 1].includes("\n")) i++;
+    }
+  }
+  return items;
+}

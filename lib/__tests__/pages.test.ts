@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ar } from "@/content/ar";
-import { PAGE_MAX, PAGE_SLUGS, isPageSlug, pageIn, validatePage } from "../pages";
+import { PAGE_MAX, PAGE_SLUGS, faqItems, isPageSlug, pageIn, validatePage } from "../pages";
 
 const e = ar.admin.errors;
 const ok = { title_ar: " من نحن ", body_ar: "نص", title_en: "About", body_en: "Text" };
@@ -105,4 +105,19 @@ describe("savePageAction", () => {
     guard.requireAdmin.mockRejectedValue(new Error("REDIRECT:/admin/login"));
     await expect(savePageAction("faq", {}, form(ok))).rejects.toThrow("REDIRECT:/admin/login");
   });
+});
+
+describe("faqItems", () => {
+  it("takes a question line and its answer lines from one paragraph", () => {
+    expect(faqItems(["كيف أطلب؟\nاختر المنتج.", "كم السعر؟\nحسب الحجم."])).toEqual([
+      { q: "كيف أطلب؟", a: "اختر المنتج." },
+      { q: "كم السعر؟", a: "حسب الحجم." },
+    ]);
+  });
+  it("takes plain paragraphs two at a time, and keeps a lone last question", () => {
+    expect(faqItems(["س1", "ج1", "س2", "ج2", "س3"])).toEqual([
+      { q: "س1", a: "ج1" }, { q: "س2", a: "ج2" }, { q: "س3", a: "" },
+    ]);
+  });
+  it("gives nothing for no text", () => expect(faqItems([])).toEqual([]));
 });
