@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// These tests need the dummy data from supabase/seed/dummy-data.sql. They skip themselves when it isn't loaded.
+// These tests need products in the shop (they skip themselves when it is empty).
 const P = (n: number) => `00000000-0000-4002-8000-${String(n).padStart(12, "0")}`;
 const C3 = "00000000-0000-4001-8000-000000000003";
 
