@@ -1,0 +1,6 @@
+# Netlify builds the shop with its Next.js support; this only pins the build command and the Node version.
+[build]
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "22"
