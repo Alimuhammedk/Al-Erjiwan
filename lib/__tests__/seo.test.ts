@@ -67,11 +67,11 @@ describe("organizationJsonLd", () => {
 
 describe("sitemapEntries", () => {
   const data = { products: [{ id: "p1", created_at: "2026-11-01T00:00:00Z" }, { id: "p2" }], articles: [{ id: "a1", updated_at: "2026-11-02T00:00:00Z" }] };
-  it("lists the main pages, the four pages, products and articles", () => {
+  it("lists the main pages, the three pages, products and articles", () => {
     const urls = sitemapEntries(data, "https://a.com").map((e) => e.url);
     expect(urls).toEqual([
       "https://a.com/", "https://a.com/shop", "https://a.com/calculator",
-      "https://a.com/about", "https://a.com/faq", "https://a.com/returns", "https://a.com/privacy",
+      "https://a.com/about", "https://a.com/faq", "https://a.com/returns",
       "https://a.com/shop/p1", "https://a.com/shop/p2", "https://a.com/articles/a1",
     ]);
   });
@@ -85,7 +85,7 @@ describe("sitemapEntries", () => {
     for (const blocked of BLOCKED_PATHS) expect(urls.some((p) => p.startsWith(blocked))).toBe(false);
   });
   it("is just the fixed pages with no data", () => {
-    expect(sitemapEntries({ products: [], articles: [] }, "https://a.com")).toHaveLength(7);
+    expect(sitemapEntries({ products: [], articles: [] }, "https://a.com")).toHaveLength(6);
   });
 });
 

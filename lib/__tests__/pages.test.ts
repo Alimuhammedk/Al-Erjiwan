@@ -6,8 +6,8 @@ const e = ar.admin.errors;
 const ok = { title_ar: " من نحن ", body_ar: "نص", title_en: "About", body_en: "Text" };
 
 describe("isPageSlug", () => {
-  it("knows the four pages and nothing else", () => {
-    expect(PAGE_SLUGS).toEqual(["about", "faq", "returns", "privacy"]);
+  it("knows the three pages and nothing else", () => {
+    expect(PAGE_SLUGS).toEqual(["about", "faq", "returns"]);
     for (const s of PAGE_SLUGS) expect(isPageSlug(s)).toBe(true);
     for (const s of ["contact", "", "About", "../etc", "about "]) expect(isPageSlug(s)).toBe(false);
   });

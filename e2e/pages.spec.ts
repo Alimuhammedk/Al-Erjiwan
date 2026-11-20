@@ -6,19 +6,31 @@ const SAMPLE = "/styleguide/pages";
 const useEnglish = (page: Page) => page.context().addCookies([{ name: "lang", value: "en", url: "http://localhost:3000" }]);
 
 test("a page shows its title and paragraphs, in Arabic by default", async ({ page }) => {
-  await page.goto(`${SAMPLE}?slug=faq`);
+  await page.goto(`${SAMPLE}?slug=returns`);
   await expect(page.getByRole("heading", { name: "من نحن", level: 1 })).toBeVisible();
   await expect(page.getByTestId("page-view").locator("p").filter({ hasText: "أصباغ الأرجوان متجر للدهانات" })).toBeVisible();
   await expect(page.getByTestId("page-view").locator("p").filter({ hasText: "نوصّل إلى جميع المحافظات." })).toBeVisible();
   await expect(page.getByRole("link", { name: "العودة إلى الرئيسية" })).toHaveAttribute("href", "/");
 });
 
+test("FAQ shows only the questions, and a tap opens the answer", async ({ page }) => {
+  await page.goto(`${SAMPLE}?slug=faq`);
+  const list = page.getByTestId("faq-list");
+  await expect(list.locator("summary")).toHaveCount(1);
+  await expect(list.getByText("أصباغ الأرجوان متجر للدهانات")).toBeVisible();
+  await expect(list.getByText("نوصّل إلى جميع المحافظات.")).toBeHidden();
+  await list.locator("summary").click();
+  await expect(list.getByText("نوصّل إلى جميع المحافظات.")).toBeVisible();
+  await list.locator("summary").click();
+  await expect(list.getByText("نوصّل إلى جميع المحافظات.")).toBeHidden();
+});
+
 test("in English the page shows the English text, and the Arabic when there is none", async ({ page }) => {
   await useEnglish(page);
-  await page.goto(`${SAMPLE}?slug=faq`);
+  await page.goto(`${SAMPLE}?slug=returns`);
   await expect(page.getByRole("heading", { name: "About us", level: 1 })).toBeVisible();
   await expect(page.getByText("Al-Erjiwan is a paint shop in Al-Kifl.")).toBeVisible();
-  await page.goto(`${SAMPLE}?slug=faq&english=0`);
+  await page.goto(`${SAMPLE}?slug=returns&english=0`);
   await expect(page.getByRole("heading", { name: "من نحن", level: 1 })).toBeVisible();
 });
 
@@ -65,21 +77,21 @@ for (const [name, width] of [["phone", 375], ["tablet", 768], ["desktop", 1280]]
   });
 }
 
-test("the footer links to the four pages in Arabic and in English", async ({ page }) => {
+test("the footer links to the three pages in Arabic and in English", async ({ page }) => {
   await page.goto("/");
   const footer = page.getByRole("contentinfo");
-  for (const [label, href] of [["من نحن", "/about"], ["الأسئلة الشائعة", "/faq"], ["سياسة الإرجاع", "/returns"], ["سياسة الخصوصية", "/privacy"]]) {
+  for (const [label, href] of [["من نحن", "/about"], ["الأسئلة الشائعة", "/faq"], ["سياسة الإرجاع", "/returns"]]) {
     await expect(footer.getByRole("link", { name: label })).toHaveAttribute("href", href);
   }
   await useEnglish(page);
   await page.goto("/");
-  for (const label of ["About us", "FAQ", "Return policy", "Privacy policy"]) await expect(page.getByRole("contentinfo").getByRole("link", { name: label })).toBeVisible();
+  for (const label of ["About us", "FAQ", "Return policy"]) await expect(page.getByRole("contentinfo").getByRole("link", { name: label })).toBeVisible();
 });
 
 test("the real pages open (needs 0009 run in Supabase)", async ({ page, request }) => {
   const res = await request.get("/about");
   test.skip(res.status() !== 200, "0009_languages_and_pages.sql has not been run yet");
-  for (const path of ["/about", "/faq", "/returns", "/privacy"]) {
+  for (const path of ["/about", "/faq", "/returns"]) {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   }

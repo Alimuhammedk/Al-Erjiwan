@@ -230,7 +230,6 @@ export const en: Messages = {
     about: "About us",
     faq: "FAQ",
     returns: "Return policy",
-    privacy: "Privacy policy",
     footerTitle: "Information",
     mapTitle: "Store location",
     openInMaps: "Open in Google Maps",

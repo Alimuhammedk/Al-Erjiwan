@@ -3,7 +3,7 @@ import type { Result } from "@/lib/admin/types";
 import { localised } from "@/lib/i18n/lang";
 import { parseMapLocation } from "@/lib/maps";
 
-export const PAGE_SLUGS = ["about", "faq", "returns", "privacy"] as const;
+export const PAGE_SLUGS = ["about", "faq", "returns"] as const;
 export type PageSlug = (typeof PAGE_SLUGS)[number];
 export const isPageSlug = (v: string): v is PageSlug => (PAGE_SLUGS as readonly string[]).includes(v);
 

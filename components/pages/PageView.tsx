@@ -14,13 +14,28 @@ export function PageView({ page, t }: { page: SitePage; t: Messages }) {
       {parts.length === 0 ? (
         <p className="text-ink/70">{t.pages.emptyPage}</p>
       ) : (
-        <div className="space-y-5 text-lg leading-10 text-ink/90">
-          {parts.map((p, n) => (
-            <p key={n} className="whitespace-pre-line break-words">
-              {p}
-            </p>
-          ))}
-        </div>
+        page.slug === "faq" ? (
+          // Paragraphs come in pairs: a question, then its answer. The answer opens when the question is tapped.
+          <div className="divide-y divide-brand-100 rounded-2xl border border-brand-100 bg-white" data-testid="faq-list">
+            {Array.from({ length: Math.ceil(parts.length / 2) }, (_, n) => (
+              <details key={n} className="group px-4">
+                <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 py-3 text-lg font-bold text-brand-900 [&::-webkit-details-marker]:hidden">
+                  <span className="break-words">{parts[n * 2]}</span>
+                  <span aria-hidden className="shrink-0 text-2xl leading-none text-brand-700 transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p className="whitespace-pre-line break-words pb-4 text-lg leading-10 text-ink/90">{parts[n * 2 + 1]}</p>
+              </details>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-5 text-lg leading-10 text-ink/90">
+            {parts.map((p, n) => (
+              <p key={n} className="whitespace-pre-line break-words">
+                {p}
+              </p>
+            ))}
+          </div>
+        )
       )}
       {page.slug === "about" && <StoreMap source={page.map_url} title={t.pages.mapTitle} openLabel={t.pages.openInMaps} />}
       <Link href="/" className="inline-flex min-h-11 items-center font-bold text-brand-700">

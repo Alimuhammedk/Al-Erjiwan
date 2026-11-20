@@ -29,6 +29,7 @@ export function PageForm({ page, action }: Props) {
       <FormField label={t.bodyAr} error={err.body_ar}>
         <textarea name="body_ar" rows={10} defaultValue={page.body_ar} maxLength={PAGE_MAX.body} className={`${inputClass} leading-8`} />
         <span className="mt-1 block text-sm text-ink/60">{t.bodyHint}</span>
+        {page.slug === "faq" && <span className="mt-1 block text-sm font-bold text-brand-700">{t.faqHint}</span>}
       </FormField>
 
       <section className="space-y-4 rounded-xl border border-brand-100 bg-brand-50/50 p-4" dir="ltr" lang="en">

@@ -6,7 +6,7 @@ import { cardExcerpt } from "@/lib/articles";
 import { pageIn, type PageSlug } from "@/lib/pages";
 import { PageView } from "./PageView";
 
-// The shared body of the four page routes (about, faq, returns, privacy).
+// The shared body of the four page routes (about, faq, returns).
 export async function PageRoute({ slug }: { slug: PageSlug }) {
   const [t, page] = await Promise.all([getMessages(), getPage(slug)]);
   if (!page) notFound();

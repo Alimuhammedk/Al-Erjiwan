@@ -51,6 +51,6 @@ test("robots.txt blocks private areas and points to the sitemap", async ({ reque
 
 test("sitemap lists the main pages and never private ones", async ({ request }) => {
   const xml = await (await request.get("/sitemap.xml")).text();
-  for (const p of ["/shop", "/calculator", "/about", "/faq", "/returns", "/privacy"]) expect(xml).toContain(`${p}</loc>`);
+  for (const p of ["/shop", "/calculator", "/about", "/faq", "/returns"]) expect(xml).toContain(`${p}</loc>`);
   for (const p of ["/admin", "/cart", "/checkout", "/track", "/styleguide"]) expect(xml).not.toContain(`${p}`);
 });
