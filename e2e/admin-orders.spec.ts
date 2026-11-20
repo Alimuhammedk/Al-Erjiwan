@@ -21,13 +21,13 @@ test("the phone number is a call link", async ({ page }) => {
   await expect(page.getByRole("link", { name: "اتصال" })).toHaveAttribute("href", "tel:07701234567");
 });
 
-const ALL = ["جديد", "مؤكد", "مع شركة التوصيل", "تم التسليم", "ملغي", "مرتجع"];
+const ALL = ["جديد", "مؤكد", "قيد التوصيل", "تم التسليم", "ملغي", "مرتجع"];
 const statusCard = (page: Page) => page.locator("section", { has: page.getByRole("heading", { name: "حالة الطلب" }) });
 
 for (const [from, label] of [
   ["new", "جديد"],
   ["confirmed", "مؤكد"],
-  ["shipped", "مع شركة التوصيل"],
+  ["shipped", "قيد التوصيل"],
   ["delivered", "تم التسليم"],
   ["cancelled", "ملغي"],
   ["returned", "مرتجع"],
@@ -151,7 +151,7 @@ test("the insert buttons add a {word} where the cursor is", async ({ page }) => 
   await expect(c.getByTestId("preview-update")).toHaveText("علي حسينABCD1234");
 });
 
-test("a line with nothing to show (no delivery company yet) is left out of the message", async ({ page }) => {
+test("an old saved message that still has the removed {company} word loses that line", async ({ page }) => {
   await page.goto(URL);
   const c = await open(page, "update");
   await c.getByRole("textbox").fill("طلبك {status}\nشركة التوصيل: {company}");
@@ -180,28 +180,15 @@ test("there is no copy-message button and no old delivery card", async ({ page }
   await expect(page.getByLabel("رقم الشحنة أو ملاحظة التتبع")).toHaveCount(0);
 });
 
-test("sending to the delivery company needs a chosen company, then opens WhatsApp to its number", async ({ page }) => {
+test("there is no delivery company, price, difference or delivery-notes box any more", async ({ page }) => {
   await page.goto(URL);
+  await expect(page.getByRole("heading", { name: "شركة التوصيل" })).toHaveCount(0);
+  await expect(page.getByRole("combobox")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "إرسال إلى شركة التوصيل" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "إرسال إلى شركة التوصيل" })).toBeDisabled();
-
-  await page.getByRole("combobox").selectOption({ label: "شركة السرعة" });
-  const link = page.getByRole("link", { name: "إرسال إلى شركة التوصيل" });
-  const href = await link.getAttribute("href");
-  expect(href!.startsWith("https://wa.me/9647801234567?text=")).toBe(true);
-  const text = decode(href!);
-  expect(text).toContain("المبلغ المطلوب تحصيله من الزبون: 123,000 د.ع");
-  expect(text).toContain("ملاحظات للتوصيل: زبون جديد");
-  await expect(page.getByTestId("company-price")).toHaveText("4,000 د.ع");
-  await expect(page.getByTestId("company-difference")).toHaveText("1,000 د.ع");
-
-  await page.getByRole("combobox").selectOption({ label: "شركة النور" });
-  await expect(page.getByTestId("company-difference")).toHaveText("-1,500 د.ع");
-  await expect(link).toHaveAttribute("href", /wa\.me\/9647901234567/);
-
-  await page.getByRole("combobox").selectOption({ label: "شركة بلا سعر" });
-  await expect(page.getByTestId("company-price")).toHaveCount(0);
-  await expect(page.getByTestId("company-difference")).toHaveCount(0);
+  await expect(page.getByText("سعر الشركة")).toHaveCount(0);
+  await expect(page.getByText("الفرق")).toHaveCount(0);
+  await expect(page.getByLabel(/ملاحظات لشركة التوصيل/)).toHaveCount(0);
+  await expect(page.getByText("ملاحظات الزبون")).toBeVisible();
 });
 
 test("the print slip link is there", async ({ page }) => {
@@ -214,22 +201,6 @@ test("a customer with earlier cancelled or returned orders gets a warning", asyn
   await expect(page.getByRole("alert").filter({ hasText: "لهذا الرقم 2 طلب سابق ملغي أو مرتجع" })).toBeVisible();
   await page.goto(`${URL}?problems=0`);
   await expect(page.getByText("طلب سابق ملغي أو مرتجع")).toHaveCount(0);
-});
-
-test("there is one notes box; it keeps what was typed, says saved, and shows errors on the field", async ({ page }) => {
-  await page.goto(URL);
-  await page.waitForLoadState("networkidle");
-  await expect(page.getByLabel(/ملاحظات لشركة التوصيل/)).toHaveValue("زبون جديد");
-  await page.getByLabel(/ملاحظات لشركة التوصيل/).fill("اتصل قبل الوصول بنصف ساعة");
-  await page.getByRole("button", { name: "حفظ", exact: true }).click();
-  await expect(page.getByRole("status").filter({ hasText: "تم الحفظ" })).toBeVisible();
-  await expect(page.getByLabel(/ملاحظات لشركة التوصيل/)).toHaveValue("اتصل قبل الوصول بنصف ساعة");
-
-  await page.getByLabel(/ملاحظات لشركة التوصيل/).fill("FAIL");
-  await page.getByRole("button", { name: "حفظ", exact: true }).click();
-  await expect(page.getByText("خطأ تجريبي")).toBeVisible();
-  await expect(page.getByLabel(/ملاحظات لشركة التوصيل/)).toHaveValue("FAIL");
-  await expect(page.getByRole("status").filter({ hasText: "تم الحفظ" })).toHaveCount(0);
 });
 
 for (const [name, width] of [["phone", 375], ["tablet", 768], ["desktop", 1280]] as const) {

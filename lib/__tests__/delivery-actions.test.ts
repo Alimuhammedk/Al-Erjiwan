@@ -39,12 +39,10 @@ vi.mock("@/lib/supabase/auth-server", () => ({
 }));
 
 import { ar } from "@/content/ar";
-import { deleteCompanyAction, saveCompanyAction } from "../../app/admin/(protected)/delivery-companies/actions";
 import { saveZonesAction } from "../../app/admin/(protected)/delivery-fees/actions";
 
 const Z1 = "123e4567-e89b-12d3-a456-426614174001";
 const Z2 = "123e4567-e89b-12d3-a456-426614174002";
-const CID = "223e4567-e89b-12d3-a456-426614174001";
 const form = (f: Record<string, string>) => {
   const d = new FormData();
   Object.entries(f).forEach(([k, v]) => d.set(k, v));
@@ -81,63 +79,5 @@ describe("saveZonesAction", () => {
     guard.requireAdmin.mockRejectedValue(new Error("REDIRECT:/admin/login"));
     await expect(saveZonesAction({}, form(good))).rejects.toThrow("REDIRECT:/admin/login");
     expect(calls.log).toHaveLength(0);
-  });
-});
-
-describe("saveCompanyAction", () => {
-  const good = { name: "شركة السرعة", whatsapp: "0780 123 4567", is_active: "on", ids: `${Z1},${Z2}`, [`price_${Z1}`]: "4000", [`price_${Z2}`]: "" };
-  const company = { name: "شركة السرعة", whatsapp: "07801234567", notes: null, is_active: true };
-
-  it("creates a company, saves its typed prices, removes other prices and goes back to the list", async () => {
-    await expect(saveCompanyAction(null, {}, form(good))).rejects.toThrow("REDIRECT:/admin/delivery");
-    expect(calls.log[0]).toEqual(["delivery_companies", "insert", company]);
-    expect(ops("upsert")).toEqual([
-      ["delivery_company_prices", "upsert", [{ company_id: calls.insertedId, zone_id: Z1, price: 4000 }], { onConflict: "company_id,zone_id" }],
-    ]);
-    expect(ops("delete-not")).toEqual([["delivery_company_prices", "delete-not", "company_id", calls.insertedId, "zone_id", "in", `(${Z1})`]]);
-  });
-  it("updates an existing company by id", async () => {
-    await expect(saveCompanyAction(CID, {}, form(good))).rejects.toThrow("REDIRECT:");
-    expect(calls.log[0]).toEqual(["delivery_companies", "update", company, "id", CID]);
-    expect(ops("insert")).toHaveLength(0);
-  });
-  it("with no prices typed, removes all of the company's prices and saves none", async () => {
-    await expect(saveCompanyAction(CID, {}, form({ ...good, [`price_${Z1}`]: "" }))).rejects.toThrow("REDIRECT:");
-    expect(ops("upsert")).toHaveLength(0);
-    expect(ops("delete")).toEqual([["delivery_company_prices", "delete", "company_id", CID]]);
-  });
-  it("without a price list in the form (the current form), saved prices are left alone", async () => {
-    const noPrices = Object.fromEntries(Object.entries(good).filter(([k]) => k !== "ids"));
-    await expect(saveCompanyAction(CID, {}, form(noPrices))).rejects.toThrow("REDIRECT:/admin/delivery");
-    expect(calls.log).toEqual([["delivery_companies", "update", company, "id", CID]]);
-  });
-  it("returns field errors and writes nothing for bad input", async () => {
-    const r = await saveCompanyAction(null, {}, form({ ...good, name: "", whatsapp: "1", [`price_${Z1}`]: "x" }));
-    expect(Object.keys(r.errors ?? {}).sort()).toEqual(["name", `price_${Z1}`, "whatsapp"].sort());
-    expect(calls.log).toHaveLength(0);
-  });
-  it.each(["delivery_companies:insert", "delivery_company_prices:upsert", "delivery_company_prices:delete-not"])("shows a save error when %s fails", async (key) => {
-    calls.fail.add(key);
-    expect((await saveCompanyAction(null, {}, form(good))).error).toBe(ar.admin.errors.saveFailed);
-  });
-  it("refuses a malformed id and non-admins", async () => {
-    expect((await saveCompanyAction("nope", {}, form(good))).error).toBe(ar.admin.errors.saveFailed);
-    guard.requireAdmin.mockRejectedValue(new Error("REDIRECT:/admin/login"));
-    await expect(saveCompanyAction(null, {}, form(good))).rejects.toThrow("REDIRECT:/admin/login");
-    expect(calls.log).toHaveLength(0);
-  });
-});
-
-describe("deleteCompanyAction", () => {
-  it("deletes the company and returns to the list", async () => {
-    await expect(deleteCompanyAction(CID)).rejects.toThrow("REDIRECT:/admin/delivery");
-    expect(calls.log).toEqual([["delivery_companies", "delete", "id", CID]]);
-  });
-  it("refuses a bad id and non-admins, and reports a failure", async () => {
-    await expect(deleteCompanyAction("nope")).rejects.toThrow(ar.admin.errors.saveFailed);
-    calls.fail.add("delivery_companies:delete");
-    await expect(deleteCompanyAction(CID)).rejects.toThrow(ar.admin.errors.saveFailed);
-    guard.requireAdmin.mockRejectedValue(new Error("REDIRECT:/admin/login"));
-    await expect(deleteCompanyAction(CID)).rejects.toThrow("REDIRECT:/admin/login");
   });
 });

@@ -41,8 +41,8 @@ describe("timeline", () => {
 
 describe("status words in English", () => {
   it("labels and timeline use the words passed in", () => {
-    expect(customerStatusLabel("shipped", en.order.statuses)).toBe("With the delivery company");
+    expect(customerStatusLabel("shipped", en.order.statuses)).toBe("Out for delivery");
     expect(customerStatusLabel("weird", en.order.statuses)).toBe("Under review");
-    expect(timeline("confirmed", en.order.statuses).steps.map((x) => x.label)).toEqual(["Under review", "Order confirmed", "With the delivery company", "Delivered"]);
+    expect(timeline("confirmed", en.order.statuses).steps.map((x) => x.label)).toEqual(["Under review", "Order confirmed", "Out for delivery", "Delivered"]);
   });
 });

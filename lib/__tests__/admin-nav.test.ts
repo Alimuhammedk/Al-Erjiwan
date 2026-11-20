@@ -30,7 +30,6 @@ describe("activeTab", () => {
     ["/admin/stock", "/admin/stock"],
     ["/admin/colours/import", "/admin/colours"],
     ["/admin/delivery", "/admin/delivery"],
-    ["/admin/delivery-companies/new", "/admin/delivery"],
   ])("%s lights %s", (path, tab) => expect(activeTab(path)).toBe(tab));
 
   it("lights nothing on the login page or an unknown page, and the home tab is not lit on every page", () => {

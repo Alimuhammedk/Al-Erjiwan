@@ -79,12 +79,6 @@ export default async function TrackPage({ searchParams }: { searchParams: Promis
               <dt className="text-ink/70">{t.updated}</dt>
               <dd className="font-semibold">{formatDateTime(order.updated_at, m.lang)}</dd>
             </div>
-            {order.delivery_company && (
-              <div className="flex justify-between gap-3">
-                <dt className="text-ink/70">{t.deliveryCompany}</dt>
-                <dd className="font-semibold">{order.delivery_company}</dd>
-              </div>
-            )}
           </dl>
 
           <ul className="divide-y divide-brand-100 border-t border-brand-100">

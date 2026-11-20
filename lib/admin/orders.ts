@@ -28,10 +28,6 @@ export type AdminOrder = {
   delivery_fee: number;
   total: number;
   status: string;
-  delivery_company: string | null;
-  delivery_company_id: string | null;
-  delivery_cost: number | null;
-  delivery_notes: string | null;
   created_at: string;
   updated_at: string;
   items: AdminOrderItem[];
@@ -41,9 +37,6 @@ export const STATUS_ORDER = ["new", "confirmed", "shipped", "delivered", "cancel
 
 // Any status can move to any other (the database applies the stock rules), so every other status is offered.
 export const otherStatuses = (status: string): string[] => STATUS_ORDER.filter((s) => s !== status);
-
-// What the customer paid for delivery minus what the company charges; null when the company has no price.
-export const costDifference = (fee: number, cost: number | null): number | null => (cost === null ? null : fee - cost);
 
 // 07701234567 -> 9647701234567 (the form wa.me wants)
 export const internationalPhone = (phone: string) => "964" + phone.replace(/^0/, "");
@@ -74,12 +67,11 @@ function templateValues(order: AdminOrder): Record<string, string> {
     items: order.items.map(itemLine).join("\n"),
     total: `${formatPrice(order.total)} ${fill(m.includesDelivery, { fee: formatPrice(order.delivery_fee) })}`,
     address: `${place(order)} - ${order.address}`,
-    company: order.delivery_company ?? "",
+    company: "", // an old saved message may still say {company}: it comes out empty and its line is dropped
   };
 }
 
-// Fills {name}, {code}... in a template. A line whose values are all empty (for example the company line before a
-// company is chosen) is left out; unknown {words} are kept as typed.
+// Fills {name}, {code}... in a template. A line whose values are all empty is left out; unknown {words} are kept as typed.
 export function fillTemplate(template: string, order: AdminOrder): string {
   const values = templateValues(order);
   return template
@@ -98,27 +90,6 @@ export function customerWhatsAppUrl(order: AdminOrder, kind: MessageKind, templa
   const text = fillTemplate(template ?? DEFAULT_TEMPLATES[kind], order);
   return `https://wa.me/${internationalPhone(order.phone)}?text=${encodeURIComponent(text)}`;
 }
-
-// Everything a delivery company needs, including the exact cash to collect.
-export function deliveryMessage(order: AdminOrder): string {
-  return [
-    fill(m.deliveryTitle, { code: order.code }),
-    `${m.name}: ${order.customer_name}`,
-    `${m.phone}: ${order.phone}`,
-    `${m.governorate}: ${place(order)}`,
-    `${m.address}: ${order.address}`,
-    ...(order.landmark ? [`${m.landmark}: ${order.landmark}`] : []),
-    `${m.products}:`,
-    ...order.items.map(itemLine),
-    `${m.collect}: ${formatPrice(order.total)} ${fill(m.includesDelivery, { fee: formatPrice(order.delivery_fee) })}`,
-    ...(order.notes ? [`${m.notes}: ${order.notes}`] : []),
-    ...(order.delivery_notes ? [`${m.deliveryNotes}: ${order.delivery_notes}`] : []),
-  ].join("\n");
-}
-
-// Opens a WhatsApp chat with the chosen delivery company, with the delivery message ready to send.
-export const deliveryWhatsAppUrl = (order: AdminOrder, company: { whatsapp: string }) =>
-  `https://wa.me/${internationalPhone(company.whatsapp)}?text=${encodeURIComponent(deliveryMessage(order))}`;
 
 export const ORDERS_PER_PAGE = 20;
 

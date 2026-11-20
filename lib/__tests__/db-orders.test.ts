@@ -104,3 +104,17 @@ describe("0009_languages_and_pages.sql", () => {
     }
   }, 90_000);
 });
+
+describe("0010_remove_delivery_companies.sql", () => {
+  it("passes every check in supabase/tests/0010_remove_delivery_companies_test.sql", async () => {
+    const db10 = await createDb([
+      ...BASE_MIGRATIONS, "0004_orders.sql", "0005_order_changes.sql", "0006_colours.sql", "0007_product_colours.sql", "0008_articles.sql", "0009_languages_and_pages.sql", "0010_remove_delivery_companies.sql",
+    ]);
+    try {
+      const results = await db10.exec(readSql("supabase/tests/0010_remove_delivery_companies_test.sql"));
+      expect((results.at(-1)?.rows[0] as { result: string }).result).toBe("ALL PASSED");
+    } finally {
+      await db10.close();
+    }
+  }, 90_000);
+});

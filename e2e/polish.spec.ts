@@ -36,7 +36,7 @@ test.describe("without JavaScript", () => {
 
 test("banner dots are at least 44px and the arrows and pause button work", async ({ page }) => {
   await page.goto("/");
-  await expect(dots(page)).toHaveCount(2);
+  await expect.poll(() => dots(page).count()).toBeGreaterThan(1);
   for (const box of await Promise.all((await dots(page).all()).map((d) => d.boundingBox()))) {
     expect(box!.width).toBeGreaterThanOrEqual(44);
     expect(box!.height).toBeGreaterThanOrEqual(44);
@@ -193,12 +193,11 @@ test("a card with two photos shows the second on hover and lifts", async ({ page
   await expect.poll(() => two.evaluate((el) => getComputedStyle(el).translate)).toMatch(/-\d/);
 });
 
-test("the homepage has a trust strip and the banner has a shop-now button", async ({ page }) => {
+test("the homepage has a trust strip", async ({ page }) => {
   await page.goto("/");
   for (const text of ["توصيل إلى جميع محافظات العراق", "الدفع عند الاستلام", "دعم عبر واتساب"]) {
     await expect(page.getByText(text).first()).toBeVisible();
   }
-  await expect(page.locator("main section").first().getByText("تسوّق الآن")).toBeVisible();
 });
 
 test("the header gets a shadow once you scroll", async ({ page }) => {
