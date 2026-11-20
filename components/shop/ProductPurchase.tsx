@@ -1,7 +1,9 @@
 "use client";
 
+import { localised } from "@/lib/i18n/lang";
+
 import { useState } from "react";
-import { ar } from "@/content/ar";
+import { useMessages } from "@/lib/i18n/provider";
 import type { PickableColour } from "@/lib/colours/search";
 import { useCart } from "@/lib/cart/CartProvider";
 import type { ProductDetail } from "@/lib/data/shop";
@@ -12,8 +14,9 @@ import { ColourPanel } from "./ColourPanel";
 type Variant = ProductDetail["variants"][number];
 
 export function ProductPurchase({ detail }: { detail: ProductDetail }) {
+  const m = useMessages();
   const { product, images, variants, colours } = detail;
-  const t = ar.product;
+  const t = m.product;
   const { add } = useCart();
 
   const variantColours = !product.is_tintable && variants.some((v) => v.colour_id);
@@ -53,8 +56,10 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
       variant_id: variant?.id ?? null,
       colour_id: product.is_tintable ? (chosen?.id ?? null) : (variant?.colour_id ?? null),
       colour_name: product.is_tintable ? (chosen?.name_ar ?? null) : (colours.find((c) => c.id === variant?.colour_id)?.name_ar ?? null),
+      colour_name_en: product.is_tintable ? (chosen?.name_en ?? null) : (colours.find((c) => c.id === variant?.colour_id)?.name_en ?? null),
       colour_note: null,
       name: product.name_ar,
+      name_en: product.name_en,
       size_label: variant?.size_label ?? null,
       unit_price: price,
       image_url: images[0] ?? null,
@@ -69,11 +74,11 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
   return (
     <div className="space-y-5">
       <p className="flex flex-wrap items-baseline gap-3">
-        <span className="text-3xl font-extrabold text-brand-700">{formatPrice(price)}</span>
-        {oldPrice !== null && <span className="text-lg text-ink/70 line-through">{formatPrice(oldPrice)}</span>}
+        <span className="text-3xl font-extrabold text-brand-700">{formatPrice(price, m.common.currency)}</span>
+        {oldPrice !== null && <span className="text-lg text-ink/70 line-through">{formatPrice(oldPrice, m.common.currency)}</span>}
         {percent !== null && (
           <span className="rounded-full bg-coral-500 px-3 py-1 text-sm font-bold text-white">
-            {ar.common.discount.replace("{n}", String(percent))}
+            {m.common.discount.replace("{n}", String(percent))}
           </span>
         )}
       </p>
@@ -82,7 +87,7 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
         <div>
           <p className="mb-2 font-semibold text-brand-900">
             {t.colours}
-            {chosenColour && <span className="ms-2 font-normal text-ink/70">{chosenColour.name_ar}</span>}
+            {chosenColour && <span className="ms-2 font-normal text-ink/70">{localised(m.lang, chosenColour.name_ar, chosenColour.name_en)}</span>}
           </p>
           <ul className="flex flex-wrap gap-2">
             {swatchColours.map((c) => (
@@ -90,7 +95,7 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
                 <button
                   type="button"
                   onClick={() => pickColour(c.id)}
-                  aria-label={c.name_ar}
+                  aria-label={localised(m.lang, c.name_ar, c.name_en)}
                   aria-pressed={c.id === colourId}
                   style={{ backgroundColor: c.hex }}
                   className={`size-10 rounded-full border-2 ${c.id === colourId ? "border-brand-900 ring-2 ring-brand-500" : "border-brand-100"}`}
@@ -170,8 +175,8 @@ export function ProductPurchase({ detail }: { detail: ProductDetail }) {
         className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-brand-100 bg-paper/95 py-3 ps-4 pe-[5.5rem] backdrop-blur md:hidden"
       >
         <div className="min-w-0 flex-1">
-          <p className="font-extrabold text-brand-700">{formatPrice(price)}</p>
-          {oldPrice !== null && <p className="text-xs text-ink/70 line-through">{formatPrice(oldPrice)}</p>}
+          <p className="font-extrabold text-brand-700">{formatPrice(price, m.common.currency)}</p>
+          {oldPrice !== null && <p className="text-xs text-ink/70 line-through">{formatPrice(oldPrice, m.common.currency)}</p>}
         </div>
         <button
           type="button"

@@ -50,6 +50,21 @@ export function ArticleForm({ action, initial }: Props) {
         <span className="mt-1 block text-sm text-ink/60">{t.bodyHint}</span>
       </FormField>
 
+      <section className="space-y-4 rounded-xl border border-brand-100 bg-brand-50/50 p-4" dir="ltr" lang="en">
+        <p className="text-sm text-ink/70" dir="rtl" lang="ar">
+          {t.englishHint}
+        </p>
+        <FormField label={t.titleEn} error={err.title_en}>
+          <input name="title_en" dir="ltr" defaultValue={initial?.title_en ?? ""} maxLength={ARTICLE_MAX.title} className={`${inputClass} text-start`} />
+        </FormField>
+        <FormField label={t.excerptEn} error={err.excerpt_en}>
+          <textarea name="excerpt_en" dir="ltr" rows={2} defaultValue={initial?.excerpt_en ?? ""} maxLength={ARTICLE_MAX.excerpt} className={`${inputClass} text-start`} />
+        </FormField>
+        <FormField label={t.bodyEn} error={err.body_en}>
+          <textarea name="body_en" dir="ltr" rows={8} defaultValue={initial?.body_en ?? ""} maxLength={ARTICLE_MAX.body} className={`${inputClass} text-start leading-8`} />
+        </FormField>
+      </section>
+
       <div>
         <span className="mb-1 block font-semibold text-brand-900">{t.extra}</span>
         <ImageUploader folder="articles" value={images} onChange={(v) => setImages(v.slice(0, ARTICLE_MAX.images))} multiple />

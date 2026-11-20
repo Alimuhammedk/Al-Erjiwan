@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     listColourFamilies(db, only),
   ]);
   return NextResponse.json(
-    { colours: colours.map(({ id, name_ar, code, hex, family, system }) => ({ id, name_ar, code, hex, family, system: system ?? null })), families },
+    { colours: colours.map(({ id, name_ar, name_en, code, hex, family, system }) => ({ id, name_ar, name_en: name_en ?? null, code, hex, family, system: system ?? null })), families },
     { headers },
   );
 }

@@ -17,7 +17,7 @@ const item = {
 test("the cart page shows an empty message with a link to the shop", async ({ page }) => {
   await page.goto("/cart");
   await expect(page.getByText("السلة فارغة")).toBeVisible();
-  await expect(page.getByRole("link", { name: "تابع التسوق" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "متابعة التسوق" }).first()).toBeVisible();
 });
 
 test("the cart page lists saved items, changes quantity and removes them", async ({ page }) => {

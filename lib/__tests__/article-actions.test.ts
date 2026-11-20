@@ -41,7 +41,7 @@ beforeEach(() => {
 describe("saveArticleAction", () => {
   it("creates an article and goes back to the list", async () => {
     await expect(saveArticleAction(null, {}, form(good))).rejects.toThrow("REDIRECT:/admin/articles");
-    expect(db.write).toHaveBeenCalledWith("insert", { title: "كيف تختار اللون", excerpt: null, body: "نص المقال", cover_url: COVER, images: [], is_published: true });
+    expect(db.write).toHaveBeenCalledWith("insert", { title: "كيف تختار اللون", excerpt: null, body: "نص المقال", title_en: null, excerpt_en: null, body_en: null, cover_url: COVER, images: [], is_published: true });
   });
   it("updates by id", async () => {
     await expect(saveArticleAction(ID, {}, form(good))).rejects.toThrow("REDIRECT:/admin/articles");

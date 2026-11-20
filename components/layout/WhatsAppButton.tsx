@@ -1,13 +1,14 @@
-import { ar } from "@/content/ar";
+import { getMessages } from "@/lib/i18n/messages";
 import { whatsappLink } from "@/lib/store-info";
 
-export function WhatsAppButton() {
+export async function WhatsAppButton() {
+  const t = await getMessages();
   return (
     <a
       href={whatsappLink()}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label={ar.common.whatsapp}
+      aria-label={t.common.whatsapp}
       className="fixed bottom-4 end-4 z-50 grid size-14 place-items-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-105"
     >
       <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

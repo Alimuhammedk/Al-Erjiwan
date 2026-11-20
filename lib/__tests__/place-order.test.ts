@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const client = vi.hoisted(() => ({ rpc: vi.fn(), from: vi.fn() }));
-const state = vi.hoisted(() => ({ noClient: false }));
+const state = vi.hoisted(() => ({ noClient: false, lang: undefined as string | undefined }));
 
 vi.mock("@/lib/supabase/server", () => ({ createServerClient: () => (state.noClient ? null : client) }));
+vi.mock("next/headers", () => ({
+  cookies: async () => ({ get: () => (state.lang ? { value: state.lang } : undefined) }),
+}));
 vi.mock("next/navigation", () => ({
   redirect: (url: string) => {
     throw new Error(`REDIRECT:${url}`);
@@ -11,6 +14,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { ar } from "@/content/ar";
+import { en } from "@/content/en";
 import { placeOrderAction } from "../../app/(site)/checkout/actions";
 
 const e = ar.checkout.errors;
@@ -36,6 +40,7 @@ const good = {
 beforeEach(() => {
   vi.clearAllMocks();
   state.noClient = false;
+  state.lang = undefined;
   client.rpc.mockResolvedValue({ data: "ABCD1234", error: null });
 });
 
@@ -96,9 +101,27 @@ describe("placeOrderAction", () => {
     state.noClient = true;
     expect((await placeOrderAction({}, form(good))).error).toBe(e.generic);
     state.noClient = false;
+  state.lang = undefined;
     client.rpc.mockRejectedValue(new Error("network down"));
     expect((await placeOrderAction({}, form(good))).error).toBe(e.generic);
     client.rpc.mockResolvedValue({ data: { weird: true }, error: null });
     expect((await placeOrderAction({}, form(good))).error).toBe(e.generic);
+  });
+});
+
+describe("placeOrderAction in English", () => {
+  it("returns field errors and database messages in English when the customer chose English", async () => {
+    state.lang = "en";
+    const r = await placeOrderAction({}, form({ ...good, customer_name: "", phone: "123" }));
+    expect(r.errors).toMatchObject({ customer_name: en.checkout.errors.name, phone: en.checkout.errors.phone });
+    client.rpc.mockResolvedValue({ data: null, error: { message: "OUT_OF_STOCK:Pentalite" } });
+    expect((await placeOrderAction({}, form(good))).error).toBe("Pentalite is sold out, please change the cart");
+    client.rpc.mockRejectedValue(new Error("network down"));
+    expect((await placeOrderAction({}, form(good))).error).toBe(en.checkout.errors.generic);
+  });
+  it("stays Arabic for any other cookie value", async () => {
+    state.lang = "fr";
+    const r = await placeOrderAction({}, form({ ...good, customer_name: "" }));
+    expect(r.errors?.customer_name).toBe(ar.checkout.errors.name);
   });
 });

@@ -22,7 +22,7 @@ describe("GET /api/colours", () => {
     const res = await call(`?product=${P}&q=أزرق`);
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({
-      colours: [{ id: "1", name_ar: "أزرق", code: "B1", hex: "#0000ff", family: "الأزرق", system: "JW" }],
+      colours: [{ id: "1", name_ar: "أزرق", name_en: "Blue", code: "B1", hex: "#0000ff", family: "الأزرق", system: "JW" }],
       families: ["الأزرق"],
     });
   });

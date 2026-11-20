@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { ar } from "@/content/ar";
+import { getMessages } from "@/lib/i18n/messages";
 import type { OrderSummary } from "@/lib/data/orders";
 import { formatPrice } from "@/lib/format";
 import { customerStatusLabel } from "@/lib/shop/status";
 import { CopyCode } from "./CopyCode";
 
-const t = ar.order;
 
 // What the customer sees right after ordering. Shown by the real page and by the dev-only sample page.
-export function OrderConfirmationView({ code, summary }: { code: string; summary: OrderSummary }) {
+export async function OrderConfirmationView({ code, summary }: { code: string; summary: OrderSummary }) {
+  const m = await getMessages();
+  const t = m.order;
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 space-y-6 px-4 py-10">
       <div className="space-y-3 text-center">
@@ -29,7 +30,7 @@ export function OrderConfirmationView({ code, summary }: { code: string; summary
         <CopyCode code={code} />
         <p className="text-sm text-ink/70">{t.keepNumber}</p>
         <p className="inline-block rounded-full bg-brand-700 px-4 py-1 text-sm font-bold text-white">
-          {t.status}: {customerStatusLabel(summary.status)}
+          {t.status}: {customerStatusLabel(summary.status, m.order.statuses)}
         </p>
       </section>
 
@@ -48,7 +49,7 @@ export function OrderConfirmationView({ code, summary }: { code: string; summary
         </ul>
         <p className="flex justify-between border-t border-brand-100 pt-3 text-lg">
           <span className="font-bold text-brand-900">{t.total}</span>
-          <span className="font-extrabold text-brand-700">{formatPrice(summary.total)}</span>
+          <span className="font-extrabold text-brand-700">{formatPrice(summary.total, m.common.currency)}</span>
         </p>
       </section>
 

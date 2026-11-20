@@ -11,7 +11,7 @@ export function withFirstImage(row: Row): ProductWithImage {
 
 async function activeProducts(filter: "is_featured" | "sale_price"): Promise<ProductWithImage[]> {
   try {
-    const db = createServerClient();
+    const db = createServerClient({ cached: true });
     if (!db) return [];
     let query = db
       .from("products")

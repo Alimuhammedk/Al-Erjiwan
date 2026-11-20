@@ -1,7 +1,8 @@
 import { ar } from "@/content/ar";
+import type { Messages } from "@/lib/i18n/types";
 import type { Result } from "@/lib/admin/types";
 
-const e = ar.checkout.errors;
+type Errors = Messages["checkout"]["errors"];
 
 export type CheckoutInput = {
   customer_name: string;
@@ -29,7 +30,8 @@ export function normalisePhone(input: string): string | null {
 type Raw = Record<string, FormDataEntryValue | null | undefined>;
 const str = (v: Raw[string]) => (typeof v === "string" ? v.trim() : "");
 
-export function validateCheckout(raw: Raw): Result<CheckoutInput> {
+// `e` holds the error words of the language the customer is using (Arabic by default).
+export function validateCheckout(raw: Raw, e: Errors = ar.checkout.errors): Result<CheckoutInput> {
   const errors: Record<string, string> = {};
 
   const customer_name = str(raw.customer_name);

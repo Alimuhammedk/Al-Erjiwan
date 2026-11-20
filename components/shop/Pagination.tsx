@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ar } from "@/content/ar";
+import { getMessages } from "@/lib/i18n/messages";
 import { PAGE_SIZE, type ShopQuery } from "@/lib/shop/query";
 
 function href(q: ShopQuery, page: number): string {
@@ -15,15 +15,16 @@ function href(q: ShopQuery, page: number): string {
   return s ? `/shop?${s}` : "/shop";
 }
 
-export function Pagination({ query, total }: { query: ShopQuery; total: number }) {
+export async function Pagination({ query, total }: { query: ShopQuery; total: number }) {
+  const m = await getMessages();
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   if (pages <= 1) return null;
   const link = "rounded-full border-2 border-brand-700 px-5 py-2 font-bold text-brand-700 hover:bg-brand-50";
   return (
-    <nav className="flex items-center justify-center gap-4 pt-6" aria-label={ar.shop.title}>
+    <nav className="flex items-center justify-center gap-4 pt-6" aria-label={m.shop.title}>
       {query.page > 1 && (
         <Link href={href(query, query.page - 1)} className={link}>
-          {ar.shop.prev}
+          {m.shop.prev}
         </Link>
       )}
       <span className="text-sm text-ink/70">
@@ -31,7 +32,7 @@ export function Pagination({ query, total }: { query: ShopQuery; total: number }
       </span>
       {query.page < pages && (
         <Link href={href(query, query.page + 1)} className={link}>
-          {ar.shop.next}
+          {m.shop.next}
         </Link>
       )}
     </nav>

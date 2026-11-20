@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ar } from "@/content/ar";
+import { en } from "@/content/en";
 import { cartToOrderItems, orderErrorMessage, parseOrderItems } from "../shop/orders";
 import { normalisePhone, validateCheckout } from "../shop/checkout";
 import type { CartItem } from "../cart/cart";
@@ -115,5 +116,17 @@ describe("orderErrorMessage", () => {
   it("falls back to a generic message for anything unknown, never raw database text", () => {
     expect(orderErrorMessage("relation \"orders\" does not exist")).toBe(e.generic);
     expect(orderErrorMessage("")).toBe(e.generic);
+  });
+});
+
+describe("checkout messages in English", () => {
+  it("validateCheckout names each problem in English when given the English words", () => {
+    const r = validateCheckout({ customer_name: "", phone: "1", governorate: "", city: "", landmark: "" }, en.checkout.errors);
+    expect(r).toEqual({ ok: false, errors: { customer_name: en.checkout.errors.name, phone: en.checkout.errors.phone, governorate: en.checkout.errors.governorate, city: en.checkout.errors.city, landmark: en.checkout.errors.landmark } });
+  });
+  it("order errors and cart errors read in English", () => {
+    expect(orderErrorMessage("MIN_ORDER", en.checkout.errors)).toBe(en.checkout.errors.minOrder);
+    expect(orderErrorMessage("SIZE_REQUIRED:Paint", en.checkout.errors)).toBe("Choose a size for Paint");
+    expect(parseOrderItems("[]", en.checkout.errors)).toEqual({ ok: false, errors: { items: en.checkout.errors.emptyCart } });
   });
 });

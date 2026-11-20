@@ -1,8 +1,9 @@
 import { ar } from "@/content/ar";
+import type { Messages } from "@/lib/i18n/types";
 import type { Result } from "@/lib/admin/types";
 import type { CartItem } from "@/lib/cart/cart";
 
-const e = ar.checkout.errors;
+type Errors = Messages["checkout"]["errors"];
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_LINES = 50;
 
@@ -28,7 +29,7 @@ export function cartToOrderItems(items: CartItem[]): OrderItem[] {
 
 // Reads the cart lines posted by the checkout form. Anything unexpected is refused; unknown fields (such as a
 // price a tampered browser might add) are dropped.
-export function parseOrderItems(json: string): Result<OrderItem[]> {
+export function parseOrderItems(json: string, e: Errors = ar.checkout.errors): Result<OrderItem[]> {
   const fail = (message: string): Result<OrderItem[]> => ({ ok: false, errors: { items: message } });
   let data: unknown;
   try {
@@ -58,9 +59,9 @@ export function parseOrderItems(json: string): Result<OrderItem[]> {
   return { ok: true, value: items };
 }
 
-// Turns an error code from the database into an Arabic message for the customer. Raw database text never
+// Turns an error code from the database into a message in the customer's language. Raw database text never
 // reaches the screen.
-export function orderErrorMessage(message: string): string {
+export function orderErrorMessage(message: string, e: Errors = ar.checkout.errors): string {
   const m = /^([A-Z_]+)(?::(.*))?$/.exec(message.trim());
   const name = m?.[2] ?? "";
   switch (m?.[1]) {

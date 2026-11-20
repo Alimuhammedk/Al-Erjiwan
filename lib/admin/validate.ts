@@ -53,6 +53,7 @@ export function validateProduct(raw: Raw): Result<ProductInput> {
   const name_ar = text(raw, "name_ar", 200, errors, true) ?? "";
   const name_en = text(raw, "name_en", 200, errors);
   const description = text(raw, "description", 5000, errors);
+  const description_en = text(raw, "description_en", 5000, errors);
   const brand = text(raw, "brand", 100, errors);
   const category_id = uuidOrNull(raw, "category_id", errors);
 
@@ -72,6 +73,7 @@ export function validateProduct(raw: Raw): Result<ProductInput> {
     name_ar,
     name_en,
     description,
+    description_en,
     category_id,
     brand,
     base_price: basePrice ?? 0,
@@ -121,6 +123,7 @@ export function validateBanner(raw: Raw): Result<BannerInput> {
   const errors: Errors = {};
   const image_url = imageUrl(raw, "image_url", errors, true) ?? "";
   const title = text(raw, "title", 200, errors);
+  const title_en = text(raw, "title_en", 200, errors);
   const sort_order = whole(raw, "sort_order", errors, e.invalidStock);
 
   const link = str(raw.link);
@@ -130,6 +133,7 @@ export function validateBanner(raw: Raw): Result<BannerInput> {
   return done(errors, {
     image_url,
     title,
+    title_en,
     link: link || null,
     sort_order,
     is_active: flag(raw.is_active),

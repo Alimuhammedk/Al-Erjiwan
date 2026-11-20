@@ -1,26 +1,31 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ar } from "@/content/ar";
-import { paragraphs, type Article } from "@/lib/articles";
+import { getMessages } from "@/lib/i18n/messages";
+import { articleIn, paragraphs, type Article } from "@/lib/articles";
 import { formatDate } from "@/lib/format";
 
-const t = ar.articles;
 
 // One article, full page: the cover, the title and date, the text in paragraphs, and any extra pictures.
 // Used by the real page and by the dev-only sample page.
-export function ArticleView({ article }: { article: Article }) {
+export async function ArticleView({ article }: { article: Article }) {
+  const m = await getMessages();
+  const text = articleIn(article, m.lang);
+  const t = m.articles;
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-8" data-testid="article-view">
       <Link href="/" className="inline-flex min-h-11 items-center font-bold text-brand-700">
-        → {t.back}
+        <span aria-hidden="true" className="inline-block ltr:rotate-180">
+          →
+        </span>{" "}
+        {t.back}
       </Link>
 
       <header className="space-y-3">
         <time dateTime={article.published_at} className="inline-block rounded-full bg-sun-300 px-3 py-1 text-xs font-extrabold text-brand-900">
-          {formatDate(article.published_at)}
+          {formatDate(article.published_at, m.lang)}
         </time>
-        <h1 className="break-words text-3xl font-extrabold leading-[1.5] text-brand-900 sm:text-4xl">{article.title}</h1>
-        {article.excerpt && <p className="text-lg leading-9 text-ink/75">{article.excerpt}</p>}
+        <h1 className="break-words text-3xl font-extrabold leading-[1.5] text-brand-900 sm:text-4xl">{text.title}</h1>
+        {text.excerpt && <p className="text-lg leading-9 text-ink/75">{text.excerpt}</p>}
       </header>
 
       <div className="relative aspect-[16/10] overflow-hidden rounded-3xl bg-brand-50">
@@ -28,7 +33,7 @@ export function ArticleView({ article }: { article: Article }) {
       </div>
 
       <div className="space-y-5 text-lg leading-10 text-ink/90">
-        {paragraphs(article.body).map((p, n) => (
+        {paragraphs(text.body).map((p, n) => (
           <p key={n} className="whitespace-pre-line break-words">
             {p}
           </p>

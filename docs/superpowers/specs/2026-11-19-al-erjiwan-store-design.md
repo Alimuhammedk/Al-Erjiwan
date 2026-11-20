@@ -153,3 +153,10 @@ These are business choices only Ali can make. They do not block phases 0–3, bu
 - On mixed-paint products a catalogue picker replaces the typed colour box, and a typed code or name is still allowed when the colour is not listed.
 - About 60 invented sample shades are used until Ali supplies the real catalogue; one SQL removes them.
 - Colours are searched in the database, never loaded whole into a page. The catalogue can be loaded by CSV (system, code, name, hex, family); importing again updates instead of duplicating.
+
+## 18. Phase 7 decisions (languages, pages, SEO)
+- The customer site gets an Arabic / English switch (Arabic is the default, English is left-to-right). The admin stays Arabic, and WhatsApp messages Ali sends customers stay Arabic.
+- Products, categories and colours use their existing English name boxes (Arabic shown when empty); articles, banners, product descriptions and pages get optional English boxes.
+- About, FAQ, Return policy and Privacy pages are edited in the admin in both languages. The About page shows a small store map from a Google Maps link pasted in the admin.
+- Product web addresses stay as they are. SEO, speed, full mobile testing and a full proofread are part of this phase.
+- Not in this phase: email alerts for new orders, the bulk price tool, the project gallery.

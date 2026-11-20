@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshCatalog } from "@/lib/cache";
 import { redirect } from "next/navigation";
 import { ar } from "@/content/ar";
 import { prepareProductSave, replaceProductImages, syncProductColours, syncVariants } from "@/lib/admin/product-save";
@@ -31,6 +32,7 @@ export async function saveProductAction(_prev: ProductSaveState, formData: FormD
   const sizesError = await syncVariants(db, id, variants);
   const coloursError = await syncProductColours(db, id, colours);
   if (imagesError || sizesError || coloursError) return { error: ar.admin.errors.partialSave, savedId: id };
+  refreshCatalog();
   redirect("/admin/products");
 }
 
@@ -39,6 +41,7 @@ export async function toggleProductActiveAction(id: string, active: boolean): Pr
   const db = await createAuthClient();
   const { error } = await db.from("products").update({ is_active: active }).eq("id", id);
   if (error) throw new Error(ar.admin.errors.saveFailed);
+  refreshCatalog();
 }
 
 // Orders that contain the product are kept (database rule sets their product to empty).
@@ -47,5 +50,6 @@ export async function deleteProductAction(id: string): Promise<void> {
   const db = await createAuthClient();
   const { error } = await db.from("products").delete().eq("id", id);
   if (error) throw new Error(ar.admin.errors.saveFailed);
+  refreshCatalog();
   redirect("/admin/products");
 }

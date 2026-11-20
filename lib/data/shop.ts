@@ -7,7 +7,7 @@ import { withFirstImage, type Row } from "./products";
 // per size, so Ali enters the lowest size price as the base price (hint in the admin form).
 export async function getShopProducts(q: ShopQuery): Promise<{ products: ProductWithImage[]; total: number }> {
   try {
-    const db = createServerClient();
+    const db = createServerClient({ cached: true });
     if (!db) return { products: [], total: 0 };
 
     let query = db
@@ -37,20 +37,20 @@ export async function getShopProducts(q: ShopQuery): Promise<{ products: Product
 }
 
 export async function getFilterOptions(): Promise<{
-  categories: { id: string; name_ar: string }[];
+  categories: { id: string; name_ar: string; name_en: string | null }[];
   brands: string[];
 }> {
   try {
-    const db = createServerClient();
+    const db = createServerClient({ cached: true });
     if (!db) return { categories: [], brands: [] };
     const [cats, brands] = await Promise.all([
-      db.from("categories").select("id, name_ar").order("sort_order"),
+      db.from("categories").select("id, name_ar, name_en").order("sort_order"),
       db.from("products").select("brand").eq("is_active", true).not("brand", "is", null),
     ]);
     if (cats.error || brands.error) return { categories: [], brands: [] };
     const names = (brands.data as { brand: string }[] | null) ?? [];
     return {
-      categories: (cats.data as { id: string; name_ar: string }[] | null) ?? [],
+      categories: (cats.data as { id: string; name_ar: string; name_en: string | null }[] | null) ?? [],
       brands: [...new Set(names.map((b) => b.brand))].sort(),
     };
   } catch {
@@ -71,7 +71,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function getProductDetail(id: string): Promise<ProductDetail | null> {
   if (!UUID.test(id)) return null;
   try {
-    const db = createServerClient();
+    const db = createServerClient({ cached: true });
     if (!db) return null;
 
     const { data: product, error } = await db

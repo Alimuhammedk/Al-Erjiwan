@@ -1,20 +1,19 @@
-import { ar } from "@/content/ar";
-
+// The words come in as props so both the server header and the client menu can use it.
 // Plain GET form to the shop: works without JavaScript, and the shop page does the searching.
-export function SearchForm({ className = "" }: { className?: string }) {
+export function SearchForm({ className = "", searchSite, search }: { className?: string; searchSite: string; search: string }) {
   return (
     <form role="search" action="/shop" method="get" className={`relative ${className}`}>
       <input
         type="search"
         name="q"
         maxLength={60}
-        aria-label={ar.common.searchSite}
-        placeholder={ar.common.searchSite}
+        aria-label={searchSite}
+        placeholder={searchSite}
         className="h-11 w-full rounded-full border border-brand-100 bg-brand-50 ps-4 pe-12 text-sm focus:border-brand-500 focus:bg-paper focus:outline-none"
       />
       <button
         type="submit"
-        aria-label={ar.common.search}
+        aria-label={search}
         className="absolute end-0 top-0 grid size-11 place-items-center rounded-full text-brand-700 hover:text-coral-500"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">

@@ -1,10 +1,11 @@
+import { localised } from "@/lib/i18n/lang";
 import Link from "next/link";
-import { ar } from "@/content/ar";
+import { getMessages } from "@/lib/i18n/messages";
 import type { ShopQuery } from "@/lib/shop/query";
 
 type Props = {
   query: ShopQuery;
-  categories: { id: string; name_ar: string }[];
+  categories: { id: string; name_ar: string; name_en?: string | null }[];
   brands: string[];
 };
 
@@ -23,8 +24,9 @@ function Select({ name, label, value, children }: { name: string; label: string;
 }
 
 // Plain GET form: filters live in the page address, so it works without JavaScript and can be shared.
-export function ShopFilters({ query, categories, brands }: Props) {
-  const t = ar.shop;
+export async function ShopFilters({ query, categories, brands }: Props) {
+  const m = await getMessages();
+  const t = m.shop;
   return (
     <form method="get" className="space-y-4 rounded-2xl border border-brand-100 bg-paper p-4">
       <input
@@ -41,7 +43,7 @@ export function ShopFilters({ query, categories, brands }: Props) {
           <option value="">{t.all}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name_ar}
+              {localised(m.lang, c.name_ar, c.name_en)}
             </option>
           ))}
         </Select>

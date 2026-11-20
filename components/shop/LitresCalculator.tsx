@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { ar } from "@/content/ar";
+import { useMessages } from "@/lib/i18n/provider";
 import { estimateLitres } from "@/lib/shop/product";
 
 // Accepts Arabic digits and the Arabic decimal mark.
@@ -18,7 +18,8 @@ const input =
   "w-full rounded-xl border border-brand-100 bg-paper px-3 py-2.5 focus:border-brand-500 focus:outline-none";
 
 export function LitresCalculator() {
-  const t = ar.product;
+  const m = useMessages();
+  const t = m.product;
   const reduceMotion = useReducedMotion();
   const resultRef = useRef<HTMLDivElement>(null);
   const [v, setV] = useState({ length: "", width: "", height: "", doors: "1", windows: "1", coats: "2" });

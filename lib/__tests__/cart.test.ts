@@ -95,3 +95,19 @@ describe("parseCart", () => {
     expect(parseCart(JSON.stringify([neg, str]))).toEqual([]);
   });
 });
+
+describe("English names in the cart", () => {
+  const stored = (extra: object) =>
+    JSON.stringify([{ product_id: "p", variant_id: null, colour_id: null, colour_note: null, name: "دهان", size_label: null, image_url: null, unit_price: 1000, quantity: 1, ...extra }]);
+  it("keeps the English names that were saved", () => {
+    const [item] = parseCart(stored({ name_en: "Paint", colour_name_en: "Sky blue" }));
+    expect(item).toMatchObject({ name_en: "Paint", colour_name_en: "Sky blue" });
+  });
+  it("older carts without them still load, and wrong types are dropped", () => {
+    const [old] = parseCart(stored({}));
+    expect(old).not.toHaveProperty("name_en");
+    const [bad] = parseCart(stored({ name_en: 5, colour_name_en: {} }));
+    expect(bad).not.toHaveProperty("name_en");
+    expect(bad).not.toHaveProperty("colour_name_en");
+  });
+});

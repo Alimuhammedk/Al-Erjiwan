@@ -1,13 +1,16 @@
 "use client";
 
+import { localised } from "@/lib/i18n/lang";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { ar } from "@/content/ar";
+import { useMessages } from "@/lib/i18n/provider";
 import { useCart } from "@/lib/cart/CartProvider";
 
 // Pop-up that confirms an add to cart. It disappears by itself after 5 seconds, or when closed.
 export function CartToast() {
+  const m = useMessages();
   const { lastAdded, dismissAdded } = useCart();
   const pathname = usePathname();
 
@@ -28,13 +31,13 @@ export function CartToast() {
         <path d="M5 12.5l4.5 4.5L19 7.5" />
       </svg>
       <div className="min-w-0 flex-1">
-        <p className="font-bold">{ar.product.added}</p>
-        <p className="truncate text-sm text-white/80">{lastAdded.name}</p>
+        <p className="font-bold">{m.product.added}</p>
+        <p className="truncate text-sm text-white/80">{localised(m.lang, lastAdded.name, lastAdded.name_en)}</p>
       </div>
       <Link href="/cart" onClick={dismissAdded} className="shrink-0 rounded-full bg-sun-300 px-4 py-2 font-extrabold text-brand-900">
-        {ar.common.viewCart}
+        {m.common.viewCart}
       </Link>
-      <button type="button" onClick={dismissAdded} aria-label={ar.common.close} className="grid size-9 shrink-0 place-items-center rounded-full text-white/80 hover:bg-white/10">
+      <button type="button" onClick={dismissAdded} aria-label={m.common.close} className="grid size-9 shrink-0 place-items-center rounded-full text-white/80 hover:bg-white/10">
         ×
       </button>
     </div>

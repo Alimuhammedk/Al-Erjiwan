@@ -8,6 +8,8 @@ export type CartItem = {
   colour_name: string | null; // shown in the cart; checkout re-reads the colour from the database
   colour_note: string | null;
   name: string;
+  name_en?: string | null; // for the English site; the Arabic name is shown when it is missing
+  colour_name_en?: string | null;
   size_label: string | null;
   unit_price: number;
   image_url: string | null;
@@ -77,6 +79,8 @@ export function parseCart(raw: string | null): CartItem[] {
       variant_id: d.variant_id,
       colour_id: d.colour_id,
       colour_name: typeof d.colour_name === "string" ? d.colour_name : null, // older saved carts have none
+      ...(typeof d.name_en === "string" ? { name_en: d.name_en } : {}),
+      ...(typeof d.colour_name_en === "string" ? { colour_name_en: d.colour_name_en } : {}),
       colour_note: d.colour_note,
       name: d.name,
       size_label: d.size_label,

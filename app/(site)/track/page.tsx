@@ -1,24 +1,28 @@
 import type { Metadata } from "next";
 import { inputClass } from "@/components/admin/FormField";
-import { ar } from "@/content/ar";
+import { getMessages } from "@/lib/i18n/messages";
 import { trackOrder } from "@/lib/data/orders";
 import { formatDateTime, formatPrice } from "@/lib/format";
 import { customerStatusLabel, timeline } from "@/lib/shop/status";
 
-export const metadata: Metadata = { title: `${ar.track.title} | ${ar.siteName}`, robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  const m = await getMessages();
+  return { title: `${m.track.title} | ${m.siteName}`, robots: { index: false } };
+}
 export const dynamic = "force-dynamic";
 
 type Params = Record<string, string | string[] | undefined>;
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 
 export default async function TrackPage({ searchParams }: { searchParams: Promise<Params> }) {
+  const m = await getMessages();
   const params = await searchParams;
   const code = first(params.code).slice(0, 20);
   const phone = first(params.phone).slice(0, 30);
   const searched = code.trim() !== "" && phone.trim() !== "";
   const order = searched ? await trackOrder(code, phone) : null;
-  const t = ar.track;
-  const line = order ? timeline(order.status) : null;
+  const t = m.track;
+  const line = order ? timeline(order.status, m.order.statuses) : null;
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 space-y-6 px-4 py-10">
@@ -48,7 +52,7 @@ export default async function TrackPage({ searchParams }: { searchParams: Promis
       {order && line && (
         <section className="space-y-5 rounded-2xl border border-brand-100 bg-paper p-5" aria-live="polite">
           {line.ended ? (
-            <p className="inline-block rounded-full bg-coral-500 px-5 py-2 text-lg font-extrabold text-white">{customerStatusLabel(line.ended)}</p>
+            <p className="inline-block rounded-full bg-coral-500 px-5 py-2 text-lg font-extrabold text-white">{customerStatusLabel(line.ended, m.order.statuses)}</p>
           ) : (
             <ol className="grid grid-cols-4 gap-2 text-center">
               {line.steps.map((s) => (
@@ -69,11 +73,11 @@ export default async function TrackPage({ searchParams }: { searchParams: Promis
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between gap-3">
               <dt className="text-ink/70">{t.placed}</dt>
-              <dd className="font-semibold">{formatDateTime(order.created_at)}</dd>
+              <dd className="font-semibold">{formatDateTime(order.created_at, m.lang)}</dd>
             </div>
             <div className="flex justify-between gap-3">
               <dt className="text-ink/70">{t.updated}</dt>
-              <dd className="font-semibold">{formatDateTime(order.updated_at)}</dd>
+              <dd className="font-semibold">{formatDateTime(order.updated_at, m.lang)}</dd>
             </div>
             {order.delivery_company && (
               <div className="flex justify-between gap-3">
@@ -95,8 +99,8 @@ export default async function TrackPage({ searchParams }: { searchParams: Promis
             ))}
           </ul>
           <p className="flex justify-between border-t border-brand-100 pt-3 text-lg">
-            <span className="font-bold text-brand-900">{ar.order.total}</span>
-            <span className="font-extrabold text-brand-700">{formatPrice(order.total)}</span>
+            <span className="font-bold text-brand-900">{m.order.total}</span>
+            <span className="font-extrabold text-brand-700">{formatPrice(order.total, m.common.currency)}</span>
           </p>
         </section>
       )}

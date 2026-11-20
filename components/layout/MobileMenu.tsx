@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ar } from "@/content/ar";
+import { useMessages } from "@/lib/i18n/provider";
 import { isCurrent } from "@/lib/nav";
+import { LanguageSwitch } from "./LanguageSwitch";
 import { SearchForm } from "./SearchForm";
 
 type NavLink = { key: string; label: string; href: string };
 
 export function MobileMenu({ links }: { links: NavLink[] }) {
+  const t = useMessages();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -26,7 +28,7 @@ export function MobileMenu({ links }: { links: NavLink[] }) {
         type="button"
         aria-expanded={open}
         aria-controls="mobile-menu"
-        aria-label={open ? ar.common.closeMenu : ar.common.menu}
+        aria-label={open ? t.common.closeMenu : t.common.menu}
         onClick={() => setOpen((v) => !v)}
         className="grid size-11 place-items-center rounded-full text-brand-900 hover:bg-brand-50"
       >
@@ -36,7 +38,7 @@ export function MobileMenu({ links }: { links: NavLink[] }) {
       </button>
       {open && (
         <nav id="mobile-menu" className="absolute inset-x-0 top-full border-b border-brand-100 bg-paper shadow-lg">
-          <SearchForm className="px-4 pt-3" />
+          <SearchForm className="px-4 pt-3" searchSite={t.common.searchSite} search={t.common.search} />
           <ul className="flex flex-col px-4 py-2">
             {links.map((l) => (
               <li key={l.key}>
@@ -51,6 +53,9 @@ export function MobileMenu({ links }: { links: NavLink[] }) {
               </li>
             ))}
           </ul>
+          <div className="px-4 pb-3">
+            <LanguageSwitch />
+          </div>
         </nav>
       )}
     </div>

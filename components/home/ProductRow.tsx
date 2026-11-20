@@ -3,10 +3,10 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { SideScroller } from "@/components/ui/SideScroller";
 import { ProductCard } from "@/components/ui/ProductCard";
-import { ar } from "@/content/ar";
+import { getMessages } from "@/lib/i18n/messages";
 import type { ProductWithImage } from "@/types/db";
 
-export function ProductRow({
+export async function ProductRow({
   title,
   products,
   emptyMessage,
@@ -17,13 +17,14 @@ export function ProductRow({
   emptyMessage: string;
   href?: string;
 }) {
+  const m = await getMessages();
   return (
     <section className="mx-auto w-full max-w-6xl px-4 pt-12">
       <div className="mb-5 flex items-center justify-between gap-4">
         <h2 className="text-2xl font-extrabold text-brand-900">{title}</h2>
         {products.length > 0 && (
           <Link href={href} className="inline-flex min-h-11 items-center font-bold text-brand-700 hover:underline">
-            {ar.common.viewAll}
+            {m.common.viewAll}
           </Link>
         )}
       </div>

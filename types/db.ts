@@ -3,6 +3,7 @@ export type Banner = {
   id: string;
   image_url: string;
   title: string | null;
+  title_en?: string | null;
   link: string | null;
   sort_order: number;
   is_active: boolean;
@@ -21,6 +22,7 @@ export type Product = {
   name_ar: string;
   name_en: string | null;
   description: string | null;
+  description_en?: string | null;
   category_id: string | null;
   brand: string | null;
   base_price: number;
