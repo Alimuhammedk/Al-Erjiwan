@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshCatalog } from "@/lib/cache";
 import { redirect } from "next/navigation";
 import { ar } from "@/content/ar";
 import type { ActionState } from "@/lib/admin/types";
@@ -17,5 +18,6 @@ export async function savePageAction(slug: string, _prev: ActionState, formData:
   const db = await createAuthClient();
   const { error } = await db.from("site_pages").update(result.value).eq("slug", slug);
   if (error) return { error: ar.admin.errors.saveFailed };
+  refreshCatalog();
   redirect("/admin/pages");
 }

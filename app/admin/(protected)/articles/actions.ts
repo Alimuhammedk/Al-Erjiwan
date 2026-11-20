@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshCatalog } from "@/lib/cache";
 import { redirect } from "next/navigation";
 import { ar } from "@/content/ar";
 import type { ActionState } from "@/lib/admin/types";
@@ -20,6 +21,7 @@ export async function saveArticleAction(id: string | null, _prev: ActionState, f
   const db = await createAuthClient();
   const { error } = await (id ? db.from("articles").update(result.value).eq("id", id) : db.from("articles").insert(result.value));
   if (error) return failed;
+  refreshCatalog();
   redirect("/admin/articles");
 }
 
@@ -30,6 +32,7 @@ export async function toggleArticleAction(id: string, published: boolean): Promi
   const db = await createAuthClient();
   const { error } = await db.from("articles").update({ is_published: published }).eq("id", id);
   if (error) throw new Error(ar.admin.errors.saveFailed);
+  refreshCatalog();
   redirect("/admin/articles");
 }
 
@@ -39,5 +42,6 @@ export async function deleteArticleAction(id: string): Promise<void> {
   const db = await createAuthClient();
   const { error } = await db.from("articles").delete().eq("id", id);
   if (error) throw new Error(ar.admin.errors.saveFailed);
+  refreshCatalog();
   redirect("/admin/articles");
 }

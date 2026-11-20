@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshCatalog } from "@/lib/cache";
 import { redirect } from "next/navigation";
 import { ar } from "@/content/ar";
 import type { ActionState } from "@/lib/admin/types";
@@ -23,6 +24,7 @@ export async function saveColourAction(id: string | null, _prev: ActionState, fo
   const db = await createAuthClient();
   const { error } = await (id ? db.from("colours").update(result.value).eq("id", id) : db.from("colours").insert(result.value));
   if (error) return error.message.includes("colours_system_code_key") ? { errors: { code: t.codeTaken } } : failed;
+  refreshCatalog();
   redirect("/admin/colours");
 }
 
@@ -33,6 +35,7 @@ export async function deleteColourAction(id: string): Promise<void> {
   const db = await createAuthClient();
   const { error } = await db.from("colours").delete().eq("id", id);
   if (error) throw new Error(ar.admin.errors.saveFailed);
+  refreshCatalog();
   redirect("/admin/colours");
 }
 

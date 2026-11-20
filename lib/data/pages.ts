@@ -7,7 +7,7 @@ const COLUMNS = "slug, title_ar, title_en, body_ar, body_en, map_url, updated_at
 export async function getPage(slug: string): Promise<SitePage | null> {
   if (!isPageSlug(slug)) return null;
   try {
-    const db = createServerClient();
+    const db = createServerClient({ cached: true });
     if (!db) return null;
     const { data, error } = await db.from("site_pages").select(COLUMNS).eq("slug", slug).maybeSingle();
     return error ? null : ((data as SitePage | null) ?? null);

@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshCatalog } from "@/lib/cache";
 import { redirect } from "next/navigation";
 import { getMessages } from "@/lib/i18n/messages";
 import type { ActionState } from "@/lib/admin/types";
@@ -41,6 +42,7 @@ export async function placeOrderAction(_prev: ActionState, formData: FormData): 
     return { error: e.generic };
   }
   if (typeof code !== "string") return { error: e.generic };
+  refreshCatalog(); // the sale lowered stock
 
   redirect(`/order/${code}`);
 }

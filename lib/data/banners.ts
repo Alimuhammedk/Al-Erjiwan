@@ -3,7 +3,7 @@ import type { Banner } from "@/types/db";
 
 export async function getBanners(): Promise<Banner[]> {
   try {
-    const db = createServerClient();
+    const db = createServerClient({ cached: true });
     if (!db) return [];
     const { data, error } = await db
       .from("banners")

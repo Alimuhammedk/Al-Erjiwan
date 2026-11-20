@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshCatalog } from "@/lib/cache";
 import { redirect } from "next/navigation";
 import { ar } from "@/content/ar";
 import type { ActionState } from "@/lib/admin/types";
@@ -21,6 +22,7 @@ export async function saveCategoryAction(
     ? db.from("categories").update(result.value).eq("id", id)
     : db.from("categories").insert(result.value));
   if (error) return { error: ar.admin.errors.saveFailed };
+  refreshCatalog();
   redirect("/admin/categories");
 }
 
@@ -30,5 +32,6 @@ export async function deleteCategoryAction(id: string): Promise<void> {
   const db = await createAuthClient();
   const { error } = await db.from("categories").delete().eq("id", id);
   if (error) throw new Error(ar.admin.errors.saveFailed);
+  refreshCatalog();
   redirect("/admin/categories");
 }

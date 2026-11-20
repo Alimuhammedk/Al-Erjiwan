@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshCatalog } from "@/lib/cache";
 import { ar } from "@/content/ar";
 import type { ActionState } from "@/lib/admin/types";
 import { parseAmount, planStockChange } from "@/lib/admin/stock";
@@ -41,7 +42,10 @@ export async function adjustStockAction(_prev: ActionState, formData: FormData):
     p_reason: plan.reason,
     p_note: plan.note,
   });
-  if (!error) return {};
+  if (!error) {
+    refreshCatalog();
+    return {};
+  }
   return error.message.includes("NEGATIVE_STOCK") ? { errors: { amount: t.notEnough } } : failed;
 }
 

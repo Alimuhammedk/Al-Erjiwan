@@ -7,7 +7,7 @@ export const HOME_ARTICLES = 8;
 // The newest published articles for the homepage. Any failure gives an empty list (the section then hides itself).
 export async function getHomeArticles(limit = HOME_ARTICLES): Promise<Article[]> {
   try {
-    const db = createServerClient();
+    const db = createServerClient({ cached: true });
     if (!db) return [];
     const { data, error } = await db
       .from("articles")
@@ -25,7 +25,7 @@ export async function getHomeArticles(limit = HOME_ARTICLES): Promise<Article[]>
 export async function getArticle(id: string): Promise<Article | null> {
   if (!UUID.test(id)) return null;
   try {
-    const db = createServerClient();
+    const db = createServerClient({ cached: true });
     if (!db) return null;
     const { data, error } = await db
       .from("articles")
