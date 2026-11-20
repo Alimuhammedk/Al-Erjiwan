@@ -1,11 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   customerWhatsAppUrl,
-  deliveryMessage,
-  deliveryWhatsAppUrl,
   internationalPhone,
   otherStatuses,
-  costDifference,
   fillTemplate,
   DEFAULT_TEMPLATES,
   type AdminOrder,
@@ -25,10 +22,6 @@ const order: AdminOrder = {
   delivery_fee: 5000,
   total: 123000,
   status: "new",
-  delivery_company: null,
-  delivery_company_id: null,
-  delivery_cost: null,
-  delivery_notes: null,
   created_at: "2026-11-20T10:00:00Z",
   updated_at: "2026-11-20T10:00:00Z",
   items: [
@@ -50,17 +43,6 @@ describe("otherStatuses", () => {
   });
 });
 
-describe("costDifference", () => {
-  it("is what the customer paid for delivery minus what the company charges", () => {
-    expect(costDifference(5000, 4000)).toBe(1000);
-    expect(costDifference(5000, 6000)).toBe(-1000);
-    expect(costDifference(0, 0)).toBe(0);
-  });
-  it("is null when the company has no price", () => {
-    expect(costDifference(5000, null)).toBeNull();
-  });
-});
-
 describe("internationalPhone", () => {
   it("turns 07... into the form wa.me wants", () => {
     expect(internationalPhone("07701234567")).toBe("9647701234567");
@@ -77,53 +59,11 @@ describe("customerWhatsAppUrl", () => {
       expect(text, part).toContain(part);
     }
   });
-  it("the update message gives the status the customer sees, and the company when there is one", () => {
-    const text = decode(customerWhatsAppUrl({ ...order, status: "shipped", delivery_company: "شركة النور" }, "update"));
+  it("the update message gives the status the customer sees", () => {
+    const text = decode(customerWhatsAppUrl({ ...order, status: "shipped" }, "update"));
     expect(text).toContain("ABCD1234");
-    expect(text).toContain("مع شركة التوصيل");
-    expect(text).toContain("شركة النور");
-    expect(decode(customerWhatsAppUrl(order, "update"))).not.toContain("شركة التوصيل:");
-  });
-});
-
-describe("deliveryMessage", () => {
-  const text = deliveryMessage(order);
-  it("has everything a delivery company needs", () => {
-    for (const part of ["ABCD1234", "علي حسين", "07701234567", "بابل", "الكفل", "حي الجامعة، شارع 5", "قرب الجامع الكبير", "اتصل قبل الوصول"]) {
-      expect(text, part).toContain(part);
-    }
-  });
-  it("lists every item with size and colour name, code or typed colour", () => {
-    expect(text).toContain("بنتلايت داخلي (4 لتر) كريمي JW-102 × 2");
-    expect(text).toContain("فرشاة طلاء × 1");
-    expect(text).toContain("دهان مخلوط (1 لتر) ٤٢٠ × 1");
-  });
-  it("states the exact amount to collect, including delivery", () => {
-    expect(text).toContain("المبلغ المطلوب تحصيله من الزبون: 123,000 د.ع");
-    expect(text).toContain("يشمل التوصيل 5,000 د.ع");
-  });
-  it("includes the owner's delivery notes", () => {
-    expect(deliveryMessage({ ...order, delivery_notes: "الدفع للسائق فقط" })).toContain("ملاحظات للتوصيل: الدفع للسائق فقط");
-  });
-  it("leaves out lines that have no value", () => {
-    const bare = deliveryMessage({ ...order, landmark: null, notes: null, city: null });
-    expect(bare).not.toContain("أقرب نقطة دالة");
-    expect(bare).not.toContain("ملاحظات");
-    expect(bare).not.toContain("null");
-  });
-});
-
-describe("deliveryWhatsAppUrl", () => {
-  const company = { whatsapp: "07801234567" };
-  it("opens a chat with the chosen delivery company", () => {
-    const url = deliveryWhatsAppUrl(order, company);
-    expect(url.startsWith("https://wa.me/9647801234567?text=")).toBe(true);
-    expect(decode(url)).toBe(deliveryMessage(order));
-  });
-  it("encodes special characters so the message is not cut off", () => {
-    const url = deliveryWhatsAppUrl({ ...order, notes: "الطابق 2 & الباب الأزرق #5 ؟" }, company);
-    expect(url).not.toMatch(/[&#](?!.*text=)/);
-    expect(decode(url)).toContain("الطابق 2 & الباب الأزرق #5 ؟");
+    expect(text).toContain("قيد التوصيل");
+    expect(text).not.toContain("شركة");
   });
 });
 
@@ -164,7 +104,6 @@ describe("fillTemplate", () => {
   });
   it("leaves out a line whose only value is empty, but keeps lines that have text of their own", () => {
     expect(fillTemplate("مرحبًا {name}\nشركة التوصيل: {company}\nشكرًا", order)).toBe("مرحبًا علي حسين\nشكرًا");
-    expect(fillTemplate("شركة التوصيل: {company}", { ...order, delivery_company: "شركة النور" })).toBe("شركة التوصيل: شركة النور");
     expect(fillTemplate("سطر عادي\n\nسطر", order)).toBe("سطر عادي\n\nسطر");
   });
   it("is safe with special characters in the order's own text", () => {

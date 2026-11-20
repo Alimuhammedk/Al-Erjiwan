@@ -187,7 +187,7 @@ export const en: Messages = {
     statuses: {
       new: "Under review",
       confirmed: "Order confirmed",
-      shipped: "With the delivery company",
+      shipped: "Out for delivery",
       delivered: "Delivered",
       cancelled: "Cancelled",
       returned: "Returned",
@@ -203,7 +203,6 @@ export const en: Messages = {
     notFound: "We could not find an order with these details. Check the order number and phone number.",
     placed: "Order date",
     updated: "Last update",
-    deliveryCompany: "Delivery company",
   },
 
   cart: {

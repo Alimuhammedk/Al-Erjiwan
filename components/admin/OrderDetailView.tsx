@@ -1,13 +1,10 @@
 import Link from "next/link";
 import { ar } from "@/content/ar";
 import type { ActionState } from "@/lib/admin/types";
-import type { CompanyOption } from "@/lib/admin/delivery";
 import { DEFAULT_TEMPLATES, type AdminOrder, type MessageKind } from "@/lib/admin/orders";
 import { formatDateTime, formatPrice } from "@/lib/format";
 import { DeleteOrderButton } from "./DeleteOrderButton";
-import { DeliveryCompanyPicker } from "./DeliveryCompanyPicker";
 import { MessageComposer } from "./MessageComposer";
-import { NotesForm } from "./NotesForm";
 import { OrderActions } from "./OrderActions";
 import { StatusBadge } from "./StatusBadge";
 
@@ -18,10 +15,7 @@ type Props = {
   problemCount: number;
   printHref: string;
   setStatus: (status: string) => Promise<ActionState>;
-  saveNotes: (prev: ActionState, formData: FormData) => Promise<ActionState>;
   deleteOrder: () => Promise<ActionState>;
-  assignCompany: (companyId: string | null) => Promise<ActionState>;
-  companies: CompanyOption[];
   templates: Record<MessageKind, string>;
   saveTemplate: (kind: MessageKind, template: string) => Promise<ActionState>;
 };
@@ -45,7 +39,7 @@ const Row = ({ label, children }: { label: string; children: React.ReactNode }) 
 const button = "inline-flex min-h-11 items-center justify-center rounded-full px-5 font-bold";
 
 // The whole order page. The pieces that change data come in as actions, so the same page can be shown with sample data.
-export function OrderDetailView({ order, problemCount, printHref, setStatus, saveNotes, deleteOrder, assignCompany, companies, templates, saveTemplate }: Props) {
+export function OrderDetailView({ order, problemCount, printHref, setStatus, deleteOrder, templates, saveTemplate }: Props) {
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 space-y-5 px-4 py-6">
       <Link href="/admin/orders" className="inline-flex min-h-11 items-center font-bold text-brand-700 print:hidden">
@@ -137,14 +131,6 @@ export function OrderDetailView({ order, problemCount, printHref, setStatus, sav
                 {t.print}
               </Link>
             </div>
-          </Card>
-
-          <Card title={t.company}>
-            <DeliveryCompanyPicker order={order} companies={companies} assign={assignCompany} />
-          </Card>
-
-          <Card title={t.deliveryNotesCard}>
-            <NotesForm initial={{ delivery_notes: order.delivery_notes }} action={saveNotes} />
           </Card>
 
           <DeleteOrderButton code={order.code} status={order.status} deleteOrder={deleteOrder} after="list" />

@@ -37,25 +37,9 @@ test("the same-price box fills every fee but saves nothing", async ({ page }) =>
   await expect(page.getByRole("alert").filter({ hasText: "ECHO:fees" })).toContainText("[[7000,0,true],[7000,20000,true],[7000,0,false]]");
 });
 
-test("the company form has no price list, checks the number and keeps what was typed", async ({ page }) => {
-  await page.goto(`${URL}?view=companies`);
-  await page.getByLabel("اسم الشركة").fill("شركة السرعة");
-  await page.getByLabel("رقم واتساب الشركة").fill("123");
-  await page.getByRole("button", { name: "حفظ", exact: true }).click();
-  await expect(page.getByText("أدخل رقم واتساب عراقيًا صحيحًا")).toBeVisible();
-  await expect(page.getByLabel("اسم الشركة")).toHaveValue("شركة السرعة");
-  await expect(page.getByText("ما تأخذه الشركة")).toHaveCount(0);
-
-  await page.getByLabel("رقم واتساب الشركة").fill("+964 780 123 4567");
-  await page.getByRole("button", { name: "حفظ", exact: true }).click();
-  await expect(page.getByRole("alert").filter({ hasText: "ECHO:company" })).toContainText("ECHO:company:07801234567:[]");
+test("the delivery fees form fits a phone screen", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto(URL);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+  await page.screenshot({ path: "e2e/screenshots/admin-delivery-375.png", fullPage: true });
 });
-
-for (const view of ["", "?view=companies"]) {
-  test(`the delivery forms fit a phone screen ${view}`, async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 800 });
-    await page.goto(`${URL}${view}`);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
-    await page.screenshot({ path: `e2e/screenshots/admin-delivery${view ? "-company" : ""}-375.png`, fullPage: true });
-  });
-}

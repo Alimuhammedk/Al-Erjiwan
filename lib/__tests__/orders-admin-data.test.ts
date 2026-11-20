@@ -53,7 +53,7 @@ describe("getOrder", () => {
         data: {
           id: "o1", code: "ABCD1234", customer_name: "علي", phone: "07701234567", governorate: "بابل", city: null, address: "حي الجامعة",
           landmark: null, notes: null, subtotal: "8000", delivery_fee: "5000", total: "13000", status: "new",
-          delivery_company: null, delivery_company_id: null, delivery_cost: null, delivery_notes: null, created_at: "2026-11-20T10:00:00Z", updated_at: "2026-11-20T10:00:00Z",
+          created_at: "2026-11-20T10:00:00Z", updated_at: "2026-11-20T10:00:00Z",
           order_items: [{ product_name: "منتج", size_label: null, colour_name: null, colour_code: null, colour_note: null, quantity: 1, unit_price: "8000" }],
         },
         error: null,
