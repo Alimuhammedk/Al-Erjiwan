@@ -51,7 +51,7 @@ test("banner dots are at least 44px and the arrows and pause button work", async
   const pause = page.getByRole("button", { name: "إيقاف التشغيل التلقائي" });
   await pause.focus();
   await pause.press("Enter");
-  await expect(page.getByRole("button", { name: "تشغيل التلقائي" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "بدء التشغيل التلقائي" })).toHaveAttribute("aria-pressed", "true");
 });
 
 test("the banner rotates on its own, but not when reduced motion is requested", async ({ page, browser }) => {

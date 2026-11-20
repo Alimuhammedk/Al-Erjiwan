@@ -215,7 +215,6 @@ export const en: Messages = {
     increase: "Increase quantity",
     decrease: "Decrease quantity",
     checkout: "Checkout",
-    checkoutSoon: "Checkout will be available soon",
     size: "Size",
     colour: "Colour",
     deliveryNote: "The delivery cost is calculated at checkout",
