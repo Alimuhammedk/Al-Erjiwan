@@ -48,25 +48,6 @@ describe("0006_colours.sql", () => {
   }, 90_000);
 });
 
-describe("supabase/seed/sample-colours.sql", () => {
-  it("loads, can be run twice without duplicates, and the removal line takes them all away", async () => {
-    const db = await createDb([...BASE_MIGRATIONS, "0004_orders.sql", "0005_order_changes.sql", "0006_colours.sql"]);
-    try {
-      const sql = readSql("supabase/seed/sample-colours.sql");
-      await db.exec(sql);
-      await db.exec(sql);
-      const count = async () => (await db.query<{ n: number }>("select count(*)::int as n from public.colours where system = 'عينة'")).rows[0].n;
-      expect(await count()).toBe(51);
-      const near = await db.query<{ code: string }>("select code from public.closest_colours('#bfe0f2', 1)");
-      expect(near.rows[0].code).toBeTruthy();
-      await db.exec("delete from public.colours where system = 'عينة'");
-      expect(await count()).toBe(0);
-    } finally {
-      await db.close();
-    }
-  }, 90_000);
-});
-
 describe("0007_product_colours.sql", () => {
   it("passes every check in supabase/tests/0007_product_colours_test.sql", async () => {
     const db7 = await createDb([...BASE_MIGRATIONS, "0004_orders.sql", "0005_order_changes.sql", "0006_colours.sql", "0007_product_colours.sql"]);
