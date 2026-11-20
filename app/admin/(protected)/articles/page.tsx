@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { PagesList } from "@/components/admin/PagesList";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { ar } from "@/content/ar";
 import { listAdminArticles } from "@/lib/admin/articles-data";
@@ -56,6 +57,7 @@ export default async function AdminArticlesPage() {
           ))}
         </ul>
       )}
+      <PagesList />
     </main>
   );
 }

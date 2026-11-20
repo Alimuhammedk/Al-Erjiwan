@@ -259,8 +259,7 @@ export const ar = {
       banners: "البانرات",
       categories: "الفئات",
       delivery: "التوصيل",
-      articles: "المقالات",
-      pages: "الصفحات",
+      articles: "المقالات والصفحات",
       colours: "الألوان",
     },
     pages: {

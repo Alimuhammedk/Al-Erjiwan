@@ -67,7 +67,7 @@ export function PageForm({ page, action }: Props) {
       )}
       <div className="flex items-center gap-3">
         <SubmitButton pending={pending} />
-        <Link href="/admin/pages" className="font-bold text-brand-700">
+        <Link href="/admin/articles" className="font-bold text-brand-700">
           {ar.admin.cancel}
         </Link>
       </div>

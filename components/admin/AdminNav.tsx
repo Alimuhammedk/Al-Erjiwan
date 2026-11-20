@@ -42,12 +42,6 @@ const icons: Record<string, ReactNode> = {
       <path d="M14 2v6h6M8 13h8M8 17h6" />
     </>
   ),
-  pages: (
-    <>
-      <path d="M4 5a2 2 0 012-2h9l5 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2z" />
-      <path d="M9 3v5h5M8 13h8M8 17h5" />
-    </>
-  ),
   products: (
     <>
       <path d="M21 8l-9-5-9 5v8l9 5 9-5z" />
